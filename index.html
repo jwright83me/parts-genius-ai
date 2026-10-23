@@ -6,4 +6,23 @@ function addBubble(message,who){const b=document.createElement('div');b.classNam
 function sendChat(){const input=$('chatInput');const raw=input.value.trim();if(!raw)return;input.value='';addBubble(raw,'user');const t=raw.toLowerCase();let reply='';if(/overheat|steam|smoke|burning smell/.test(t)){reply='This could be unsafe. Pull over safely, shut off the engine and allow it to cool. Do not open a hot coolant cap. Do you see leaking coolant or a temperature warning? Avoid driving until it is checked.';}else if(/brake failure|no brakes|brake pedal to floor/.test(t)){reply='Do not drive the vehicle with compromised brakes. Arrange a tow or professional inspection. Is the pedal soft, or is there a warning light?';}else if(/won.t start|not start|no start|click|crank|starter/.test(t)){reply='Let’s narrow down the starting issue. When you turn the key or press Start, do you hear rapid clicks, one click, normal cranking, or nothing at all?';chatStep=1;}else if(chatStep===1){reply=/rapid|multiple|dim|weak/.test(t)?'A weak 12V battery or poor terminal connection is possible. Check battery voltage and cable condition before replacing anything. Do the headlights dim when you try to start?':/one click|single click/.test(t)?'A single click can indicate a starting-circuit issue, but battery voltage and connections should be tested first. Do the dash lights dim?':/crank|turns over/.test(t)?'If the engine cranks normally but does not start, we should check for fault codes and whether fuel and ignition systems are operating. Is the check-engine light on?':'Thanks. Are there warning lights or any clicking noises when you try again?';chatStep=2;}else if(/check engine|p0[0-9]{3}|p1[0-9]{3}/.test(t)){reply='Please share the exact diagnostic code and vehicle year, make, model and engine. A trouble code points to a system to test, not necessarily a part to replace.';}else if(/oil|filter|battery|alternator/.test(t)){reply='I can help you research that part. First, confirm the year, make, model and engine, and whether you need a diagnosis or a replacement. Retailer prices and fitment are not live in this demo.';}else{reply='Thanks. What year, make, model and engine is the vehicle? Also, when does the issue happen, and are there any warning lights, noises or trouble codes?';}addBubble(reply,'bot');}
 function startListening(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const status=$('micStatus');if(!SR){status.textContent='Voice recognition is not available in this browser. You can type your message or use the keyboard microphone.';return;}const rec=new SR();rec.lang='en-US';rec.interimResults=false;rec.maxAlternatives=1;status.textContent='Listening…';rec.onresult=e=>{const words=e.results[0][0].transcript;$('chatInput').value=words;status.textContent='Speech captured. Tap Send to submit.';};rec.onerror=e=>{status.textContent='Microphone unavailable ('+e.error+'). Try typing or the keyboard microphone.';};rec.onend=()=>{if(status.textContent==='Listening…')status.textContent='Listening stopped. Tap Speak to try again.';};try{rec.start()}catch(e){status.textContent='Unable to start microphone. Please type instead.';}}
 $('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}});
+async function sendChat(){
+  const input=document.getElementById('chatInput');
+  const message=input.value.trim();
+  if(!message)return;
+  addBubble(message,'user');
+  input.value='';
+  try{
+    const response=await fetch('/api/diagnose',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({message:message})
+    });
+    const data=await response.json();
+    if(!response.ok)throw new Error(data.error||'Server error');
+    addBubble(data.reply||'No answer received.','bot');
+  }catch(error){
+    addBubble('AI connection error: '+error.message,'bot');
+  }
+}
 </script></body></html>
