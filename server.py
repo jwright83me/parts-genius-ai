@@ -29,12 +29,11 @@ Prioritize safety. Warn users about dangerous repairs,
 high-voltage hybrid systems, and unsafe driving conditions.
 """
 
+from flask import send_file
+
 @app.get("/")
 def home():
-    return jsonify({
-        "status": "online",
-        "app": "Parts Genius AI"
-    })
+    return send_file("index.html")
 
 @app.post("/api/diagnose")
 def diagnose():
