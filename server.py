@@ -1,0 +1,71 @@
+
+import os
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from openai import OpenAI
+
+app = Flask(__name__)
+
+CORS(app, resources={
+    r"/api/*": {"origins": [
+        "https://jwright83me.github.io"
+    ]}
+})
+
+SYSTEM_PROMPT = """
+You are Parts Genius AI, a knowledgeable automotive
+diagnostic and parts assistant.
+
+Help customers troubleshoot vehicle problems, interpret
+OBD-II codes, and identify possible replacement parts.
+
+Ask for year, make, model, engine, and symptoms when needed.
+Explain likely causes, diagnostic tests, and repair options.
+
+Never invent OEM numbers, retailer inventory, prices,
+or confirmed vehicle fitment.
+
+Prioritize safety. Warn users about dangerous repairs,
+high-voltage hybrid systems, and unsafe driving conditions.
+"""
+
+@app.get("/")
+def home():
+    return jsonify({
+        "status": "online",
+        "app": "Parts Genius AI"
+    })
+
+@app.post("/api/diagnose")
+def diagnose():
+    data = request.get_json(silent=True) or {}
+    message = str(data.get("message", "")).strip()
+
+    if not message:
+        return jsonify({"error": "Enter a vehicle question."}), 400
+
+    if len(message) > 4000:
+        return jsonify({"error": "Message is too long."}), 400
+
+    if not os.getenv("OPENAI_API_KEY"):
+        return jsonify({"error": "AI is not configured."}), 503
+
+    try:
+        client = OpenAI()
+        response = client.responses.create(
+            model="gpt-4.1-mini",
+            instructions=SYSTEM_PROMPT,
+            input=message,
+            max_output_tokens=700
+        )
+        return jsonify({"reply": response.output_text})
+
+    except Exception:
+        app.logger.exception("AI request failed")
+        return jsonify({
+            "error": "AI is temporarily unavailable."
+        }), 502
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
