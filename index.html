@@ -43,6 +43,9 @@ vinPanel.innerHTML=`
 <h2>🚗 Identify Your Vehicle</h2>
 <p>Enter your 17-character VIN to identify your vehicle.</p>
 <input id="pgVin" maxlength="17" placeholder="Enter VIN" style="width:100%;box-sizing:border-box;padding:14px;border-radius:10px;font-size:16px">
+
+<input type="file" id="pgVinCamera" accept="image/*" capture="environment" style="margin-top:10px">
+
 <button id="pgDecode" style="margin-top:12px;padding:14px;background:#00aeef;color:white;border:0;border-radius:10px;font-weight:bold">Decode VIN</button>
 <div id="pgVinResult" style="margin-top:14px"></div>`;
 document.body.appendChild(vinPanel);
@@ -74,5 +77,14 @@ document.getElementById('pgDecode').onclick=async()=>{
     result.textContent='VIN lookup failed. Please try again.';
   }
 };
+
+const vinCamera = document.getElementById('pgVinCamera');
+
+vinCamera.addEventListener('change', () => {
+  const photo = vinCamera.files[0];
+  if (!photo) return;
+  alert('VIN photo selected! Next we will add automatic VIN reading.');
+});
+
 
 </script></body></html>
