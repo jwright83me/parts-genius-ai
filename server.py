@@ -39,7 +39,7 @@ def home():
 def diagnose():
     data = request.get_json(silent=True) or {}
     message = str(data.get("message", "")).strip()
-        history = data.get("history", [])
+    history = data.get("history", [])
     if not isinstance(history, list):
         history = []
     if not message:
