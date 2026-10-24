@@ -30,4 +30,38 @@ document.querySelectorAll('*').forEach(el=>{
     el.textContent='AI-Powered Automotive Diagnostics • Live AI Assistant';
   }
 });
+
+const vinPanel=document.createElement('section');
+vinPanel.style.cssText='margin:20px auto;padding:20px;max-width:650px;background:#0b2238;border:1px solid #168bd0;border-radius:18px;color:white';
+vinPanel.innerHTML=`
+<h2>🚗 Identify Your Vehicle</h2>
+<p>Enter your 17-character VIN to identify your vehicle.</p>
+<input id="pgVin" maxlength="17" placeholder="Enter VIN" style="width:100%;box-sizing:border-box;padding:14px;border-radius:10px;font-size:16px">
+<button id="pgDecode" style="margin-top:12px;padding:14px;background:#00aeef;color:white;border:0;border-radius:10px;font-weight:bold">Decode VIN</button>
+<div id="pgVinResult" style="margin-top:14px"></div>`;
+document.body.appendChild(vinPanel);
+
+document.getElementById('pgDecode').onclick=async()=>{
+  const vin=document.getElementById('pgVin').value.trim().toUpperCase();
+  const result=document.getElementById('pgVinResult');
+  if(!/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)){
+    result.textContent='Please enter a valid 17-character VIN.';
+    return;
+  }
+  result.textContent='Identifying vehicle...';
+  try{
+    const r=await fetch('https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues/'+encodeURIComponent(vin)+'?format=json');
+    if(!r.ok)throw new Error('VIN service unavailable');
+    const d=(await r.json()).Results[0];
+    if(!d||!d.Make||!d.Model||!d.ModelYear){
+      result.textContent='Vehicle could not be identified. Check the VIN.';
+      return;
+    }
+    const vehicle=[d.ModelYear,d.Make,d.Model,d.EngineModel,d.DisplacementL?d.DisplacementL+'L':''].filter(Boolean).join(' ');
+    result.textContent='Vehicle: '+vehicle+'. Please confirm these details before ordering parts.';
+  }catch(e){
+    result.textContent='VIN lookup failed. Please try again.';
+  }
+};
+
 </script></body></html>
