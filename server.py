@@ -1,4 +1,4 @@
-
+hi
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -39,7 +39,9 @@ def home():
 def diagnose():
     data = request.get_json(silent=True) or {}
     message = str(data.get("message", "")).strip()
-
+        history = data.get("history", [])
+    if not isinstance(history, list):
+        history = []
     if not message:
         return jsonify({"error": "Enter a vehicle question."}), 400
 
@@ -54,7 +56,10 @@ def diagnose():
         response = client.responses.create(
             model="gpt-4.1-mini",
             instructions=SYSTEM_PROMPT,
-            input=message,
+                        input=[
+                *history[-20:],
+                {"role": "user", "content": message}
+            ],
             max_output_tokens=700
         )
         return jsonify({"reply": response.output_text})
