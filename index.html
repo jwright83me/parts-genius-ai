@@ -121,8 +121,12 @@ return v[8] === check;
       return;
     }
 
-    document.getElementById('pgVin').value = vin[0];
-    result.textContent = 'VIN found: ' + vin[0] + '. Please verify it, then tap Decode VIN.';
+    
+document.getElementById('pgVin').value = vin;
+
+    
+result.textContent = 'VIN found: ' + vin + '. Please verify it, then tap Decode VIN.';
+
   } catch (error) {
     
     result.textContent = 'VIN scanner error: ' + error.message;
