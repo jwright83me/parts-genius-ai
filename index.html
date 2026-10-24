@@ -105,7 +105,9 @@ vinCamera.addEventListener('change', async () => {
     document.getElementById('pgVin').value = vin[0];
     result.textContent = 'VIN found: ' + vin[0] + '. Please verify it, then tap Decode VIN.';
   } catch (error) {
-    result.textContent = 'Unable to read photo. Please enter VIN manually.';
+    
+    result.textContent = 'VIN scanner error: ' + error.message;
+
   }
 });
 
