@@ -98,7 +98,12 @@ vinCamera.addEventListener('change', async () => {
     const scan = await Tesseract.recognize(photo, 'eng');
     const text = scan.data.text.toUpperCase();
     
-const candidates = text.match(/[A-HJ-NPR-Z0-9]{17}/g) || [];
+
+const candidates = text.split('\n').flatMap(line => {
+  const matches = line.toUpperCase().match(/[A-HJ-NPR-Z0-9][A-HJ-NPR-Z0-9\s-]{15,35}[A-HJ-NPR-Z0-9]/g) || [];
+  return matches.map(m => m.replace(/[\s-]/g, '')).filter(m => m.length === 17);
+});
+
 const vin = candidates.find(v => {
   const weights = [8,7,6,5,4,3,2,10,0,9,8,7,6,5,4,3,2];
   
