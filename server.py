@@ -40,6 +40,7 @@ def diagnose():
     data = request.get_json(silent=True) or {}
     message = str(data.get("message", "")).strip()
     history = data.get("history", [])
+        vehicle = str(data.get("vehicle") or "")[:300]
     if not isinstance(history, list):
         history = []
     if not message:
@@ -55,7 +56,9 @@ def diagnose():
         client = OpenAI()
         response = client.responses.create(
             model="gpt-4.1-mini",
-            instructions=SYSTEM_PROMPT,
+            
+            instructions=SYSTEM_PROMPT + ("\nCustomer's saved vehicle: " + vehicle if vehicle else ""),
+
                         input=[
                 *history[-20:],
                 {"role": "user", "content": message}
