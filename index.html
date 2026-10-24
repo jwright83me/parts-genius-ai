@@ -25,4 +25,9 @@ async function sendChat(){
     addBubble('AI connection error: '+error.message,'bot');
   }
 }
+document.querySelectorAll('*').forEach(el=>{
+  if(el.children.length===0 && el.textContent.includes('Interactive guided demo')){
+    el.textContent='AI-Powered Automotive Diagnostics • Live AI Assistant';
+  }
+});
 </script></body></html>
