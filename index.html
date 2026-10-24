@@ -7,7 +7,7 @@ function addBubble(message,who){const b=document.createElement('div');b.classNam
 function startListening(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const status=$('micStatus');if(!SR){status.textContent='Voice recognition is not available in this browser. You can type your message or use the keyboard microphone.';return;}const rec=new SR();rec.lang='en-US';rec.interimResults=false;rec.maxAlternatives=1;status.textContent='Listening…';rec.onresult=e=>{const words=e.results[0][0].transcript;$('chatInput').value=words;status.textContent='Speech captured. Tap Send to submit.';};rec.onerror=e=>{status.textContent='Microphone unavailable ('+e.error+'). Try typing or the keyboard microphone.';};rec.onend=()=>{if(status.textContent==='Listening…')status.textContent='Listening stopped. Tap Speak to try again.';};try{rec.start()}catch(e){status.textContent='Unable to start microphone. Please type instead.';}}
 $('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}});
 const chatHistory = [];
-async function sendChat(){alert('Send button is working');
+async function sendChat(){
   const input=document.getElementById('chatInput');
   const message=input.value.trim();
   if(!message)return;
