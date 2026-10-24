@@ -16,7 +16,7 @@ async function sendChat(){alert('Send button is working');
   try{
     const response=await fetch('/api/diagnose',{
       method:'POST',
-      headers:{'Content-Type':'application/
+      headers:{'Content-Type':'application/json'},
   body:JSON.stringify({message:message,history:chatHistory})
     });
     const data=await response.json();
