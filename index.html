@@ -130,7 +130,10 @@ return v[8] === check;
 document.getElementById('pgVin').value = vin;
 
     
-result.textContent = 'VIN found: ' + vin + '. Please verify it, then tap Decode VIN.';
+
+result.textContent = 'VIN found: ' + vin + '. Identifying vehicle...';
+document.getElementById('pgDecode').click();
+
 
   } catch (error) {
     
