@@ -34,8 +34,8 @@ chatHistory.push({role:'assistant',content:data.reply});
 document.querySelectorAll('*').forEach(el=>{
   if(el.children.length===0 && el.textContent.includes('Interactive guided demo')){
     el.textContent='AI-Powered Automotive Diagnostics • Live AI Assistant';
-  }
 });
+
 
 const vinPanel=document.createElement('section');
 vinPanel.style.cssText='margin:20px auto;padding:20px;max-width:650px;background:#0b2238;border:1px solid #168bd0;border-radius:18px;color:white';
