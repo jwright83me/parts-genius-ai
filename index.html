@@ -29,7 +29,7 @@ chatHistory.push({role:'assistant',content:data.reply});
   }catch(error){
     addBubble('AI connection error: '+error.message,'bot');
   
-
+}
 }
 document.querySelectorAll('*').forEach(el=>{
   if(el.children.length===0 && el.textContent.includes('Interactive guided demo')){
