@@ -65,6 +65,7 @@ document.getElementById('pgDecode').onclick=async()=>{
     }
     const vehicle=[d.ModelYear,d.Make,d.Model,d.EngineModel,d.DisplacementL?d.DisplacementL+'L':''].filter(Boolean).join(' ');
     result.textContent='Vehicle: '+vehicle+'. Please confirm these details before ordering parts.';
+    document.getElementById('year').value=d.ModelYear;
     result.scrollIntoView({behavior:'smooth',block:'center'});
   }catch(e){
     result.textContent='VIN lookup failed. Please try again.';
