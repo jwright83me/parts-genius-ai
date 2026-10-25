@@ -90,10 +90,18 @@ def check_voice_setup():
         })
 @app.post("/api/voice/session")
 def create_voice_session():
-        if os.getenv("VOICE_ENABLED") != "true":
-            return jsonify({"error": "Voice is not enabled yet"}), 403
-        if not os.getenv("OPENAI_API_KEY"):
-            return jsonify({"error": "Voice AI is not configured"}), 503
+    import hmac
+    from flask import request
+
+    expected = os.getenv("VOICE_TEST_PASSWORD")
+    provided = request.headers.get("X-Voice-Test-Password", "")
+
+    if not expected or not hmac.compare_digest(provided, expected):
+        return jsonify({"error": "Unauthorized"}), 401
+    if os.getenv("VOICE_ENABLED") != "true":
+        return jsonify({"error": "Voice is not enabled yet"}), 403
+    if not os.getenv("OPENAI_API_KEY"):
+        return jsonify({"error": "Voice AI is not configured"}), 503
 
         try:
             client = OpenAI()
