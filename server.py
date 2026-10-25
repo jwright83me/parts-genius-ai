@@ -93,7 +93,7 @@ def create_voice_session():
     import hmac
     from flask import request
 
-    expected = os.getenv("VOICE_TEST_PASSWORD")
+    expected = os.getenv("VOICE_TEST_TOKEN")
     provided = request.headers.get("X-Voice-Test-Password", "")
 
     if not expected or not hmac.compare_digest(provided, expected):
