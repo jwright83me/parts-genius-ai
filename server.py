@@ -73,6 +73,21 @@ def diagnose():
             "error": "AI is temporarily unavailable."
         }), 502
 
+@app.get("/api/voice/check")
+def check_voice_setup():
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key="test-key")
+        supported = hasattr(client.realtime, "client_secrets")
+        return jsonify({
+            "voice_library_ready": supported,
+            "voice_enabled": False
+        })
+    except Exception:
+        return jsonify({
+            "voice_library_ready": False,
+            "voice_enabled": False
+        })
 @app.post("/api/voice/session")
 def create_voice_session():
         if os.getenv("VOICE_ENABLED") != "true":
