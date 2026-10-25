@@ -1,3 +1,4 @@
+
 <!doctype html><html lang="en"><head>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
@@ -153,4 +154,73 @@ document.getElementById('pgDecode').click();
 
 
 const VOICE_ENABLED = false;
+let voiceConnection = null;
+let voiceStream = null;
+let voiceAudio = null;
+let voiceChannel = null;
+function stopVoice() {
+  if (voiceChannel) voiceChannel.close();
+  if (voiceConnection) voiceConnection.close();
+  if (voiceStream) {
+    voiceStream.getTracks().forEach(track => track.stop());
+  }
+  if (voiceAudio) {
+    voiceAudio.srcObject = null;
+  }
+  voiceChannel = null;
+  voiceConnection = null;
+  voiceStream = null;
+  voiceAudio = null;
+}
+async function startVoice() {
+  if (!VOICE_ENABLED) {
+    alert("Live voice is not enabled yet.");
+    return;
+  }
+  const response = await fetch('/api/voice/session', {
+    method: 'POST'
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    alert(data.error || 'Unable to start voice');
+    return;
+  }
+  voiceConnection = new RTCPeerConnection();
+  voiceAudio = new Audio();
+  voiceAudio.autoplay = true;
+  voiceConnection.ontrack = (event) => {
+    voiceAudio.srcObject = event.streams[0];
+  };
+  voiceStream = await navigator.mediaDevices.getUserMedia({
+    audio: true
+  });
+  voiceStream.getTracks().forEach(track => {
+    voiceConnection.addTrack(track, voiceStream);
+  });
+  voiceChannel = voiceConnection.createDataChannel('oai-events');
+  const offer = await voiceConnection.createOffer();
+  await voiceConnection.setLocalDescription(offer);
+  const sdpResponse = await fetch(
+    'https://api.openai.com/v1/realtime/calls',
+    {
+      method: 'POST',
+      body: offer.sdp,
+      headers: {
+        'Authorization': 'Bearer ' + data.client_secret,
+        'Content-Type': 'application/sdp'
+      }
+    }
+  );
+  if (!sdpResponse.ok) {
+    alert("Unable to connect to the voice assistant.");
+    stopVoice();
+    return;
+  }
+
+  const answer = await sdpResponse.text();
+  await voiceConnection.setRemoteDescription({
+    type: 'answer',
+    sdp: answer
+  });
+}
 </script></body></html>
