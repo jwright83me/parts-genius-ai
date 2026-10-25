@@ -15,9 +15,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const talkButton = document.createElement('button');
   talkButton.type = 'button';
   talkButton.textContent = '🎙 Talk to Mechanic';
-  talkButton.onclick = startVoice;
-  talkButton.disabled = true;
-  talkButton.title = 'Live voice coming soon';
+  talkButton.onclick = async () => {
+  const password = prompt('Enter your private voice test password:');
+  if (!password) return;
+  await startVoice(password);
+};
+  talkButton.disabled = false;
+  talkButton.title = 'Talk to your AI mechanic';
 
   speakButton.insertAdjacentElement('afterend', talkButton);
 });
@@ -166,7 +170,7 @@ document.getElementById('pgDecode').click();
 
 
 
-const VOICE_ENABLED = false;
+const VOICE_ENABLED = true;
 let voiceConnection = null;
 let voiceStream = null;
 let voiceAudio = null;
@@ -185,14 +189,17 @@ function stopVoice() {
   voiceStream = null;
   voiceAudio = null;
 }
-async function startVoice() {
+async function startVoice(password) {
   if (!VOICE_ENABLED) {
     alert("Live voice is not enabled yet.");
     return;
   }
   const response = await fetch('/api/voice/session', {
-    method: 'POST'
-  });
+  method: 'POST',
+  headers: {
+    'X-Voice-Test-Password': password
+  }
+});
   const data = await response.json();
   if (!response.ok) {
     alert(data.error || 'Unable to start voice');
