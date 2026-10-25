@@ -81,8 +81,8 @@ def create_voice_session():
             return jsonify({"error": "Voice AI is not configured"}), 503
 
         try:
-        client = OpenAI()
-        session = client.realtime.client_secrets.create(
+            client = OpenAI()
+            session = client.realtime.client_secrets.create(
             session={
                 "type": "realtime",
                 "model": "gpt-realtime",
@@ -92,7 +92,7 @@ def create_voice_session():
                 }
             }
         )
-        return jsonify({"client_secret": session.value})
+            return jsonify({"client_secret": session.value})
     except Exception:
         app.logger.exception("Voice session error")
         return jsonify({"error": "Unable to start voice session"}), 502
