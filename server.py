@@ -93,9 +93,9 @@ def create_voice_session():
             }
         )
             return jsonify({"client_secret": session.value})
-    except Exception:
-        app.logger.exception("Voice session error")
-        return jsonify({"error": "Unable to start voice session"}), 502
+        except Exception:
+            app.logger.exception("Voice session error")
+            return jsonify({"error": "Unable to start voice session"}), 502
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
