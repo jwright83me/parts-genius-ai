@@ -76,7 +76,7 @@ def diagnose():
 @app.post("/api/voice/session")
 def create_voice_session():
         if os.getenv("VOICE_ENABLED") != "true":
-        return jsonify({"error": "Voice is not enabled yet"}), 403
+            return jsonify({"error": "Voice is not enabled yet"}), 403
     if not os.getenv("OPENAI_API_KEY"):
         return jsonify({"error": "Voice AI is not configured"}), 503
 
