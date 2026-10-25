@@ -88,6 +88,18 @@ def check_voice_setup():
             "voice_library_ready": False,
             "voice_enabled": False
         })
+@app.post("/api/voice/security-test")
+def test_voice_security():
+    import hmac
+    from flask import request
+
+    expected = os.getenv("VOICE_TEST_TOKEN")
+    provided = request.headers.get("X-Voice-Test-Password", "")
+
+    if not expected or not hmac.compare_digest(provided, expected):
+        return jsonify({"error": "Unauthorized"}), 401
+
+    return jsonify({"security": "passed"})
 @app.post("/api/voice/session")
 def create_voice_session():
     import hmac
