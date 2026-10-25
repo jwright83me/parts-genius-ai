@@ -73,6 +73,28 @@ def diagnose():
             "error": "AI is temporarily unavailable."
         }), 502
 
+@app.post("/api/voice/session")
+def create_voice_session():
+    if not os.getenv("OPENAI_API_KEY"):
+        return jsonify({"error": "Voice AI is not configured"}), 503
+
+    try:
+        client = OpenAI()
+        session = client.realtime.client_secrets.create(
+            session={
+                "type": "realtime",
+                "model": "gpt-realtime",
+                "instructions": SYSTEM_PROMPT,
+                "audio": {
+                    "output": {"voice": "marin"}
+                }
+            }
+        )
+        return jsonify({"client_secret": session.value})
+    except Exception:
+        app.logger.exception("Voice session error")
+        return jsonify({"error": "Unable to start voice session"}), 502
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
