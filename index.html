@@ -85,7 +85,10 @@ vinPanel.innerHTML=`
 <input id="pgVin" maxlength="17" placeholder="Enter VIN" style="width:100%;box-sizing:border-box;padding:14px;border-radius:10px;font-size:16px">
 
 <input type="file" id="pgVinCamera" accept="image/*" capture="environment" style="margin-top:10px">
-
+<button id="pgGuidedScan" type="button"
+style="display:block;margin-top:12px;padding:14px;background:#168bd0;color:white;border:0;border-radius:10px;font-weight:bold;width:100%">
+📷 Scan VIN with Guided Camera
+</button>
 <button id="pgDecode" style="margin-top:12px;padding:14px;background:#00aeef;color:white;border:0;border-radius:10px;font-weight:bold">Decode VIN</button>
 <div id="pgVinResult" style="margin-top:14px"></div>`;
 document.body.appendChild(vinPanel);
