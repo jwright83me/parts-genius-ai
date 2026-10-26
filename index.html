@@ -129,7 +129,15 @@ vinCamera.addEventListener('change', async () => {
   result.textContent = 'Reading VIN from photo...';
 
   try {
-    const scan = await Tesseract.recognize(photo, 'eng');
+    const worker = await Tesseract.createWorker('eng');
+
+await worker.setParameters({
+  tessedit_char_whitelist: 'ABCDEFGHJKLMNPRSTUVWXYZ0123456789',
+  preserve_interword_spaces: '0'
+});
+
+const scan = await worker.recognize(photo);
+await worker.terminate();
     const text = scan.data.text.toUpperCase();
     
 
