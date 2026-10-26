@@ -92,6 +92,77 @@ style="display:block;margin-top:12px;padding:14px;background:#168bd0;color:white
 <button id="pgDecode" style="margin-top:12px;padding:14px;background:#00aeef;color:white;border:0;border-radius:10px;font-weight:bold">Decode VIN</button>
 <div id="pgVinResult" style="margin-top:14px"></div>`;
 document.body.appendChild(vinPanel);
+const guidedScanButton = document.getElementById('pgGuidedScan');
+
+const guidedCamera = document.createElement('div');
+guidedCamera.id = 'pgGuidedCamera';
+guidedCamera.style.cssText =
+  'display:none;margin-top:15px;padding:12px;background:#071522;border:2px solid #168bd0;border-radius:12px;';
+
+guidedCamera.innerHTML = `
+  <div style="position:relative;width:100%;overflow:hidden;border-radius:10px">
+    <video id="pgVinVideo" autoplay playsinline muted
+      style="width:100%;display:block"></video>
+    <div style="position:absolute;left:5%;top:40%;width:90%;height:20%;border:3px solid #00aeef;border-radius:8px;box-sizing:border-box;pointer-events:none"></div>
+  </div>
+  <p style="text-align:center;color:white">Align all 17 VIN characters inside the blue box.</p>
+  <button id="pgCaptureVin" type="button">📸 Capture VIN</button>
+  <button id="pgCloseVin" type="button">Cancel</button>
+`;
+
+vinPanel.appendChild(guidedCamera);
+const vinVideo = document.getElementById('pgVinVideo');
+let vinCameraStream = null;
+guidedScanButton.onclick = async () => {
+  try {
+    guidedCamera.style.display = 'block';
+
+    vinCameraStream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: { facingMode: 'environment' }
+    });
+
+    vinVideo.srcObject = vinCameraStream;
+    await vinVideo.play();
+
+  } catch (error) {
+    guidedCamera.style.display = 'none';
+    alert('Unable to open camera: ' + error.message);
+  }
+};
+document.getElementById('pgCloseVin').onclick = () => {
+  if (vinCameraStream) {
+    vinCameraStream.getTracks().forEach(track => track.stop());
+    vinCameraStream = null;
+  }
+
+  vinVideo.srcObject = null;
+  guidedCamera.style.display = 'none';
+};
+document.getElementById('pgCaptureVin').onclick = async () => {
+  if (!vinCameraStream || !vinVideo.videoWidth) {
+    alert('Camera is not ready yet.');
+    return;
+  }
+
+  const canvas = document.createElement('canvas');
+  const width = vinVideo.videoWidth;
+  const height = vinVideo.videoHeight;
+
+  canvas.width = Math.round(width * 0.9);
+  canvas.height = Math.round(height * 0.2);
+
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(
+    vinVideo,
+    width * 0.05, height * 0.4,
+    width * 0.9, height * 0.2,
+    0, 0, canvas.width, canvas.height
+  );
+
+  document.getElementById('pgVinResult').textContent =
+    'VIN image captured. Preparing to scan...';
+};
 document.body.style.paddingBottom='220px';
 document.getElementById('pgDecode').onclick=async()=>{
   const vin=document.getElementById('pgVin').value.trim().toUpperCase();
