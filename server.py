@@ -115,7 +115,7 @@ def create_voice_session():
     if not os.getenv("OPENAI_API_KEY"):
         return jsonify({"error": "Voice AI is not configured"}), 503
 
-        try:
+    try:
             client = OpenAI()
             session = client.realtime.client_secrets.create(
             session={
@@ -128,7 +128,7 @@ def create_voice_session():
             }
         )
             return jsonify({"client_secret": session.value})
-        except Exception:
+    except Exception:
             app.logger.exception("Voice session error")
             return jsonify({"error": "Unable to start voice session"}), 502
 
