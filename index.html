@@ -164,9 +164,11 @@ return v[8] === check;
 
 
     if (!vin) {
-      result.textContent = 'Could not find a 17-character VIN. Try a clearer photo.';
-      return;
-    }
+  result.textContent =
+    'VIN not recognized. Camera read: ' +
+    (text.trim() || '[no text detected]');
+  return;
+}
 
     
 document.getElementById('pgVin').value = vin;
