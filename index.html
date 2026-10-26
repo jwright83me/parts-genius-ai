@@ -16,9 +16,17 @@ document.addEventListener('DOMContentLoaded', () => {
   talkButton.type = 'button';
   talkButton.textContent = '🎙 Talk to Mechanic';
   talkButton.onclick = async () => {
+  if (voiceConnection) {
+  stopVoice();
+  talkButton.textContent = '🎙 Talk to Mechanic';
+  return;
+}
   const password = prompt('Enter your private voice test password:');
   if (!password) return;
   await startVoice(password);
+  if (voiceConnection) {
+  talkButton.textContent = '🔴 End Conversation';
+}
 };
   talkButton.disabled = false;
   talkButton.title = 'Talk to your AI mechanic';
