@@ -153,6 +153,7 @@ document.getElementById('pgCaptureVin').onclick = async () => {
 
 
   const ctx = canvas.getContext('2d');
+  ctx.filter = 'grayscale(1) contrast(2) brightness(1.3)';
   ctx.drawImage(
     vinVideo,
     width * 0.05, height * 0.4,
