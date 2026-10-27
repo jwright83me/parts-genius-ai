@@ -232,10 +232,20 @@ await worker.terminate();
     const text = scan.data.text.toUpperCase();
     
 
-const candidates = text.split('\n').flatMap(line => {
-  const matches = line.toUpperCase().match(/[A-HJ-NPR-Z0-9][A-HJ-NPR-Z0-9\s-]{15,35}[A-HJ-NPR-Z0-9]/g) || [];
-  return matches.map(m => m.replace(/[\s-]/g, '')).filter(m => m.length === 17);
-});
+const candidates = [];
+
+for (const line of text.split('\n')) {
+  const cleaned = line.toUpperCase()
+    .replace(/[^A-HJ-NPR-Z0-9]/g, '');
+
+  for (let i = 0; i <= cleaned.length - 17; i++) {
+    const candidate = cleaned.slice(i, i + 17);
+
+    if (!candidates.includes(candidate)) {
+      candidates.push(candidate);
+    }
+  }
+}
 
 const vin = candidates.find(v => {
   const weights = [8,7,6,5,4,3,2,10,0,9,8,7,6,5,4,3,2];
