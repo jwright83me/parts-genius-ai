@@ -228,9 +228,33 @@ await worker.setParameters({
   preserve_interword_spaces: '0'
 });
 
-const scan = await worker.recognize(photo);
+const image = await createImageBitmap(photo);
+
+const versions = [
+  'none',
+  'grayscale(1) contrast(1.5) brightness(1.4)',
+  'grayscale(1) contrast(2.5) brightness(1.8)'
+];
+
+const readings = [];
+
+for (const filter of versions) {
+  const canvas = document.createElement('canvas');
+  canvas.width = image.width * 2;
+  canvas.height = image.height * 2;
+
+  const ctx = canvas.getContext('2d');
+  ctx.filter = filter;
+  ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+  const scan = await worker.recognize(canvas);
+  readings.push(scan.data.text.toUpperCase());
+}
+
+image.close();
 await worker.terminate();
-    const text = scan.data.text.toUpperCase();
+
+const text = readings.join('\n');
     
 
 const candidates = [];
