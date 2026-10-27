@@ -387,25 +387,71 @@ async function startVoice(password) {
     sdp: answer
   });
 }
+
 const originalSaveVehicle = window.saveVehicle;
 
 window.saveVehicle = function() {
   originalSaveVehicle();
 
-  setTimeout(() => {
-    const choice = prompt(
-      "🚗 Vehicle Saved!\n\n" +
-      "What would you like to do next?\n\n" +
-      "1 - Begin Diagnosis\n" +
-      "2 - Find & Order Parts\n\n" +
-      "Enter 1 or 2, or tap Cancel."
-    );
+  const oldPopup = document.getElementById('pgSavePopup');
+  if (oldPopup) oldPopup.remove();
 
-    if (choice === "1") {
-      document.querySelector('[data-tab="diagnose"]')?.click();
-    } else if (choice === "2") {
-      document.querySelector('[data-tab="parts"]')?.click();
-    }
-  }, 100);
+  const popup = document.createElement('div');
+  popup.id = 'pgSavePopup';
+  popup.style.cssText = `
+    position:fixed;inset:0;z-index:99999;
+    background:rgba(0,0,0,.75);
+    display:flex;align-items:center;
+    justify-content:center;padding:20px;
+  `;
+
+  popup.innerHTML = `
+    <div style="background:#0b2238;color:white;
+      border:2px solid #168bd0;border-radius:20px;
+      padding:25px;width:100%;max-width:380px;
+      text-align:center;box-sizing:border-box">
+
+      <h2>✅ Vehicle Saved!</h2>
+      <p>What would you like to do next?</p>
+
+      <button id="pgStartDiagnosis"
+        style="width:100%;padding:16px;margin:10px 0;
+        background:#00aeef;color:white;border:0;
+        border-radius:12px;font-size:17px">
+        🔧 Begin Diagnosis
+      </button>
+
+      <button id="pgFindParts"
+        style="width:100%;padding:16px;margin:10px 0;
+        background:#168bd0;color:white;border:0;
+        border-radius:12px;font-size:17px">
+        🛒 Find & Order Parts
+      </button>
+
+      <button id="pgMaybeLater"
+        style="background:none;color:#ccc;border:0;
+        padding:15px;font-size:16px">
+        Maybe Later
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(popup);
+
+  document.getElementById('pgMaybeLater').onclick =
+    () => popup.remove();
+
+  document.getElementById('pgStartDiagnosis').onclick = () => {
+    popup.remove();
+    const tab = document.querySelector('[data-tab="diagnose"]');
+    if (tab) tab.click();
+  };
+
+  document.getElementById('pgFindParts').onclick = () => {
+    popup.remove();
+    const tab = document.querySelector('[data-tab="parts"]');
+    if (tab) tab.click();
+  };
 };
+  
 </script></body></html>
