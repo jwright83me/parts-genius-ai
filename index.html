@@ -148,9 +148,9 @@ document.getElementById('pgCaptureVin').onclick = async () => {
   const canvas = document.createElement('canvas');
   const width = vinVideo.videoWidth;
   const height = vinVideo.videoHeight;
+  canvas.width = Math.round(width * 0.9 * 2);
+  canvas.height = Math.round(height * 0.2 * 2);
 
-  canvas.width = Math.round(width * 0.9);
-  canvas.height = Math.round(height * 0.2);
 
   const ctx = canvas.getContext('2d');
   ctx.drawImage(
