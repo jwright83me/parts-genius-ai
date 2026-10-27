@@ -162,6 +162,23 @@ document.getElementById('pgCaptureVin').onclick = async () => {
 
   document.getElementById('pgVinResult').textContent =
     'VIN image captured. Preparing to scan...';
+    const vinFile = await new Promise(resolve => {
+  canvas.toBlob(resolve, 'image/png');
+});
+
+if (!vinFile) {
+  alert('Unable to capture VIN image.');
+  return;
+}
+
+const fileInput = document.getElementById('pgVinCamera');
+const transfer = new DataTransfer();
+transfer.items.add(new File([vinFile], 'vin.png', {
+  type: 'image/png'
+}));
+
+fileInput.files = transfer.files;
+fileInput.dispatchEvent(new Event('change', { bubbles: true }));
 };
 document.body.style.paddingBottom='220px';
 document.getElementById('pgDecode').onclick=async()=>{
