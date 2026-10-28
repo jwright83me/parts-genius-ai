@@ -353,6 +353,10 @@ async function startVoice(password) {
   voiceConnection.onconnectionstatechange = () => {
   alert("Nova connection: " + voiceConnection.connectionState);
 };
+
+voiceConnection.oniceconnectionstatechange = () => {
+  alert("Nova ICE: " + voiceConnection.iceConnectionState);
+};
   voiceAudio = new Audio();
   voiceAudio.autoplay = true;
   voiceConnection.ontrack = (event) => {
