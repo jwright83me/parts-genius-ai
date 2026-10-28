@@ -468,6 +468,35 @@ novaSection.innerHTML = `
 `;
 
 document.body.prepend(novaSection);
+// NOVA - Clickable voice button
+novaSection.style.position = 'relative';
+
+const novaTalkButton = document.createElement('button');
+novaTalkButton.type = 'button';
+novaTalkButton.setAttribute('aria-label', 'Talk to Nova');
+
+novaTalkButton.style.cssText = `
+position:absolute;
+left:23%;
+top:89%;
+width:54%;
+height:8%;
+background:transparent;
+border:none;
+cursor:pointer;
+z-index:10;
+`;
+
+novaTalkButton.onclick = () => {
+  const speakButton = document.querySelector('button[title="Talk to your AI mechanic"]');
+  if (speakButton) {
+    speakButton.click();
+  } else {
+    alert('Nova voice assistant is not ready yet.');
+  }
+};
+
+novaSection.appendChild(novaTalkButton);
 document.querySelector('header.top').style.display = 'none';
 document.querySelector('section.hero').style.display = 'none';
   
