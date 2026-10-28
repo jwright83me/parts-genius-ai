@@ -382,7 +382,11 @@ if (data.type === 'response.audio.delta' ||
   console.log('Nova audio received');
 }
 if (data.type === 'response.done') {
-  alert('Nova finished generating a response!');
+  const outputs = data.response?.output || [];
+  const types = outputs.flatMap(item =>
+    (item.content || []).map(part => part.type)
+  );
+  alert('Nova response content: ' + (types.join(', ') || 'none'));
 }
   if (data.type === 'error') {
     alert('Nova error: ' + JSON.stringify(data.error));
