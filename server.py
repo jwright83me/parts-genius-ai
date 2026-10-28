@@ -34,6 +34,9 @@ from flask import send_file
 @app.get("/")
 def home():
     return send_file("index.html")
+@app.get("/IMG_8577.png")
+def nova_image():
+    return send_file("IMG_8577.png")
 
 @app.post("/api/diagnose")
 def diagnose():
