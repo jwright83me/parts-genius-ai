@@ -374,6 +374,16 @@ voiceConnection.oniceconnectionstatechange = () => {
   if (data.type === 'input_audio_buffer.speech_started') {
     alert('Nova heard your voice!');
   }
+  if (data.type === 'response.created') {
+  alert('Nova is preparing a response!');
+}
+if (data.type === 'response.audio.delta' ||
+    data.type === 'response.output_audio.delta') {
+  console.log('Nova audio received');
+}
+if (data.type === 'response.done') {
+  alert('Nova finished generating a response!');
+}
   if (data.type === 'error') {
     alert('Nova error: ' + JSON.stringify(data.error));
   }
