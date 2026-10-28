@@ -369,6 +369,15 @@ voiceConnection.oniceconnectionstatechange = () => {
     voiceConnection.addTrack(track, voiceStream);
   });
   voiceChannel = voiceConnection.createDataChannel('oai-events');
+  voiceChannel.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  if (data.type === 'input_audio_buffer.speech_started') {
+    alert('Nova heard your voice!');
+  }
+  if (data.type === 'error') {
+    alert('Nova error: ' + JSON.stringify(data.error));
+  }
+};
   const offer = await voiceConnection.createOffer();
   await voiceConnection.setLocalDescription(offer);
   const sdpResponse = await fetch(
