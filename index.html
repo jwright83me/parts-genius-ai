@@ -350,6 +350,9 @@ async function startVoice(password) {
     return;
   }
   voiceConnection = new RTCPeerConnection();
+  voiceConnection.onconnectionstatechange = () => {
+  alert("Nova connection: " + voiceConnection.connectionState);
+};
   voiceAudio = new Audio();
   voiceAudio.autoplay = true;
   voiceConnection.ontrack = (event) => {
