@@ -350,13 +350,9 @@ async function startVoice(password) {
     return;
   }
   voiceConnection = new RTCPeerConnection();
-  voiceConnection.onconnectionstatechange = () => {
-  alert("Nova connection: " + voiceConnection.connectionState);
-};
 
-voiceConnection.oniceconnectionstatechange = () => {
-  alert("Nova ICE: " + voiceConnection.iceConnectionState);
-};
+
+
   voiceAudio = new Audio();
   voiceAudio.setAttribute('playsinline', '');
 voiceAudio.muted = false;
@@ -381,22 +377,11 @@ voiceAudio.volume = 1;
   voiceChannel = voiceConnection.createDataChannel('oai-events');
   voiceChannel.onmessage = (event) => {
   const data = JSON.parse(event.data);
-  if (data.type === 'input_audio_buffer.speech_started') {
-    alert('Nova heard your voice!');
-  }
-  if (data.type === 'response.created') {
-  alert('Nova is preparing a response!');
-}
+  
+
 if (data.type === 'response.audio.delta' ||
     data.type === 'response.output_audio.delta') {
   console.log('Nova audio received');
-}
-if (data.type === 'response.done') {
-  const outputs = data.response?.output || [];
-  const types = outputs.flatMap(item =>
-    (item.content || []).map(part => part.type)
-  );
-  alert('Nova response content: ' + (types.join(', ') || 'none'));
 }
   if (data.type === 'error') {
     alert('Nova error: ' + JSON.stringify(data.error));
