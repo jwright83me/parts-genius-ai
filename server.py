@@ -38,6 +38,10 @@ def home():
 def nova_image():
     return send_file("IMG_8594.jpeg")
 
+@app.get("/25A65F24-D04B-488D-9A2B-3FE90A62C443.png")
+def jeep_image():
+    return send_file("25A65F24-D04B-488D-9A2B-3FE90A62C443.png")
+
 @app.post("/api/diagnose")
 def diagnose():
     data = request.get_json(silent=True) or {}
