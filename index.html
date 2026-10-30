@@ -558,7 +558,11 @@ function showMyGarage() {
       color:#39c9ff;
       font-size:48px;
     `;
-    imageArea.innerHTML = '<span style="font-size:70px;filter:drop-shadow(0 0 12px #00cfff) drop-shadow(0 0 25px #008cff);">🚙</span>';
+    
+imageArea.innerHTML = vehicle.make?.toLowerCase() === 'jeep' && vehicle.model?.toLowerCase().includes('wrangler')
+  ? '<img src="25A65F24-D04B-488D-9A2B-3FE90A62C443.png" alt="Jeep Wrangler hologram" style="width:100%;height:100%;object-fit:contain;border-radius:12px;">'
+  : '<span style="font-size:70px;filter:drop-shadow(0 0 12px #00cfff)">🚙</span>';
+
 
     const selectButton = document.createElement('button');
     selectButton.textContent =
