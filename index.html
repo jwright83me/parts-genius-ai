@@ -375,6 +375,10 @@ voiceAudio.volume = 1;
     voiceConnection.addTrack(track, voiceStream);
   });
   voiceChannel = voiceConnection.createDataChannel('oai-events');
+  voiceChannel.addEventListener('open', () => {
+  const button = document.querySelector('#novaHome button');
+  if (button) button.style.animation = 'none';
+});
   voiceChannel.onmessage = (event) => {
   const data = JSON.parse(event.data);
   
@@ -515,12 +519,29 @@ top:89%;
 width:54%;
 height:8%;
 background:transparent;
-border:none;
+border:2px solid rgba(0,180,255,0.8);
+border-radius:30px;
+box-shadow:0 0 12px #00bfff,0 0 24px rgba(0,180,255,0.5);
+animation:none;
 cursor:pointer;
 z-index:10;
 `;
-
+const novaPulseStyle = document.createElement('style');
+novaPulseStyle.textContent = `
+@keyframes novaPulse {
+  from {
+    box-shadow: 0 0 8px #00bfff;
+    border-color: rgba(0,180,255,0.5);
+  }
+  to {
+    box-shadow: 0 0 20px #00bfff, 0 0 35px #0088ff;
+    border-color: #66ddff;
+  }
+}
+`;
+document.head.appendChild(novaPulseStyle);
 novaTalkButton.onclick = () => {
+  novaTalkButton.style.animation = 'novaPulse 1.2s ease-in-out infinite alternate';
   const speakButton = document.querySelector('button[title="Talk to your AI mechanic"]');
   if (speakButton) {
     speakButton.click();
