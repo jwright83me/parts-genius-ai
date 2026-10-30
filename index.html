@@ -458,6 +458,49 @@ function addToGarage(vehicle) {
     localStorage.setItem('pgGarage', JSON.stringify(garage));
   }
 }
+function showMyGarage() {
+  let garage = [];
+
+  try {
+    garage = JSON.parse(localStorage.getItem('pgGarage')) || [];
+  } catch (e) {
+    garage = [];
+  }
+
+  const oldGarage = document.getElementById('myGarageList');
+  if (oldGarage) oldGarage.remove();
+
+  const panel = document.createElement('div');
+  panel.id = 'myGarageList';
+  panel.style.cssText =
+    'background:#0b2238;color:white;padding:20px;margin:20px;border:1px solid #168bd0;border-radius:15px;';
+
+  const heading = document.createElement('h3');
+  heading.textContent = '🚗 My Garage';
+  panel.appendChild(heading);
+
+  garage.forEach((vehicle) => {
+    const button = document.createElement('button');
+    button.textContent =
+      `${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.engine || ''}`;
+    button.style.cssText =
+      'display:block;width:100%;padding:12px;margin:10px 0;background:#123d60;color:white;border:1px solid #168bd0;border-radius:10px;';
+
+    button.onclick = () => {
+      localStorage.setItem('pgVehicle', JSON.stringify(vehicle));
+      location.reload();
+    };
+
+    panel.appendChild(button);
+  });
+
+  const vehicleSection = document.getElementById('vehicleSummary');
+  if (vehicleSection) {
+    vehicleSection.parentElement.appendChild(panel);
+  } else {
+    document.body.appendChild(panel);
+  }
+}
 const originalSaveVehicle = window.saveVehicle;
 
 window.saveVehicle = function() {
@@ -468,6 +511,7 @@ try {
 } catch (e) {
   console.error('Garage save error:', e);
 }
+showMyGarage();
   const oldPopup = document.getElementById('pgSavePopup');
   if (oldPopup) oldPopup.remove();
 
