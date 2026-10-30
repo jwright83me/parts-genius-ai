@@ -411,6 +411,14 @@ if (data.type === 'response.audio.delta' ||
     type: 'answer',
     sdp: answer
   });
+voiceChannel.addEventListener('open', () => {
+  voiceChannel.send(JSON.stringify({
+    type: 'response.create',
+    response: {
+      instructions: "Greet the customer warmly and briefly as Nova, their friendly AI mechanic. Introduce yourself and ask what you can help them with today."
+    }
+  }));
+}, { once: true });
 }
 
 const originalSaveVehicle = window.saveVehicle;
