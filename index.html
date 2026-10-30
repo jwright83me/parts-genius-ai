@@ -458,11 +458,13 @@ function addToGarage(vehicle) {
     localStorage.setItem('pgGarage', JSON.stringify(garage));
   }
 }
+
 function showMyGarage() {
   let garage = [];
 
   try {
-    garage = JSON.parse(localStorage.getItem('pgGarage')) || [];
+    garage = JSON.parse(localStorage.getItem('pgGarage') || '[]');
+    if (!Array.isArray(garage)) garage = [];
   } catch (e) {
     garage = [];
   }
@@ -470,37 +472,142 @@ function showMyGarage() {
   const oldGarage = document.getElementById('myGarageList');
   if (oldGarage) oldGarage.remove();
 
-  const panel = document.createElement('div');
+  const panel = document.createElement('section');
   panel.id = 'myGarageList';
-  panel.style.cssText =
-    'background:#0b2238;color:white;padding:20px;margin:20px;border:1px solid #168bd0;border-radius:15px;';
+  panel.style.cssText = `
+    background:linear-gradient(145deg,#07182b,#0b2945);
+    border:1px solid #168bd0;
+    border-radius:22px;
+    padding:20px;
+    margin:20px 0;
+    color:white;
+    box-shadow:0 0 24px rgba(0,174,255,.12);
+  `;
 
-  const heading = document.createElement('h3');
-  heading.textContent = '🚗 My Garage';
+  const heading = document.createElement('div');
+  heading.style.cssText =
+    'display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px';
+
+  const title = document.createElement('div');
+  title.innerHTML = `
+    <div style="font-size:23px;font-weight:800;color:#fff">
+      <span style="color:#35c7ff">⌂</span> My Garage
+    </div>
+    <div style="color:#a9c9e1;font-size:13px;margin-top:4px">
+      Your saved vehicles
+    </div>
+  `;
+
+  const addButton = document.createElement('button');
+  addButton.textContent = '+ Add Vehicle';
+  addButton.style.cssText = `
+    background:#062744;
+    border:1px solid #25c7ff;
+    border-radius:12px;
+    color:#50d5ff;
+    padding:12px;
+    font-weight:bold;
+    cursor:pointer;
+  `;
+
+  heading.append(title, addButton);
   panel.appendChild(heading);
 
-  garage.forEach((vehicle) => {
-    const button = document.createElement('button');
-    button.textContent =
-      `${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.engine || ''}`;
-    button.style.cssText =
-      'display:block;width:100%;padding:12px;margin:10px 0;background:#123d60;color:white;border:1px solid #168bd0;border-radius:10px;';
+  const cards = document.createElement('div');
+  cards.style.cssText = `
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:14px;
+  `;
 
-    button.onclick = () => {
+  const activeVehicle = localStorage.getItem('pgVehicle');
+
+  garage.forEach(vehicle => {
+    const isActive =
+      activeVehicle === JSON.stringify(vehicle);
+
+    const card = document.createElement('div');
+    card.style.cssText = `
+      background:linear-gradient(160deg,#092b4b,#041321);
+      border:2px solid ${isActive ? '#28caff' : '#174b75'};
+      border-radius:17px;
+      padding:16px;
+      box-shadow:${isActive ? '0 0 18px rgba(0,190,255,.35)' : 'none'};
+    `;
+
+    const vehicleName = document.createElement('div');
+    vehicleName.style.cssText =
+      'font-size:19px;font-weight:800;margin-bottom:6px';
+    vehicleName.textContent =
+      `${vehicle.year || ''} ${vehicle.make || ''} ${vehicle.model || ''}`;
+
+    const engine = document.createElement('div');
+    engine.style.cssText =
+      'color:#a9c9e1;font-size:14px;margin-bottom:15px';
+    engine.textContent = vehicle.engine || 'Engine not specified';
+
+    const imageArea = document.createElement('div');
+    imageArea.style.cssText = `
+      height:110px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:12px;
+      margin-bottom:14px;
+      background:radial-gradient(ellipse,#104f82,#061629 75%);
+      color:#39c9ff;
+      font-size:48px;
+    `;
+    imageArea.textContent = '🚙';
+
+    const selectButton = document.createElement('button');
+    selectButton.textContent =
+      isActive ? '✓ ACTIVE VEHICLE' : 'Select Vehicle';
+    selectButton.style.cssText = `
+      width:100%;
+      background:${isActive ? '#087bb7' : '#103957'};
+      border:1px solid #29c9ff;
+      border-radius:10px;
+      padding:12px;
+      color:white;
+      font-weight:bold;
+      cursor:pointer;
+    `;
+
+    selectButton.onclick = () => {
       localStorage.setItem('pgVehicle', JSON.stringify(vehicle));
       location.reload();
     };
 
-    panel.appendChild(button);
+    card.append(imageArea, vehicleName, engine, selectButton);
+    cards.appendChild(card);
   });
 
-  const vehicleSection = document.getElementById('vehicleSummary');
+  if (!garage.length) {
+    const empty = document.createElement('p');
+    empty.textContent = 'No vehicles saved yet. Add your first vehicle below.';
+    empty.style.color = '#a9c9e1';
+    cards.appendChild(empty);
+  }
+
+  panel.appendChild(cards);
+
+  const vehicleSection =
+    document.getElementById('vehicleSection');
+
   if (vehicleSection) {
-    vehicleSection.parentElement.appendChild(panel);
+    vehicleSection.parentElement.insertBefore(panel, vehicleSection);
+    addButton.onclick = () => {
+      vehicleSection.scrollIntoView({behavior:'smooth'});
+    };
   } else {
     document.body.appendChild(panel);
+    addButton.onclick = () => {
+      document.querySelector('input')?.focus();
+    };
   }
 }
+
 const originalSaveVehicle = window.saveVehicle;
 
 window.saveVehicle = function() {
