@@ -437,12 +437,37 @@ const vehicleGreeting = savedVehicle && savedVehicle.year && savedVehicle.make &
   }));
 }, { once: true });
 }
+function addToGarage(vehicle) {
+  let garage = [];
 
+  try {
+    garage = JSON.parse(localStorage.getItem('pgGarage')) || [];
+  } catch (e) {
+    garage = [];
+  }
+
+  const exists = garage.some(v =>
+    v.year === vehicle.year &&
+    v.make === vehicle.make &&
+    v.model === vehicle.model &&
+    v.engine === vehicle.engine
+  );
+
+  if (!exists) {
+    garage.push(vehicle);
+    localStorage.setItem('pgGarage', JSON.stringify(garage));
+  }
+}
 const originalSaveVehicle = window.saveVehicle;
 
 window.saveVehicle = function() {
   originalSaveVehicle();
-
+try {
+  const savedVehicle = JSON.parse(localStorage.getItem('pgVehicle'));
+  if (savedVehicle) addToGarage(savedVehicle);
+} catch (e) {
+  console.error('Garage save error:', e);
+}
   const oldPopup = document.getElementById('pgSavePopup');
   if (oldPopup) oldPopup.remove();
 
