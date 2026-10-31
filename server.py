@@ -37,7 +37,9 @@ def home():
 @app.get("/IMG_8594.jpeg")
 def nova_image():
     return send_file("IMG_8594.jpeg")
-
+@app.get("/CBD947D0-BDA0-4DF1-9AE4-63AA0EABEB09.png")
+def nova_new_image():
+    return send_file("CBD947D0-BDA0-4DF1-9AE4-63AA0EABEB09.png")
 @app.get("/25A65F24-D04B-488D-9A2B-3FE90A62C443.png")
 def jeep_image():
     return send_file("25A65F24-D04B-488D-9A2B-3FE90A62C443.png")
