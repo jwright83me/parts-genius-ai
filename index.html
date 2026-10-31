@@ -713,6 +713,14 @@ novaSection.innerHTML = `
 `;
 
 document.body.prepend(novaSection);
+// NOVA - Vehicle hologram overlay
+const novaHologram = document.createElement('img');
+novaHologram.id = 'novaVehicleHologram';
+novaHologram.src = '25A65F24-D04B-488D-9A2B-3FE90A62C443.png';
+novaHologram.alt = 'Vehicle hologram';
+novaHologram.style.cssText = 'position:absolute;left:25%;top:64%;width:50%;height:18%;object-fit:contain;mix-blend-mode:screen;pointer-events:none;z-index:5;';
+novaSection.style.position = 'relative';
+novaSection.appendChild(novaHologram);
 // NOVA - Clickable voice button
 novaSection.style.position = 'relative';
 
