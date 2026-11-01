@@ -467,7 +467,14 @@ function getVehicleHologram(vehicle) {
     return '25A65F24-D04B-488D-9A2B-3FE90A62C443.png';
   }
 
+
+
   // Other vehicles will use automatic image lookup later.
+// Ford F-150 hologram
+if (make === 'ford' &&
+    (model.includes('f150') || model.includes('f-150'))) {
+  return 'C0C75DC0-FC3F-4A2D-8382-9992BA71E4D2.png';
+}
   return null;
 }
 function showMyGarage() {
