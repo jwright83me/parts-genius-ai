@@ -49,6 +49,9 @@ def sedan_hologram_image():
 @app.get("/FDE5A325-DA4D-4802-A7AC-3A3FB8A8DF09.png")
 def suv_hologram_image():
     return send_file("FDE5A325-DA4D-4802-A7AC-3A3FB8A8DF09.png")
+@app.get("/76BD6A66-D1D3-412C-B133-38673666312C.png")
+def transparent_suv_image():
+    return send_file("76BD6A66-D1D3-412C-B133-38673666312C.png")
 @app.get("/25A65F24-D04B-488D-9A2B-3FE90A62C443.png")
 def jeep_image():
     return send_file("25A65F24-D04B-488D-9A2B-3FE90A62C443.png")
