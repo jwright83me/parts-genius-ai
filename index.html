@@ -593,7 +593,8 @@ garage.forEach(vehicle => {
       activeVehicle === JSON.stringify(vehicle);
 
     const card = document.createElement('div');
-    card.style.cssText = `
+    card.style.cssText =
+    grid-column:${isActive ? '1 / -1' : 'auto'};
       background:linear-gradient(160deg,#092b4b,#041321);
       border:2px solid ${isActive ? '#28caff' : '#174b75'};
       border-radius:17px;
