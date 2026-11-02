@@ -55,6 +55,9 @@ def jeep_image():
 @app.get("/5170AE46-023D-44CF-9044-6487A5745A25.png")
 def sports_car_hologram_image():
     return send_file("5170AE46-023D-44CF-9044-6487A5745A25.png")
+@app.get("/F084B039-9ADD-4259-B2FB-02100B23F54F.png")
+def transparent_sports_car_image():
+    return send_file("F084B039-9ADD-4259-B2FB-02100B23F54F.png")
 @app.post("/api/diagnose")
 def diagnose():
     data = request.get_json(silent=True) or {}
