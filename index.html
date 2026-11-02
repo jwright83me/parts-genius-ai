@@ -573,11 +573,12 @@ function showMyGarage() {
   panel.appendChild(heading);
 
   const cards = document.createElement('div');
-  cards.style.cssText = `
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:14px;
-  `;
+cards.style.cssText = `
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+  width:100%;
+`;
 
   const activeVehicle = localStorage.getItem('pgVehicle');
 
