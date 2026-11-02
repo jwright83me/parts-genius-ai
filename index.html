@@ -475,6 +475,19 @@ if (make === 'ford' &&
     (model.includes('f150') || model.includes('f-150'))) {
   return 'C0C75DC0-FC3F-4A2D-8382-9992BA71E4D2.png';
 }
+// Generic sedan hologram
+const sedanModels = [
+  'camry', 'corolla', 'accord', 'civic',
+  'altima', 'sentra', 'sonata', 'elantra',
+  'malibu', 'impala', 'fusion', 'taurus',
+  'jetta', 'passat', 'mazda3', 'mazda6',
+  'optima', 'forte', 'legacy', 'impreza',
+  '300', 'charger', 'maxima', 'avalon'
+];
+
+if (sedanModels.some(name => model.includes(name))) {
+  return 'D47D44AC-9D64-4818-A7C5-8AD97493D269.png';
+}
   return null;
 }
 function showMyGarage() {
