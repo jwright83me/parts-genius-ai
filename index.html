@@ -624,7 +624,22 @@ garage.forEach(vehicle => {
       color:#39c9ff;
       font-size:48px;
     `;
-    
+const showroomLabel = document.createElement('div');
+showroomLabel.textContent = isActive
+  ? '✦ ACTIVE SHOWROOM ✦'
+  : 'VEHICLE COLLECTION';
+
+showroomLabel.style.cssText = `
+  text-align:center;
+  color:${isActive ? '#35d7ff' : '#829db5'};
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:2px;
+  padding:8px;
+  text-shadow:${isActive ? '0 0 12px #00aeff' : 'none'};
+`;
+
+card.prepend(showroomLabel);
 const hologramImage = getVehicleHologram(vehicle);
 
 imageArea.innerHTML = hologramImage
