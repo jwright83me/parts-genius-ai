@@ -46,6 +46,9 @@ def ford_hologram_image():
 @app.get("/D47D44AC-9D64-4818-A7C5-8AD97493D269.png")
 def sedan_hologram_image():
     return send_file("D47D44AC-9D64-4818-A7C5-8AD97493D269.png")
+@app.get("/F825ECCA-C6EF-4055-A7B6-E90BB67B2FA0.png")
+def transparent_sedan_image():
+    return send_file("F825ECCA-C6EF-4055-A7B6-E90BB67B2FA0.png")
 @app.get("/FDE5A325-DA4D-4802-A7AC-3A3FB8A8DF09.png")
 def suv_hologram_image():
     return send_file("FDE5A325-DA4D-4802-A7AC-3A3FB8A8DF09.png")
