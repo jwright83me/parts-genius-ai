@@ -581,7 +581,13 @@ function showMyGarage() {
 
   const activeVehicle = localStorage.getItem('pgVehicle');
 
-  garage.forEach(vehicle => {
+  garage.sort((a, b) => {
+  const aActive = JSON.stringify(a) === activeVehicle;
+  const bActive = JSON.stringify(b) === activeVehicle;
+  return Number(bActive) - Number(aActive);
+});
+
+garage.forEach(vehicle => {
     const isActive =
       activeVehicle === JSON.stringify(vehicle);
 
