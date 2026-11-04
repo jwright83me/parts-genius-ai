@@ -75,6 +75,12 @@ def sports_car_hologram_image():
 @app.get("/F084B039-9ADD-4259-B2FB-02100B23F54F.png")
 def transparent_sports_car_image():
     return send_file("F084B039-9ADD-4259-B2FB-02100B23F54F.png")
+
+@app.get("/C6CBC409-B685-49C0-99B2-4C22F827B53C.png")
+def nova_remove_popup_image():
+    return send_file("C6CBC409-B685-49C0-99B2-4C22F827B53C.png")
+
+
 @app.post("/api/diagnose")
 def diagnose():
     data = request.get_json(silent=True) or {}
