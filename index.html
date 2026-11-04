@@ -686,8 +686,17 @@ removeButton.onclick = () => {
   localStorage.setItem('pgGarage', JSON.stringify(updatedGarage));
 
   if (JSON.stringify(vehicle) === localStorage.getItem('pgVehicle')) {
+  const removedIndex = savedGarage.findIndex(
+    saved => JSON.stringify(saved) === JSON.stringify(vehicle)
+  );
+  const nextVehicle = updatedGarage[removedIndex] || updatedGarage[0];
+
+  if (nextVehicle) {
+    localStorage.setItem('pgVehicle', JSON.stringify(nextVehicle));
+  } else {
     localStorage.removeItem('pgVehicle');
   }
+}
 
   location.reload();
 });
