@@ -40,6 +40,11 @@ def nova_image():
 @app.get("/CBD947D0-BDA0-4DF1-9AE4-63AA0EABEB09.png")
 def nova_new_image():
     return send_file("CBD947D0-BDA0-4DF1-9AE4-63AA0EABEB09.png")
+
+@app.get("/7AA2AD4D-0095-496A-A848-08CC254ACCA1.png")
+def nova_final_image():
+    return send_file("7AA2AD4D-0095-496A-A848-08CC254ACCA1.png")
+
 @app.get("/C0C75DC0-FC3F-4A2D-8382-9992BA71E4D2.png")
 def ford_hologram_image():
     return send_file("C0C75DC0-FC3F-4A2D-8382-9992BA71E4D2.png")
