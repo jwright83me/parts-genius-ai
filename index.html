@@ -671,7 +671,28 @@ imageArea.innerHTML = hologramImage
       location.reload();
     };
 
-    card.append(imageArea, vehicleName, engine, selectButton);
+const removeButton = document.createElement('button');
+removeButton.textContent = '🗑 Remove Vehicle';
+removeButton.style.cssText = 'width:100%;margin-top:10px;padding:12px;background:#401827;color:white;border:1px solid #ff6078;border-radius:10px;font-weight:bold;cursor:pointer;';
+
+removeButton.onclick = () => {
+  if (!confirm('Remove this vehicle from My Garage?')) return;
+
+  const savedGarage = JSON.parse(localStorage.getItem('pgGarage') || '[]');
+  const updatedGarage = savedGarage.filter(
+    saved => JSON.stringify(saved) !== JSON.stringify(vehicle)
+  );
+
+  localStorage.setItem('pgGarage', JSON.stringify(updatedGarage));
+
+  if (JSON.stringify(vehicle) === localStorage.getItem('pgVehicle')) {
+    localStorage.removeItem('pgVehicle');
+  }
+
+  location.reload();
+};
+
+    card.append(imageArea, vehicleName, engine, selectButton, removeButton);
     cards.appendChild(card);
   });
 
