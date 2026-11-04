@@ -826,7 +826,9 @@ document.body.prepend(novaSection);
 // NOVA - Vehicle hologram overlay
 const novaHologram = document.createElement('img');
 novaHologram.id = 'novaVehicleHologram';
-const activeNovaVehicle = JSON.parse(localStorage.getItem('pgVehicle') || 'null');
+const novaGarage = JSON.parse(localStorage.getItem('pgGarage') || '[]');
+const savedNovaVehicle = JSON.parse(localStorage.getItem('pgVehicle') || 'null');
+const activeNovaVehicle = novaGarage.find(v => JSON.stringify(v) === JSON.stringify(savedNovaVehicle)) || null;
 const activeNovaImage = activeNovaVehicle ? getVehicleHologram(activeNovaVehicle) : null;
 if (activeNovaImage) {
   novaHologram.src = activeNovaImage;
