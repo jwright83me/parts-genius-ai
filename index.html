@@ -676,7 +676,7 @@ removeButton.textContent = '🗑 Remove Vehicle';
 removeButton.style.cssText = 'width:100%;margin-top:10px;padding:12px;background:#401827;color:white;border:1px solid #ff6078;border-radius:10px;font-weight:bold;cursor:pointer;';
 
 removeButton.onclick = () => {
-  if (!confirm('Remove this vehicle from My Garage?')) return;
+  showNovaRemoveConfirmation(vehicle, () => {
 
   const savedGarage = JSON.parse(localStorage.getItem('pgGarage') || '[]');
   const updatedGarage = savedGarage.filter(
@@ -690,6 +690,7 @@ removeButton.onclick = () => {
   }
 
   location.reload();
+});
 };
 
     card.append(imageArea, vehicleName, engine, selectButton, removeButton);
@@ -877,4 +878,34 @@ novaSection.appendChild(novaTalkButton);
 document.querySelector('header.top').style.display = 'none';
 document.querySelector('section.hero').style.display = 'none';
   
-</script></body></html>
+</script>
+
+function showNovaRemoveConfirmation(vehicle, onConfirm) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:99999;padding:12px;';
+
+  const panel = document.createElement('div');
+  panel.style.cssText = "position:relative;width:100%;max-width:560px;aspect-ratio:1536/1024;background:url('/C6CBC409-B685-49C0-99B2-4C22F827B53C.png') center/100% 100% no-repeat;filter:drop-shadow(0 0 12px #00bfff);";
+
+  function button(left, top, width, height, action, label) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('aria-label', label);
+    b.style.cssText = `position:absolute;left:${left}%;top:${top}%;width:${width}%;height:${height}%;background:transparent;border:0;cursor:pointer;`;
+    b.onclick = action;
+    panel.appendChild(b);
+  }
+
+  button(13, 69, 35, 15, () => overlay.remove(), 'Cancel');
+  button(51, 69, 36, 15, () => {
+    overlay.remove();
+    onConfirm();
+  }, 'Remove Vehicle');
+
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
+}
+
+</script>
+</body>
+</html>
