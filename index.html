@@ -747,6 +747,13 @@ try {
   console.error('Garage save error:', e);
 }
 showMyGarage();
+const hologram = document.getElementById('novaVehicleHologram');
+const activeVehicle = JSON.parse(localStorage.getItem('pgVehicle') || 'null');
+
+if (hologram && activeVehicle) {
+  hologram.src = getVehicleHologram(activeVehicle);
+  hologram.style.display = 'block';
+}
   const oldPopup = document.getElementById('pgSavePopup');
   if (oldPopup) oldPopup.remove();
 
