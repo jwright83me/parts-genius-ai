@@ -458,6 +458,8 @@ function addToGarage(vehicle) {
     localStorage.setItem('pgGarage', JSON.stringify(garage));
   if (garage.length === 1) {
   localStorage.setItem('pgVehicle', JSON.stringify(vehicle));
+  location.reload();
+
 }
   }
 }
