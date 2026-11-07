@@ -81,6 +81,10 @@ def nova_remove_popup_image():
     return send_file("C6CBC409-B685-49C0-99B2-4C22F827B53C.png")
 
 
+@app.get("/F40BB214-234A-4897-80BD-04AB15101F4D.png")
+def lunova_saved_popup_image():
+    return send_file("F40BB214-234A-4897-80BD-04AB15101F4D.png")
+
 @app.post("/api/diagnose")
 def diagnose():
     data = request.get_json(silent=True) or {}
