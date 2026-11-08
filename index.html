@@ -17,6 +17,24 @@
   }
 
   yearSelect.value = selectedYear;
+  const makeSelect = document.getElementById('make');
+
+const makes = [
+  'Acura', 'Audi', 'BMW', 'Buick', 'Cadillac',
+  'Chevrolet', 'Chrysler', 'Dodge', 'Ford', 'GMC',
+  'Honda', 'Hyundai', 'Infiniti', 'Jeep', 'Kia',
+  'Lexus', 'Lincoln', 'Mazda', 'Mercedes-Benz',
+  'Mitsubishi', 'Nissan', 'Ram', 'Subaru',
+  'Tesla', 'Toyota', 'Volkswagen', 'Volvo'
+];
+
+makeSelect.add(new Option('Select Make', ''));
+
+makes.forEach(make => {
+  makeSelect.add(new Option(make, make));
+});
+
+makeSelect.value = saved?.make || 'Jeep';
 });const $=id=>document.getElementById(id);let vehicle={};function show(id){for(const x of ['vehicle','diagnose','parts'])$(x).classList.toggle('hidden',x!==id);if(id==='parts')renderParts();$(id).scrollIntoView({behavior:'smooth',block:'start'})}function saveVehicle(){vehicle={year:$('year').value,make:$('make').value.trim(),model:$('model').value.trim(),engine:$('engine').value.trim()};$('vehicleSummary').textContent='Selected: '+Object.values(vehicle).join(' ');$('partsVehicle').textContent='Vehicle: '+Object.values(vehicle).join(' ');try{localStorage.setItem('pgVehicle',JSON.stringify(vehicle))}catch(e){}}const samples={battery:[['Standard replacement battery','$139–$219'],['Premium replacement battery','$189–$289']],filter:[['Standard oil filter','$8–$18'],['Premium oil filter','$12–$26']],alternator:[['Remanufactured alternator','$170–$340'],['New alternator','$230–$470']],starter:[['Remanufactured starter','$110–$250'],['New starter','$160–$330']]};function renderParts(){const type=$('partSelect').value;$('partResults').innerHTML=samples[type].map(([name,price])=>`<div class="part"><div><strong>${name}</strong><div class="muted">Illustrative category · fitment unverified</div></div><div class="price">${price}</div></div>`).join('')}function diagnose(){const s=$('symptoms').value.toLowerCase();let items,check,alert='';if(/overheat|temperature|steam|smoke/.test(s)){items=['Cooling-system leak or low coolant','Cooling fan or thermostat problem','Other cooling-system fault'];check='Safely stop the vehicle, switch off the engine, and let it cool. Never open a hot coolant cap.';alert='Potential safety issue: do not continue driving an overheating vehicle.'}else if(/won.t start|not start|no start|click|crank/.test(s)){items=['Weak 12V battery or poor cable connection','Starter or starting-circuit issue','Fuel, ignition, or immobilizer issue'];check='Do the headlights dim when you attempt to start? Is there a click, cranking, or silence?';}else if(/brake|stopping/.test(s)){items=['Brake pad or rotor wear','Hydraulic or fluid issue','Other brake-system fault'];check='If braking feels reduced, do not drive; have the vehicle inspected.';alert='Potential safety issue: braking faults need professional inspection.'}else if(/check engine|p0[0-9]{3}|misfire/.test(s)){items=['A stored diagnostic trouble code needs interpretation','Sensor or electrical fault','Engine performance or emissions issue'];check='Retrieve the exact OBD-II code and note whether the check-engine light is flashing.';}else{items=['Battery or electrical issue','Wear or maintenance item','Mechanical or sensor issue'];check='When did the issue begin? Any warning lights, noises, smells, or codes?'}$('diagnosis').innerHTML=`<div class="result"><strong>Possible causes — not a confirmed diagnosis</strong><ol>${items.map(x=>`<li>${x}</li>`).join('')}</ol><p>${check}</p>${alert?`<p class="warning">${alert}</p>`:''}<p class="muted">This is a rule-based demo, not a connected AI mechanic. A part should not be purchased based on symptoms alone.</p><button onclick="show('parts')">Explore sample parts →</button></div>`}try{const saved=JSON.parse(localStorage.getItem('pgVehicle'));if(saved){for(const k of ['year','make','model','engine'])$(k).value=saved[k]||''}}catch(e){}renderParts();</script><script>
 document.addEventListener('DOMContentLoaded', () => {
   const speakButton = document.getElementById('micButton');
