@@ -2236,5 +2236,279 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 </script>
 <!-- END OPTION 3 VISUAL UPGRADE 2 -->
 
+
+<!-- PARTS GENIUS AI: CINEMATIC ENGINE SHOWROOM V3 -->
+<style>
+#parts.pg-option3 {
+  background:
+    radial-gradient(ellipse at 50% 12%, #135577, transparent 52%),
+    linear-gradient(155deg,#071d32,#020711 85%) !important;
+}
+
+#parts.pg-option3 .pg3-stage {
+  height: clamp(350px, 105vw, 490px);
+  background:
+    radial-gradient(ellipse at 50% 60%,#11618a88,transparent 60%),
+    linear-gradient(155deg,#16364b,#030c17 80%);
+  border: 1px solid #76e5ff;
+  box-shadow:
+    inset 0 0 75px #00bfff25,
+    0 18px 40px #0009,
+    0 0 25px #00bfff22;
+}
+
+#parts.pg-option3 .pg3-stage::before {
+  background:
+    repeating-linear-gradient(
+      90deg,transparent 0 65px,#55dfff14 66px 67px
+    ),
+    repeating-linear-gradient(
+      0deg,transparent 0 55px,#55dfff12 56px 57px
+    );
+}
+
+#parts.pg-option3 .pg3-stage::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(115deg,transparent 30%,#b5f5ff12 40%,transparent 52%),
+    radial-gradient(ellipse at center,transparent 35%,#0008 100%);
+}
+
+#parts.pg-option3 .pg3-engine {
+  top:43%;
+  width:98%;
+  max-width:450px;
+  z-index:2;
+  filter:
+    drop-shadow(0 15px 12px #000b)
+    drop-shadow(0 0 18px #00cfff55);
+}
+
+#parts.pg-option3 .pg3-platform {
+  width:84%;
+  height:17%;
+  bottom:46px;
+  border:2px solid #9df5ff;
+  box-shadow:
+    0 0 18px #00cfff,
+    0 0 42px #00bfff88,
+    inset 0 0 35px #00cfff55;
+}
+
+#parts.pg-option3 .pg3-card {
+  background:
+    radial-gradient(ellipse at 50% 0%,#155d7c66,transparent 75%),
+    linear-gradient(155deg,#16384d,#06111e);
+  border-color:#65dfff;
+  box-shadow:
+    inset 0 1px 0 #d1faff44,
+    0 12px 28px #0009;
+}
+
+#parts.pg-option3 .pg3-art {
+  background:
+    radial-gradient(ellipse,#197eaa77,#071522 75%);
+}
+
+#parts.pg-option3 .pg3-button {
+  background:linear-gradient(110deg,#08608f,#0aace6);
+  box-shadow:0 0 17px #00bfff55;
+}
+
+@media (max-width:400px) {
+  #parts.pg-option3 .pg3-stage {
+    height:360px;
+  }
+  #parts.pg-option3 .pg3-engine {
+    width:100%;
+  }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  #parts.pg-option3 .pg3-engine,
+  #parts.pg-option3 .pg3-platform {
+    animation:none;
+  }
+}
+</style>
+
+<script>
+(function(){
+  function installCinematicEngine(){
+    const section=document.getElementById("parts");
+    if(!section || section.dataset.option3!=="complete")return;
+    if(section.dataset.engineV3==="installed")return;
+
+    const engine=section.querySelector(".pg3-engine");
+    if(!engine)return;
+
+    section.dataset.engineV3="installed";
+
+    engine.innerHTML=`
+<svg viewBox="0 0 420 340" role="img"
+     aria-label="Detailed metallic V engine hologram">
+<defs>
+  <linearGradient id="steelV3" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#f2f8fa"/>
+    <stop offset=".18" stop-color="#a8b9c2"/>
+    <stop offset=".36" stop-color="#465e6d"/>
+    <stop offset=".52" stop-color="#d5e0e5"/>
+    <stop offset=".75" stop-color="#435968"/>
+    <stop offset="1" stop-color="#d3e8ef"/>
+  </linearGradient>
+  <linearGradient id="darkV3" x1="0" y1="0" x2="1" y2="1">
+    <stop stop-color="#536c7a"/>
+    <stop offset=".5" stop-color="#101f2d"/>
+    <stop offset="1" stop-color="#304957"/>
+  </linearGradient>
+  <filter id="shadowV3">
+    <feDropShadow dx="0" dy="10" stdDeviation="7"
+                  flood-color="#000" flood-opacity=".8"/>
+  </filter>
+</defs>
+
+<g filter="url(#shadowV3)"
+   stroke="#233b49" stroke-width="2.5"
+   stroke-linejoin="round">
+
+<!-- Cast iron engine block -->
+<path d="M68 130 120 87 303 87 353 132
+         335 247 279 280 125 276 83 239Z"
+      fill="url(#darkV3)"/>
+
+<!-- Left cylinder head -->
+<path d="M67 140 109 59 197 92 180 201 89 204Z"
+      fill="url(#steelV3)"/>
+
+<!-- Right cylinder head -->
+<path d="M223 92 311 59 353 140 332 204 240 201Z"
+      fill="url(#steelV3)"/>
+
+<!-- Valve covers -->
+<path d="M104 51 197 85 190 109 87 76Z"
+      fill="url(#darkV3)" stroke="#a9c0cc"/>
+<path d="M223 85 316 51 333 76 230 109Z"
+      fill="url(#darkV3)" stroke="#a9c0cc"/>
+
+<!-- Metallic cover highlights -->
+<path d="M102 59 184 89M236 89 318 59"
+      fill="none" stroke="#dce9ef" stroke-width="3"/>
+
+<!-- Cylinder cooling ribs -->
+<g stroke="#365667" stroke-width="4" fill="none">
+  <path d="M94 99 174 125M89 115 170 141
+           M85 132 167 157M82 148 163 174"/>
+  <path d="M246 125 326 99M250 141 331 115
+           M253 157 335 132M257 174 338 148"/>
+</g>
+
+<!-- Intake manifold -->
+<path d="M176 76 244 76 262 123
+         243 179 177 179 158 123Z"
+      fill="url(#steelV3)"/>
+<path d="M183 89h54l12 33-14 38h-50l-14-38Z"
+      fill="url(#darkV3)" stroke="#9ab7c5"/>
+
+<g stroke="#a9c0cc" stroke-width="4">
+  <path d="M186 107h48M184 121h52M188 135h44"/>
+</g>
+
+<!-- Throttle body -->
+<path d="M194 47h32v34h-32Z" fill="url(#steelV3)"/>
+<path d="M180 35h60v18h-60Z"
+      fill="url(#darkV3)" stroke="#c2d5de"/>
+
+<!-- Front timing cover -->
+<path d="M105 193 314 193 300 272 118 272Z"
+      fill="url(#steelV3)"/>
+<path d="M126 203h168v53H126Z"
+      fill="url(#darkV3)" stroke="#9bb1bc"/>
+
+<!-- Front cooling fins -->
+<g stroke="#607b89" stroke-width="3">
+  <path d="M139 212h142M139 222h142
+           M139 232h142M139 242h142"/>
+</g>
+
+<!-- Main crank pulley -->
+<circle cx="210" cy="239" r="43"
+        fill="url(#steelV3)" stroke="#243c49" stroke-width="5"/>
+<circle cx="210" cy="239" r="32"
+        fill="url(#darkV3)" stroke="#8da9b6" stroke-width="4"/>
+<circle cx="210" cy="239" r="21"
+        fill="url(#steelV3)" stroke="#243c49" stroke-width="4"/>
+<circle cx="210" cy="239" r="9"
+        fill="#152b3a" stroke="#c2dce6"/>
+
+<!-- Auxiliary pulleys -->
+<circle cx="140" cy="248" r="19"
+        fill="url(#steelV3)" stroke="#2a4350" stroke-width="4"/>
+<circle cx="140" cy="248" r="9" fill="#182b39"/>
+<circle cx="280" cy="248" r="19"
+        fill="url(#steelV3)" stroke="#2a4350" stroke-width="4"/>
+<circle cx="280" cy="248" r="9" fill="#182b39"/>
+
+<!-- Drive belt -->
+<path d="M140 229Q210 176 280 229
+         M140 267Q210 300 280 267"
+      fill="none" stroke="#172b36" stroke-width="6"/>
+
+<!-- Exhaust headers -->
+<g fill="none" stroke="url(#steelV3)" stroke-width="12">
+  <path d="M85 184 45 211 60 252 104 264"/>
+  <path d="M105 189 71 224 92 270"/>
+  <path d="M334 184 375 211 360 252 316 264"/>
+  <path d="M314 189 349 224 328 270"/>
+</g>
+
+<!-- Side housings -->
+<path d="M61 145 34 138 25 187 71 204Z"
+      fill="url(#steelV3)"/>
+<path d="M359 145 386 138 395 187 349 204Z"
+      fill="url(#steelV3)"/>
+
+<!-- Engine mounting brackets -->
+<path d="M122 274 89 312h70l25-34Z"
+      fill="url(#steelV3)"/>
+<path d="M297 274 331 312h-70l-25-34Z"
+      fill="url(#steelV3)"/>
+
+<!-- Machined bolts -->
+<g fill="#e2f1f6" stroke="#526f7d" stroke-width="1">
+  <circle cx="107" cy="66" r="4"/>
+  <circle cx="171" cy="89" r="4"/>
+  <circle cx="248" cy="89" r="4"/>
+  <circle cx="313" cy="66" r="4"/>
+  <circle cx="93" cy="181" r="4"/>
+  <circle cx="326" cy="181" r="4"/>
+</g>
+</g>
+
+<!-- Holographic scanning lines -->
+<g fill="none" stroke="#74dcff"
+   stroke-width="1.3" opacity=".55">
+  <path d="M30 316h360"/>
+  <path d="M57 327h306"/>
+  <path d="M210 8v21"/>
+</g>
+</svg>`;
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener(
+      "DOMContentLoaded",
+      installCinematicEngine,
+      {once:true}
+    );
+  } else {
+    installCinematicEngine();
+  }
+})();
+</script>
+<!-- END CINEMATIC ENGINE SHOWROOM V3 -->
+
 </body>
 </html>
