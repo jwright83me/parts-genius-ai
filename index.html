@@ -1324,5 +1324,584 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 </script>
 <!-- END OPTION 3 SHOWROOM -->
 
+
+<!-- PARTS GENIUS AI - COMPLETE OPTION 3 MOBILE SHOWROOM -->
+<style>
+#parts.pg-option3 {
+  --glow:#39d7ff;
+  position:relative;
+  width:100%;
+  max-width:100%;
+  min-height:0!important;
+  box-sizing:border-box;
+  overflow:hidden;
+  padding:20px 14px 95px!important;
+  border:1px solid #278fd0!important;
+  border-radius:24px;
+  background:
+    radial-gradient(ellipse at 50% 15%,#07517b,transparent 48%),
+    linear-gradient(160deg,#071b31,#020a16 85%)!important;
+  box-shadow:inset 0 0 65px #008cff22,0 16px 40px #0008;
+}
+#parts.pg-option3 *,
+#parts.pg-option3 *::before,
+#parts.pg-option3 *::after {
+  box-sizing:border-box;
+}
+#parts.pg-option3::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    repeating-linear-gradient(90deg,transparent 0 59px,#26bdff13 60px 61px),
+    repeating-linear-gradient(0deg,transparent 0 69px,#26bdff12 70px 71px);
+}
+#parts.pg-option3 > * {
+  position:relative;
+  z-index:1;
+}
+#parts.pg-option3 h2 {
+  font-size:clamp(23px,6vw,32px);
+  color:white;
+  margin:0 0 18px;
+}
+.pg3-intro {
+  text-align:center;
+}
+.pg3-kicker {
+  color:#75e8ff;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:2.5px;
+  margin-bottom:12px;
+}
+.pg3-title {
+  color:white;
+  font-size:clamp(25px,7vw,40px);
+  font-weight:950;
+  line-height:1.1;
+  letter-spacing:-.7px;
+  text-shadow:0 0 25px #00aeff66;
+}
+.pg3-subtitle {
+  color:#afcfe4;
+  font-size:13px;
+  line-height:1.6;
+  margin:16px auto 20px;
+  max-width:420px;
+}
+.pg3-stage {
+  height:clamp(260px,78vw,370px);
+  position:relative;
+  overflow:hidden;
+  border:1px solid #329bdb;
+  border-radius:22px;
+  background:
+    radial-gradient(ellipse at 50% 65%,#0871ac77,transparent 58%),
+    linear-gradient(145deg,#09243e,#04101f);
+}
+.pg3-stage::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  background:repeating-linear-gradient(
+    0deg,transparent 0 21px,#38cfff0b 22px 23px
+  );
+}
+.pg3-platform {
+  position:absolute;
+  left:50%;
+  bottom:42px;
+  transform:translateX(-50%);
+  width:76%;
+  height:24%;
+  border:3px solid #58eaff;
+  border-radius:50%;
+  box-shadow:0 0 25px #00bfff,inset 0 0 28px #00bfff66;
+  animation:pg3-pulse 3s ease-in-out infinite;
+}
+.pg3-engine {
+  position:absolute;
+  top:41%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  width:78%;
+  max-width:310px;
+  filter:drop-shadow(0 0 20px #00bfff88);
+  animation:pg3-float 5s ease-in-out infinite;
+}
+.pg3-engine svg {
+  width:100%;
+  display:block;
+}
+.pg3-stage-caption {
+  position:absolute;
+  bottom:12px;
+  width:100%;
+  color:#8cecff;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:2px;
+  text-align:center;
+}
+.pg3-features {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:8px;
+  margin:18px 0 25px;
+}
+.pg3-features span {
+  border:1px solid #287eaf;
+  background:#071d32;
+  color:#95e7ff;
+  border-radius:30px;
+  padding:8px 10px;
+  font-size:10px;
+  font-weight:800;
+}
+.pg3-heading {
+  color:white;
+  font-size:20px;
+  font-weight:900;
+  margin:20px 0 13px;
+}
+.pg3-search-panel {
+  background:linear-gradient(145deg,#102d48,#06172a);
+  border:1px solid #278fcb;
+  border-radius:18px;
+  padding:15px;
+  margin-bottom:22px;
+}
+.pg3-search-panel label {
+  color:#c6e9ff;
+  font-size:13px;
+  font-weight:800;
+  display:block;
+  margin-bottom:10px;
+}
+#parts.pg-option3 #partSelect {
+  width:100%;
+  max-width:100%;
+  min-height:52px;
+  background:#041728;
+  border:1px solid #4cd8ff;
+  color:white;
+  border-radius:13px;
+  padding:12px;
+  font-size:16px;
+}
+.pg3-hint {
+  color:#a9c8dc;
+  font-size:12px;
+  line-height:1.5;
+  margin:12px 0 0;
+}
+.pg3-grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.pg3-card {
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  background:linear-gradient(145deg,#123b59,#061727);
+  border:1px solid #36c7ff;
+  border-radius:18px;
+  padding:12px;
+  box-shadow:0 8px 25px #0008;
+}
+.pg3-art {
+  display:grid;
+  place-items:center;
+  height:105px;
+  border-radius:13px;
+  background:radial-gradient(ellipse,#0c679b,#06182b 72%);
+  border:1px solid #267baa;
+  margin-bottom:12px;
+}
+.pg3-art svg {
+  width:100%;
+  max-width:120px;
+  height:88px;
+  filter:drop-shadow(0 0 12px #00bfff77);
+}
+.pg3-card-title {
+  color:white;
+  font-size:14px;
+  font-weight:900;
+  line-height:1.3;
+  margin-bottom:7px;
+}
+.pg3-card-desc {
+  color:#a5c7dc;
+  font-size:11px;
+  line-height:1.45;
+  margin-bottom:10px;
+  flex:1;
+}
+.pg3-price {
+  color:#79eaff;
+  font-size:19px;
+  font-weight:950;
+  margin:7px 0 12px;
+}
+.pg3-button {
+  width:100%;
+  border:1px solid #70eaff;
+  border-radius:11px;
+  padding:12px 6px;
+  background:linear-gradient(115deg,#07528a,#009bdc);
+  color:white;
+  font-size:12px;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 0 15px #00aaff44;
+}
+.pg3-detail {
+  margin:18px 0;
+  padding:17px;
+  border:1px solid #3bd0ff;
+  border-radius:16px;
+  background:#071e33;
+  color:#c7e8fa;
+  font-size:13px;
+  line-height:1.6;
+}
+.pg3-detail h3 {
+  color:white;
+  margin:0 0 10px;
+}
+.pg3-warning {
+  color:#a9c8db;
+  font-size:11px;
+  line-height:1.6;
+  margin:18px 0;
+}
+@keyframes pg3-float {
+  0%,100% {transform:translate(-50%,-50%)}
+  50% {transform:translate(-50%,-54%)}
+}
+@keyframes pg3-pulse {
+  0%,100% {opacity:.75}
+  50% {opacity:1}
+}
+@media(max-width:370px) {
+  #parts.pg-option3 {padding-left:10px!important;padding-right:10px!important}
+  .pg3-grid {gap:8px}
+  .pg3-card {padding:9px}
+  .pg3-price {font-size:16px}
+}
+@media(min-width:760px) {
+  .pg3-grid {grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(prefers-reduced-motion:reduce) {
+  .pg3-engine,.pg3-platform {animation:none}
+}
+</style>
+
+<script>
+(function(){
+  "use strict";
+
+  function initializeOption3(){
+    const section=document.getElementById("parts");
+    if(!section || section.dataset.option3==="complete") return;
+
+    const existingSelect=document.getElementById("partSelect");
+    const existingResults=document.getElementById("partResults");
+    const heading=section.querySelector("h2");
+
+    if(!existingSelect || !existingResults || !heading) return;
+
+    section.dataset.option3="complete";
+    section.classList.add("pg-option3");
+
+    // Remove the previous experimental showroom only.
+    section.querySelectorAll(".pg-showroom").forEach(el=>el.remove());
+
+    const oldField=existingSelect.closest(".field");
+    const oldHint=section.querySelector(".parts-search-hint");
+    const oldWarning=section.querySelector(".warning.small");
+
+    const engineSVG=`
+    <svg viewBox="0 0 320 240" aria-label="Holographic engine"
+         role="img">
+      <defs>
+        <linearGradient id="pgmetal" x1="0" y1="0" x2="1" y2="1">
+          <stop stop-color="#dff7ff"/>
+          <stop offset=".3" stop-color="#76b9df"/>
+          <stop offset=".7" stop-color="#285477"/>
+          <stop offset="1" stop-color="#9ce8ff"/>
+        </linearGradient>
+      </defs>
+      <g stroke="#79e7ff" stroke-width="2" stroke-linejoin="round">
+        <path d="M38 107 78 76 223 76 281 105
+                 268 176 229 196 82 185 37 157Z"
+              fill="#0c304d"/>
+        <path d="M65 88 95 54 216 53 250 83
+                 240 129 81 133Z" fill="url(#pgmetal)"/>
+        <path d="M94 62 212 62 231 83 77 84Z"
+              fill="#123e60"/>
+        <path d="M74 128 238 128 231 173 82 171Z"
+              fill="url(#pgmetal)"/>
+        <path d="M95 137h122v28H95z" fill="#0a3152"/>
+        <path d="M104 37h104v22H104z" fill="url(#pgmetal)"/>
+        <path d="M118 24h77v15h-77z" fill="#174967"/>
+        <path d="M37 105h42v58H37zM238 104h43v62h-43z"
+              fill="url(#pgmetal)"/>
+        <circle cx="155" cy="148" r="31" fill="#6db8dd"/>
+        <circle cx="155" cy="148" r="20" fill="#09243e"/>
+        <circle cx="155" cy="148" r="9" fill="#38e4ff"/>
+        <path d="M100 87v34m23-34v34m24-34v34
+                 m24-34v34m24-34v34m24-34v34"
+              stroke="#b7f6ff" stroke-width="4"/>
+        <path d="M82 180 59 201h50l13-20
+                 M209 181l13 20h47l-24-22"
+              fill="url(#pgmetal)"/>
+        <path d="M40 108 17 93M280 111l22-21
+                 M143 24V9h36v15"
+              fill="none" stroke-width="5"/>
+      </g>
+    </svg>`;
+
+    const icons={
+      engine:`<svg viewBox="0 0 130 90">
+        <g fill="#69b7df" stroke="#b6f0ff" stroke-width="2">
+          <rect x="20" y="25" width="90" height="48" rx="9"/>
+          <rect x="35" y="12" width="60" height="18" rx="4"/>
+          <circle cx="65" cy="50" r="19" fill="#113c5b"/>
+          <circle cx="65" cy="50" r="9" fill="#45dfff"/>
+        </g>
+      </svg>`,
+      brakes:`<svg viewBox="0 0 130 90">
+        <circle cx="61" cy="45" r="35" fill="#639fbd"
+                stroke="#b5efff" stroke-width="4"/>
+        <circle cx="61" cy="45" r="23" fill="#12344d"
+                stroke="#79dfff" stroke-width="3"/>
+        <circle cx="61" cy="45" r="9" fill="#8bdcff"/>
+        <path d="M82 20h22l9 15v24l-13 11H82
+                 l-9-15V34Z"
+              fill="#2877a3" stroke="#a5eeff" stroke-width="3"/>
+      </svg>`,
+      battery:`<svg viewBox="0 0 130 90">
+        <rect x="17" y="25" width="96" height="55" rx="8"
+              fill="#367ea7" stroke="#b7f2ff" stroke-width="3"/>
+        <rect x="28" y="16" width="18" height="11" fill="#c7efff"/>
+        <rect x="84" y="16" width="18" height="11" fill="#c7efff"/>
+        <path d="M65 34 50 57h14l-5 16 23-28H67l7-11Z"
+              fill="#5deaff"/>
+      </svg>`,
+      suspension:`<svg viewBox="0 0 130 90">
+        <g stroke="#9ceaff" stroke-width="4" fill="none">
+          <path d="M45 7v13m0 50v13M85 7v13m0 50v13
+                   M45 20l40 8-40 10 40 10-40 10 40 12"/>
+          <rect x="34" y="19" width="61" height="53"
+                rx="9" stroke="#47bde9" stroke-width="2"/>
+        </g>
+      </svg>`
+    };
+
+    const showroom=document.createElement("div");
+    showroom.id="pg3-showroom";
+
+    showroom.innerHTML=`
+      <div class="pg3-intro">
+        <div class="pg3-kicker">
+          PARTS GENIUS AI · DIGITAL SHOWROOM
+        </div>
+        <div class="pg3-title">
+          FIND THE RIGHT PART.<br>
+          POWER YOUR NEXT DRIVE.
+        </div>
+        <p class="pg3-subtitle">
+          Explore automotive components in our futuristic
+          showroom and discover the parts your vehicle needs.
+        </p>
+      </div>
+
+      <div class="pg3-stage">
+        <div class="pg3-platform"></div>
+        <div class="pg3-engine">${engineSVG}</div>
+        <div class="pg3-stage-caption">
+          HOLOGRAPHIC ENGINE DISPLAY
+        </div>
+      </div>
+
+      <div class="pg3-features">
+        <span>◇ SMART DISCOVERY</span>
+        <span>◇ VEHICLE FIRST</span>
+        <span>◇ FITMENT MATTERS</span>
+      </div>
+
+      <div class="pg3-heading">EXPLORE PARTS</div>
+
+      <div class="pg3-search-panel">
+        <label for="partSelect">Choose a parts category</label>
+        <div id="pg3-select-location"></div>
+        <p class="pg3-hint">
+          Select a category to explore sample part options.
+        </p>
+      </div>
+
+      <div class="pg3-heading">POPULAR DEPARTMENTS</div>
+      <div id="pg3-departments" class="pg3-grid"></div>
+
+      <div class="pg3-heading">PART OPTIONS</div>
+      <div id="pg3-results-location"></div>
+
+      <div id="pg3-detail" class="pg3-detail"
+           hidden aria-live="polite"></div>
+    `;
+
+    heading.insertAdjacentElement("afterend",showroom);
+
+    document.getElementById("pg3-select-location")
+      .appendChild(existingSelect);
+
+    document.getElementById("pg3-results-location")
+      .appendChild(existingResults);
+
+    if(oldField) oldField.remove();
+    if(oldHint) oldHint.remove();
+
+    if(oldWarning) {
+      oldWarning.remove();
+    }
+
+    const departments=[
+      ["Engine & Filters","Engine and maintenance components","engine"],
+      ["Brakes","Pads, rotors and braking systems","brakes"],
+      ["Battery & Electrical","Starting and charging systems","battery"],
+      ["Suspension","Ride control and steering parts","suspension"]
+    ];
+
+    const deptGrid=document.getElementById("pg3-departments");
+
+    departments.forEach(([name,desc,icon])=>{
+      const card=document.createElement("article");
+      card.className="pg3-card";
+      card.innerHTML=`
+        <div class="pg3-art">${icons[icon]}</div>
+        <div class="pg3-card-title">${name}</div>
+        <div class="pg3-card-desc">${desc}</div>
+      `;
+      deptGrid.appendChild(card);
+    });
+
+    const samples={
+      battery:[
+        ["Standard replacement battery","$139–$219","battery"],
+        ["Premium replacement battery","$189–$289","battery"]
+      ],
+      brakes:[
+        ["Brake pad set","$35–$95","brakes"],
+        ["Brake rotor","$45–$140","brakes"]
+      ],
+      alternator:[
+        ["Remanufactured alternator","$150–$300","engine"],
+        ["New alternator","$230–$470","engine"]
+      ],
+      starter:[
+        ["Remanufactured starter","$110–$250","engine"],
+        ["New starter","$160–$330","engine"]
+      ]
+    };
+
+    const results=document.getElementById("partResults");
+    const detail=document.getElementById("pg3-detail");
+
+    function renderOption3Parts(){
+      const type=existingSelect.value;
+      const items=samples[type]||samples.battery;
+
+      results.className="pg3-grid";
+      results.replaceChildren();
+      detail.hidden=true;
+
+      items.forEach(([name,price,icon],index)=>{
+        const card=document.createElement("article");
+        card.className="pg3-card";
+
+        card.innerHTML=`
+          <div class="pg3-art">${icons[icon]}</div>
+          <div class="pg3-card-title">${name}</div>
+          <div class="pg3-card-desc">
+            Illustrative category · fitment unverified
+          </div>
+          <div class="pg3-price">${price}</div>
+          <button type="button" class="pg3-button">
+            View Details →
+          </button>
+        `;
+
+        card.querySelector("button").addEventListener("click",()=>{
+          detail.replaceChildren();
+
+          const title=document.createElement("h3");
+          title.textContent=name;
+
+          const description=document.createElement("p");
+          description.textContent=
+            "Illustrative price range: "+price+
+            ". This is a concept preview, not a live inventory listing. "+
+            "Exact part selection requires your vehicle year, make, "+
+            "model, engine and confirmed fitment.";
+
+          const close=document.createElement("button");
+          close.type="button";
+          close.className="pg3-button";
+          close.textContent="Close Details";
+          close.addEventListener("click",()=>detail.hidden=true);
+
+          detail.append(title,description,close);
+          detail.hidden=false;
+          detail.scrollIntoView({
+            behavior:"smooth",
+            block:"nearest"
+          });
+        });
+
+        results.appendChild(card);
+      });
+    }
+
+    // Preserve the existing parts category selector.
+    // Replace only the illustrative card rendering.
+    existingSelect.removeAttribute("onchange");
+    existingSelect.addEventListener("change",renderOption3Parts);
+
+    // The existing show('parts') function calls renderParts().
+    // Keep that navigation working with the new layout.
+    window.renderParts=renderOption3Parts;
+
+    renderOption3Parts();
+
+    const disclaimer=document.createElement("p");
+    disclaimer.className="pg3-warning";
+    disclaimer.textContent=
+      "Concept preview only. Prices are illustrative. "+
+      "Live supplier inventory, verified fitment and checkout "+
+      "are not connected yet. Always verify specifications "+
+      "and vehicle compatibility before purchasing.";
+
+    section.appendChild(disclaimer);
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener(
+      "DOMContentLoaded",
+      initializeOption3,
+      {once:true}
+    );
+  } else {
+    initializeOption3();
+  }
+})();
+</script>
+<!-- END COMPLETE OPTION 3 MOBILE SHOWROOM -->
+
 </body>
 </html>
