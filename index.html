@@ -4218,5 +4218,267 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 </script>
 <!-- END NOVA GARAGE SAVE V16 -->
 
+
+<!-- NOVA V17 - VOICE TO GARAGE + ACTIVE HOLOGRAM -->
+<script>
+(function () {
+  "use strict";
+
+  function activateVehicle(vehicle) {
+    if (!vehicle || !vehicle.year ||
+        !vehicle.make || !vehicle.model) {
+      throw new Error("Vehicle details are incomplete");
+    }
+
+    const v = {
+      year: String(vehicle.year).trim(),
+      make: String(vehicle.make).trim(),
+      model: String(vehicle.model).trim(),
+      engine: String(vehicle.engine || "").trim()
+    };
+
+    const year = Number(v.year);
+    if (year < 1980 ||
+        year > new Date().getFullYear() + 1 ||
+        !/^[a-z0-9 .-]+$/i.test(v.make) ||
+        v.model.length > 70) {
+      throw new Error("Please verify the vehicle details");
+    }
+
+    let garage = [];
+    try {
+      garage = JSON.parse(
+        localStorage.getItem("pgGarage") || "[]"
+      );
+      if (!Array.isArray(garage)) garage = [];
+    } catch (e) {
+      garage = [];
+    }
+
+    const existing = garage.findIndex(item =>
+      String(item.year) === v.year &&
+      String(item.make).toLowerCase() ===
+        v.make.toLowerCase() &&
+      String(item.model).toLowerCase() ===
+        v.model.toLowerCase()
+    );
+
+    if (existing >= 0) {
+      v.engine = v.engine ||
+        String(garage[existing].engine || "");
+      garage[existing] = v;
+    } else {
+      garage.push(v);
+    }
+
+    localStorage.setItem(
+      "pgGarage", JSON.stringify(garage)
+    );
+    localStorage.setItem(
+      "pgVehicle", JSON.stringify(v)
+    );
+
+    if (typeof showMyGarage === "function") {
+      showMyGarage();
+    }
+
+    const hologram = document.getElementById(
+      "novaVehicleHologram"
+    );
+
+    if (hologram &&
+        typeof getVehicleHologram === "function") {
+      const image = getVehicleHologram(v);
+      if (image) {
+        hologram.src = image;
+        hologram.style.display = "block";
+      } else {
+        hologram.removeAttribute("src");
+        hologram.style.display = "none";
+      }
+    }
+
+    window.dispatchEvent(
+      new CustomEvent("pg-vehicle-changed", {
+        detail: v
+      })
+    );
+
+    return v;
+  }
+
+  // Make typed garage saves activate the vehicle too.
+  if (typeof window.sendChat === "function") {
+    const previousSend = window.sendChat;
+
+    window.sendChat = function () {
+      let before = "";
+      try {
+        before = localStorage.getItem("pgGarage") || "";
+      } catch (e) {}
+
+      const result = previousSend.apply(this, arguments);
+
+      try {
+        const after =
+          localStorage.getItem("pgGarage") || "";
+        if (after !== before) {
+          const garage = JSON.parse(after);
+          if (Array.isArray(garage) && garage.length) {
+            activateVehicle(garage[garage.length - 1]);
+          }
+        }
+      } catch (e) {
+        console.warn("Garage activation:", e);
+      }
+
+      return result;
+    };
+  }
+
+  // Give Nova's realtime voice assistant a
+  // structured action for saving vehicles.
+  const configured = new WeakSet();
+
+  function attachVoiceGarage(channel) {
+    if (!channel || configured.has(channel)) return;
+    configured.add(channel);
+
+    const setup = () => {
+      if (channel.readyState !== "open") return;
+
+      channel.send(JSON.stringify({
+        type: "session.update",
+        session: {
+          tools: [{
+            type: "function",
+            name: "save_vehicle_to_garage",
+            description:
+              "Save a vehicle to My Garage and make it " +
+              "the active vehicle. Call only when the " +
+              "customer explicitly requests saving or " +
+              "adding a vehicle. Ask for missing year, " +
+              "make or model before calling.",
+            parameters: {
+              type: "object",
+              properties: {
+                year: {
+                  type: "string",
+                  description: "Four-digit model year"
+                },
+                make: {
+                  type: "string",
+                  description: "Vehicle manufacturer"
+                },
+                model: {
+                  type: "string",
+                  description: "Vehicle model and trim"
+                },
+                engine: {
+                  type: "string",
+                  description:
+                    "Engine if the customer supplied it"
+                }
+              },
+              required: ["year", "make", "model"],
+              additionalProperties: false
+            }
+          }],
+          tool_choice: "auto",
+          instructions:
+            "You are Nova, a friendly automotive AI. " +
+            "When a customer asks to save a vehicle, " +
+            "use save_vehicle_to_garage. Never claim " +
+            "a vehicle was saved unless the function " +
+            "returns success. The saved vehicle " +
+            "becomes active automatically."
+        }
+      }));
+    };
+
+    channel.addEventListener("open", setup);
+    if (channel.readyState === "open") setup();
+
+    const handledCalls = new Set();
+
+    channel.addEventListener("message", event => {
+      let data;
+      try {
+        data = JSON.parse(event.data);
+      } catch (e) {
+        return;
+      }
+
+      if (data.type !== "response.done") return;
+
+      const output = data.response?.output || [];
+
+      for (const item of output) {
+        if (item.type !== "function_call" ||
+            item.name !== "save_vehicle_to_garage" ||
+            !item.call_id ||
+            handledCalls.has(item.call_id)) {
+          continue;
+        }
+
+        handledCalls.add(item.call_id);
+
+        let result;
+        try {
+          const args = JSON.parse(
+            item.arguments || "{}"
+          );
+          const vehicle = activateVehicle(args);
+
+          result = {
+            success: true,
+            vehicle: vehicle,
+            message:
+              "Vehicle saved to My Garage and " +
+              "made active. The hologram was updated."
+          };
+        } catch (error) {
+          result = {
+            success: false,
+            error: error.message
+          };
+        }
+
+        if (channel.readyState !== "open") return;
+
+        channel.send(JSON.stringify({
+          type: "conversation.item.create",
+          item: {
+            type: "function_call_output",
+            call_id: item.call_id,
+            output: JSON.stringify(result)
+          }
+        }));
+
+        channel.send(JSON.stringify({
+          type: "response.create"
+        }));
+      }
+    });
+  }
+
+  // Detect the voice data channel created
+  // by the existing Nova voice system.
+  const watcher = setInterval(() => {
+    try {
+      if (typeof voiceChannel !== "undefined" &&
+          voiceChannel) {
+        attachVoiceGarage(voiceChannel);
+      }
+    } catch (e) {}
+  }, 400);
+
+  window.addEventListener("pagehide", () => {
+    clearInterval(watcher);
+  });
+})();
+</script>
+<!-- END NOVA V17 -->
+
 </body>
 </html>
