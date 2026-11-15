@@ -3150,5 +3150,130 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 </script>
 <!-- END REALISTIC PARTS ICONS V6 -->
 
+
+<!-- PARTS GENIUS AI — REALISTIC ICON FIX V7 -->
+<style>
+#parts.pg-option3 .pg3-art.pg7-loaded {
+  background-image:
+    url("https://raw.githubusercontent.com/jwright83me/parts-genius-ai/shop-parts-redesign/parts-genius-realistic-icons-v6.webp") !important;
+  background-repeat:no-repeat !important;
+  background-size:200% 200% !important;
+  background-color:#061523 !important;
+}
+
+#parts.pg-option3 .pg3-art.pg7-loaded svg {
+  display:none !important;
+}
+
+#parts.pg-option3 .pg3-art.pg7-engine {
+  background-position:0% 0% !important;
+}
+#parts.pg-option3 .pg3-art.pg7-brakes {
+  background-position:100% 0% !important;
+}
+#parts.pg-option3 .pg3-art.pg7-battery {
+  background-position:0% 100% !important;
+}
+#parts.pg-option3 .pg3-art.pg7-suspension {
+  background-position:100% 100% !important;
+}
+</style>
+
+<script>
+(function(){
+  const URL =
+    "https://raw.githubusercontent.com/" +
+    "jwright83me/parts-genius-ai/" +
+    "shop-parts-redesign/" +
+    "parts-genius-realistic-icons-v6.webp";
+
+  const categories=[
+    "pg7-engine",
+    "pg7-brakes",
+    "pg7-battery",
+    "pg7-suspension"
+  ];
+
+  function applyArtwork(){
+    const departmentCards=
+      document.querySelectorAll(
+        "#pg3-departments .pg3-card"
+      );
+
+    departmentCards.forEach(function(card,index){
+      const art=card.querySelector(".pg3-art");
+      if(!art || !categories[index])return;
+
+      art.classList.add(
+        "pg7-loaded",
+        categories[index]
+      );
+    });
+
+    const select=document.getElementById("partSelect");
+    const results=document.getElementById("partResults");
+    if(!select || !results)return;
+
+    const type=(select.value||"").toLowerCase();
+
+    let category="pg7-engine";
+    if(type.includes("brake"))category="pg7-brakes";
+    if(type.includes("battery"))category="pg7-battery";
+    if(type.includes("suspension"))category="pg7-suspension";
+
+    results.querySelectorAll(".pg3-art").forEach(function(art){
+      art.classList.remove(...categories);
+      art.classList.add("pg7-loaded",category);
+    });
+  }
+
+  function start(){
+    const test=new Image();
+
+    test.onload=function(){
+      applyArtwork();
+
+      const results=document.getElementById("partResults");
+      if(results){
+        new MutationObserver(applyArtwork).observe(
+          results,{childList:true}
+        );
+      }
+
+      const select=document.getElementById("partSelect");
+      if(select){
+        select.addEventListener(
+          "change",
+          function(){
+            requestAnimationFrame(applyArtwork);
+          }
+        );
+      }
+
+      let count=0;
+      const retry=setInterval(function(){
+        applyArtwork();
+        if(++count>=15)clearInterval(retry);
+      },300);
+    };
+
+    test.onerror=function(){
+      console.error("Realistic parts image failed to load");
+    };
+
+    test.src=URL;
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener(
+      "DOMContentLoaded",start,{once:true}
+    );
+  }else{
+    start();
+  }
+})();
+</script>
+<!-- END REALISTIC ICON FIX V7 -->
+
 </body>
 </html>
