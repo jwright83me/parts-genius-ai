@@ -4054,5 +4054,169 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 </script>
 <!-- END ONE-CLICK SEARCH V14 -->
 
+
+<!-- NOVA GARAGE SAVE V16 -->
+<script>
+(function () {
+  const makes = [
+    "Alfa Romeo", "Aston Martin", "Land Rover",
+    "Mercedes-Benz", "Volkswagen", "Chevrolet",
+    "Cadillac", "Chrysler", "Hyundai", "Infiniti",
+    "Lincoln", "Mitsubishi", "Subaru", "Toyota",
+    "Nissan", "Honda", "Mazda", "Dodge", "Buick",
+    "GMC", "Ford", "Jeep", "Kia", "Ram", "BMW",
+    "Audi", "Lexus", "Acura", "Volvo", "Tesla",
+    "Porsche", "Mini", "Fiat", "Genesis",
+    "Chevy", "Mercedes"
+  ].sort((a,b) => b.length - a.length);
+
+  function parseVehicle(text) {
+    const yearMatch = text.match(
+      /\b(19[89]\d|20[0-3]\d)\b/i
+    );
+    if (!yearMatch) return null;
+
+    const afterYear = text.slice(
+      yearMatch.index + yearMatch[0].length
+    ).trim();
+
+    const make = makes.find(m =>
+      afterYear.toLowerCase().startsWith(
+        m.toLowerCase() + " "
+      )
+    );
+    if (!make) return null;
+
+    const remaining = afterYear.slice(make.length)
+      .trim()
+      .split(/\s+(?:with|and|save|add|to my)\b/i)[0]
+      .replace(/[.!?,]+$/, "")
+      .trim();
+
+    if (!remaining || remaining.length > 65)
+      return null;
+
+    const engineMatch = text.match(
+      /\b(\d\.\d\s*(?:L|liter)?(?:\s*(?:turbo|V[468]))?)\b/i
+    );
+
+    return {
+      year: yearMatch[0],
+      make: make === "Chevy" ? "Chevrolet" : make,
+      model: remaining,
+      engine: engineMatch ? engineMatch[0] : ""
+    };
+  }
+
+  function garageRequest(message) {
+    return /\b(save|add)\b/i.test(message)
+      && /\b(garage|vehicle|car|truck|jeep|suv)\b/i
+        .test(message);
+  }
+
+  function saveVehicle(vehicle) {
+    let garage;
+    try {
+      garage = JSON.parse(
+        localStorage.getItem("pgGarage") || "[]"
+      );
+      if (!Array.isArray(garage)) garage = [];
+    } catch (e) {
+      garage = [];
+    }
+
+    const exists = garage.some(v =>
+      String(v.year) === String(vehicle.year) &&
+      String(v.make).toLowerCase() ===
+        vehicle.make.toLowerCase() &&
+      String(v.model).toLowerCase() ===
+        vehicle.model.toLowerCase()
+    );
+
+    if (!exists) {
+      garage.push(vehicle);
+      localStorage.setItem(
+        "pgGarage", JSON.stringify(garage)
+      );
+    }
+
+    if (!localStorage.getItem("pgVehicle")) {
+      localStorage.setItem(
+        "pgVehicle", JSON.stringify(vehicle)
+      );
+    }
+
+    if (document.getElementById("myGarageList")
+        && typeof showMyGarage === "function") {
+      showMyGarage();
+    }
+
+    return exists;
+  }
+
+  if (typeof window.sendChat !== "function") return;
+
+  const originalSendChat = window.sendChat;
+
+  window.sendChat = function () {
+    const input = document.getElementById("chatInput");
+    const message = input?.value.trim() || "";
+
+    if (!garageRequest(message)) {
+      return originalSendChat();
+    }
+
+    let vehicle = parseVehicle(message);
+
+    if (!vehicle && typeof chatHistory !== "undefined") {
+      const previous = [...chatHistory].reverse()
+        .filter(item => item.role === "user");
+
+      for (const item of previous) {
+        vehicle = parseVehicle(
+          typeof item.content === "string"
+            ? item.content : ""
+        );
+        if (vehicle) break;
+      }
+    }
+
+    if (!vehicle) {
+      return originalSendChat();
+    }
+
+    const name = [
+      vehicle.year, vehicle.make,
+      vehicle.model, vehicle.engine
+    ].filter(Boolean).join(" ");
+
+    if (!confirm(
+      "Nova found this vehicle:\n\n" +
+      name +
+      "\n\nSave it to My Garage?"
+    )) return;
+
+    try {
+      const alreadySaved = saveVehicle(vehicle);
+      addBubble(message, "user");
+      addBubble(
+        alreadySaved
+          ? "That vehicle is already in your garage."
+          : "Done! I've saved your " + name +
+            " to My Garage.",
+        "bot"
+      );
+      input.value = "";
+    } catch (e) {
+      addBubble(
+        "I couldn't save that vehicle. " +
+        "Please try again.", "bot"
+      );
+    }
+  };
+})();
+</script>
+<!-- END NOVA GARAGE SAVE V16 -->
+
 </body>
 </html>
