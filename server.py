@@ -80,6 +80,11 @@ def ford_bronco_hologram_image():
 @app.get("/5170AE46-023D-44CF-9044-6487A5745A25.png")
 def sports_car_hologram_image():
     return send_file("5170AE46-023D-44CF-9044-6487A5745A25.png")
+
+@app.get("/chevy-silverado-hologram.png.PNG")
+def chevy_silverado_hologram_image():
+    return send_file("chevy-silverado-hologram.png.PNG")
+
 @app.get("/F084B039-9ADD-4259-B2FB-02100B23F54F.png")
 def transparent_sports_car_image():
     return send_file("F084B039-9ADD-4259-B2FB-02100B23F54F.png")
