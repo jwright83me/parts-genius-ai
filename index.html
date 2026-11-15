@@ -3745,5 +3745,220 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 </script>
 <!-- END SMART PARTS FINDER V12 -->
 
+
+<!-- PARTS GENIUS AI — VEHICLE-AWARE RESULTS V13 -->
+<style>
+#pg13-vehicle-banner {
+  margin:16px 0;
+  padding:14px;
+  border:1px solid #2888b8;
+  border-radius:14px;
+  background:#08263d;
+  color:#d7f3ff;
+  font-size:13px;
+  line-height:1.6;
+}
+#pg13-vehicle-banner strong {
+  display:block;
+  color:#75dcff;
+  margin-bottom:4px;
+}
+#parts .pg13-fitment {
+  margin:10px 0;
+  padding:9px;
+  border:1px solid #416a84;
+  border-radius:9px;
+  background:#092035;
+  color:#d1e6f5;
+  font-size:11px;
+  line-height:1.5;
+}
+#parts .pg13-placeholder {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:8px;
+  min-height:125px;
+  padding:12px;
+  margin-bottom:12px;
+  border:1px solid #2a9bc7;
+  border-radius:13px;
+  background:linear-gradient(145deg,#103a56,#041422);
+  text-align:center;
+  color:#a8eaff;
+  font-size:12px;
+  font-weight:bold;
+}
+#parts .pg13-placeholder .pg13-symbol {
+  font-size:36px;
+}
+</style>
+
+<script>
+(function() {
+  "use strict";
+
+  function getSavedVehicle() {
+    try {
+      const v = JSON.parse(
+        localStorage.getItem("pgVehicle") || "null"
+      );
+      return v && v.year && v.make && v.model
+        ? v : null;
+    } catch(e) {
+      return null;
+    }
+  }
+
+  function vehicleName(v) {
+    return v
+      ? [v.year,v.make,v.model,v.engine]
+          .filter(Boolean).join(" ")
+      : "No vehicle selected";
+  }
+
+  function isHybrid(v) {
+    if (!v) return false;
+    const text = vehicleName(v).toLowerCase();
+    return /4xe|phev|hybrid|electric|ev\b/.test(text);
+  }
+
+  function initializeV13() {
+    const results = document.getElementById("partResults");
+    const select = document.getElementById("partSelect");
+
+    if (!results || !select) return;
+
+    let banner = document.getElementById(
+      "pg13-vehicle-banner"
+    );
+
+    if (!banner) {
+      banner = document.createElement("div");
+      banner.id = "pg13-vehicle-banner";
+      results.parentNode.insertBefore(banner,results);
+    }
+
+    function updateResults() {
+      const v = getSavedVehicle();
+      const type = select.value;
+      const hybrid = isHybrid(v);
+
+      banner.replaceChildren();
+
+      const heading = document.createElement("strong");
+      heading.textContent = "VEHICLE-AWARE PARTS SEARCH";
+
+      const info = document.createElement("div");
+      info.textContent = vehicleName(v);
+
+      const warning = document.createElement("div");
+      warning.style.marginTop = "8px";
+      warning.textContent = !v
+        ? "Select a vehicle before checking compatibility."
+        : "Vehicle identified. Exact part fitment is not yet verified.";
+
+      banner.append(heading,info,warning);
+
+      results.querySelectorAll(".pg3-card").forEach(card => {
+        card.querySelectorAll(
+          ".pg13-fitment,.pg13-placeholder"
+        ).forEach(el => el.remove());
+
+        const title = card.querySelector(".pg3-card-title");
+        if (!title) return;
+
+        const name = title.textContent.toLowerCase();
+        const art = card.querySelector(".pg3-art");
+
+        const wrongImage =
+          /alternator|starter/.test(name);
+
+        if (art) {
+          art.style.display = wrongImage ? "none" : "";
+        }
+
+        if (wrongImage) {
+          const placeholder = document.createElement("div");
+          placeholder.className = "pg13-placeholder";
+
+          const symbol = document.createElement("span");
+          symbol.className = "pg13-symbol";
+          symbol.textContent = "⚙️";
+
+          const label = document.createElement("span");
+          label.textContent = /alternator/.test(name)
+            ? "ALTERNATOR IMAGE PENDING"
+            : "STARTER IMAGE PENDING";
+
+          placeholder.append(symbol,label);
+          card.insertBefore(placeholder,card.firstChild);
+        }
+
+        const note = document.createElement("div");
+        note.className = "pg13-fitment";
+
+        if (!v) {
+          note.textContent =
+            "⚠ Select a vehicle. Fitment not verified.";
+        } else if (
+          hybrid &&
+          /alternator|starter|battery/.test(name)
+        ) {
+          note.textContent =
+            "⚠ Hybrid/PHEV charging or starting system. " +
+            "A conventional replacement may not apply. " +
+            "Verify the exact OEM configuration.";
+        } else {
+          note.textContent =
+            "Vehicle: " + vehicleName(v) +
+            ". Compatibility not yet verified.";
+        }
+
+        const price = card.querySelector(".pg3-price");
+        if (price) {
+          price.parentNode.insertBefore(note,price);
+        } else {
+          card.appendChild(note);
+        }
+      });
+    }
+
+    const observer = new MutationObserver(mutations => {
+      if (mutations.some(m => m.target === results)) {
+        updateResults();
+      }
+    });
+
+    observer.observe(results,{
+      childList:true
+    });
+
+    select.addEventListener("change",updateResults);
+
+    document.addEventListener("click",event => {
+      if (event.target?.getAttribute("onclick")
+          ?.includes("saveVehicle()")) {
+        setTimeout(updateResults,0);
+      }
+    });
+
+    window.addEventListener("storage",updateResults);
+
+    updateResults();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",initializeV13
+    );
+  } else {
+    initializeV13();
+  }
+})();
+</script>
+<!-- END VEHICLE-AWARE RESULTS V13 -->
+
 </body>
 </html>
