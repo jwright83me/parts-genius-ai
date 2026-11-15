@@ -2771,5 +2771,150 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 </script>
 <!-- END REALISTIC SHOWROOM V4 -->
 
+
+<!-- PARTS GENIUS AI — SHOWROOM IMAGE FIX V5 -->
+<style>
+#parts.pg-option3 .pg3-stage {
+  background:
+    radial-gradient(
+      ellipse at 50% 65%,
+      #0877a655,
+      transparent 65%
+    ),
+    linear-gradient(
+      145deg,
+      #0d3146,
+      #020812
+    ) !important;
+}
+
+#parts.pg-option3 .pg3-engine.pg5-ready {
+  top:43%;
+  width:100%;
+  max-width:540px;
+  z-index:4;
+}
+
+#parts.pg-option3 .pg5-real-engine {
+  display:block !important;
+  width:100% !important;
+  height:auto !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  border-radius:12px;
+  object-fit:contain;
+  box-shadow:0 0 30px #00cfff33;
+}
+
+#parts.pg-option3 .pg3-engine.pg5-ready svg {
+  display:none !important;
+}
+
+#parts.pg-option3 .pg3-platform.pg5-hidden {
+  display:none !important;
+}
+
+#parts.pg-option3 .pg5-status {
+  position:absolute;
+  z-index:6;
+  left:50%;
+  top:12px;
+  transform:translateX(-50%);
+  width:max-content;
+  max-width:90%;
+  padding:7px 12px;
+  border:1px solid #4bdcff;
+  border-radius:20px;
+  background:#041626dd;
+  color:#b9f5ff;
+  font-size:11px;
+  font-weight:800;
+  text-align:center;
+}
+</style>
+
+<script>
+(function(){
+  const IMAGE_URL =
+    "https://raw.githubusercontent.com/" +
+    "jwright83me/parts-genius-ai/" +
+    "shop-parts-redesign/" +
+    "parts-genius-showroom-v4.webp";
+
+  function fixShowroom(){
+    const section=document.getElementById("parts");
+    if(!section)return;
+
+    const stage=section.querySelector(".pg3-stage");
+    const engine=section.querySelector(".pg3-engine");
+    if(!stage || !engine)return;
+
+    if(stage.dataset.pg5==="ready")return;
+    stage.dataset.pg5="ready";
+
+    const status=document.createElement("div");
+    status.className="pg5-status";
+    status.textContent="LOADING REALISTIC SHOWROOM";
+    stage.appendChild(status);
+
+    const image=new Image();
+    image.className="pg5-real-engine";
+    image.alt="Realistic V8 engine in a futuristic automotive workshop";
+    image.decoding="async";
+
+    image.onload=function(){
+      engine.replaceChildren(image);
+      engine.classList.add("pg5-ready");
+
+      const platform=stage.querySelector(".pg3-platform");
+      if(platform)platform.classList.add("pg5-hidden");
+
+      status.textContent="REALISTIC SHOWROOM ACTIVE";
+      setTimeout(function(){
+        status.remove();
+      },2500);
+    };
+
+    image.onerror=function(){
+      status.textContent="IMAGE LOAD FAILED";
+      console.error("Unable to load showroom image:",IMAGE_URL);
+    };
+
+    image.src=IMAGE_URL;
+  }
+
+  function start(){
+    fixShowroom();
+
+    // Retry if the showroom was created after this script ran.
+    let attempts=0;
+    const retry=setInterval(function(){
+      attempts++;
+
+      const stage=document.querySelector("#parts .pg3-stage");
+
+      if(stage && stage.dataset.pg5==="ready"){
+        clearInterval(retry);
+        return;
+      }
+
+      if(attempts>=20){
+        clearInterval(retry);
+        return;
+      }
+
+      fixShowroom();
+    },300);
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",start,{once:true});
+  }else{
+    start();
+  }
+})();
+</script>
+<!-- END SHOWROOM IMAGE FIX V5 -->
+
 </body>
 </html>
