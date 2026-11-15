@@ -1903,5 +1903,338 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 </script>
 <!-- END COMPLETE OPTION 3 MOBILE SHOWROOM -->
 
+
+<!-- PARTS GENIUS AI - OPTION 3 VISUAL UPGRADE 2 -->
+<style>
+/* Futuristic showroom environment */
+#parts.pg-option3 {
+  background:
+    radial-gradient(ellipse at 50% 4%,#0c608e 0%,transparent 36%),
+    radial-gradient(ellipse at 50% 60%,#063a63 0%,transparent 52%),
+    linear-gradient(160deg,#061426,#010711 90%)!important;
+}
+#parts.pg-option3::before {
+  background:
+    linear-gradient(90deg,
+      #1ad8ff0d 0%,transparent 13%,
+      transparent 87%,#1ad8ff0d 100%),
+    repeating-linear-gradient(90deg,
+      transparent 0 59px,#23bfff16 60px 61px),
+    repeating-linear-gradient(0deg,
+      transparent 0 69px,#23bfff13 70px 71px);
+}
+#parts.pg-option3 .pg3-stage {
+  height:clamp(310px,92vw,430px);
+  border-color:#5bdfff;
+  background:
+    radial-gradient(ellipse at 50% 67%,#0a8bd055,transparent 58%),
+    linear-gradient(160deg,#102c46,#020c1c 85%);
+  box-shadow:
+    inset 0 0 55px #00bfff28,
+    0 0 32px #00bfff25;
+}
+#parts.pg-option3 .pg3-stage::before {
+  background:
+    linear-gradient(90deg,
+      #49dfff33 0 2px,transparent 2px 19%,
+      #49dfff22 19.2%,transparent 19.6%,
+      transparent 80%,#49dfff22 80.4%,
+      transparent 80.8%,transparent 99%,
+      #49dfff33 99%),
+    repeating-linear-gradient(0deg,
+      transparent 0 32px,#38cfff14 33px 34px);
+}
+#parts.pg-option3 .pg3-stage::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(150deg,transparent 0 45%,
+      #2cceff18 50%,transparent 55%),
+    radial-gradient(ellipse at 50% 50%,
+      transparent 35%,#0008 100%);
+}
+#parts.pg-option3 .pg3-engine {
+  z-index:2;
+  width:88%;
+  max-width:365px;
+  top:40%;
+  filter:
+    drop-shadow(0 0 14px #00cfff)
+    drop-shadow(0 0 32px #008aff77);
+}
+#parts.pg-option3 .pg3-platform {
+  bottom:47px;
+  width:82%;
+  border-color:#a2f5ff;
+  box-shadow:
+    0 0 15px #00cfff,
+    0 0 45px #00aaff99,
+    inset 0 0 30px #00d9ff55;
+}
+#parts.pg-option3 .pg3-title {
+  text-shadow:
+    0 0 22px #00aeff77,
+    0 3px 15px #000a;
+}
+#parts.pg-option3 .pg3-card {
+  border-color:#48cfff;
+  background:
+    radial-gradient(ellipse at 50% 0%,#12517a55,transparent 70%),
+    linear-gradient(155deg,#12334f,#04111f);
+  box-shadow:
+    inset 0 1px 0 #a3efff30,
+    0 10px 25px #0009,
+    0 0 15px #00aaff18;
+  transition:transform .2s,border-color .2s;
+}
+#parts.pg-option3 .pg3-card:active {
+  transform:scale(.97);
+}
+#parts.pg-option3 .pg3-art {
+  background:
+    radial-gradient(ellipse,#1388c266,#071a2d 70%);
+  box-shadow:inset 0 0 20px #00cfff1c;
+}
+#parts.pg-option3 .pg3-art svg {
+  filter:
+    drop-shadow(0 0 9px #00dfff)
+    drop-shadow(0 0 19px #00aeff55);
+}
+#parts.pg-option3 .pg3-button {
+  background:linear-gradient(110deg,#075a92,#00a4e5);
+  box-shadow:0 0 18px #00aeff55;
+}
+#parts.pg-option3 .pg3-dept-active {
+  border-color:#b6f7ff;
+  box-shadow:0 0 20px #00cfff77;
+}
+#parts.pg-option3 .pg3-dept-button {
+  display:block;
+  width:100%;
+  border:1px solid #5de5ff;
+  border-radius:10px;
+  background:#073d63;
+  color:white;
+  font-weight:800;
+  font-size:11px;
+  padding:10px 5px;
+  margin-top:10px;
+  cursor:pointer;
+}
+@media(prefers-reduced-motion:reduce) {
+  #parts.pg-option3 .pg3-card {
+    transition:none;
+  }
+}
+</style>
+
+<script>
+(function(){
+  function upgradeShowroom(){
+    const section=document.getElementById("parts");
+    if(!section ||
+       section.dataset.option3!=="complete" ||
+       section.dataset.visualUpgrade==="2") return;
+
+    section.dataset.visualUpgrade="2";
+
+    const engine=section.querySelector(".pg3-engine");
+    if(engine){
+      // More detailed, layered mechanical engine illustration.
+      engine.innerHTML=`
+      <svg viewBox="0 0 340 270"
+           role="img"
+           aria-label="Detailed holographic V engine">
+        <defs>
+          <linearGradient id="pgv2steel"
+            x1="0" y1="0" x2="1" y2="1">
+            <stop stop-color="#d7faff"/>
+            <stop offset=".2" stop-color="#76c6e8"/>
+            <stop offset=".5" stop-color="#1a5378"/>
+            <stop offset=".8" stop-color="#529bc1"/>
+            <stop offset="1" stop-color="#c5f5ff"/>
+          </linearGradient>
+          <linearGradient id="pgv2dark"
+            x1="0" y1="0" x2="1" y2="1">
+            <stop stop-color="#174c72"/>
+            <stop offset="1" stop-color="#051b31"/>
+          </linearGradient>
+        </defs>
+
+        <g stroke="#8beaff" stroke-width="2"
+           stroke-linejoin="round">
+          <!-- Rear engine block -->
+          <path d="M46 113 92 73 245 73 296 111
+                   283 190 239 216 91 203 45 171Z"
+                fill="url(#pgv2dark)"/>
+
+          <!-- Left cylinder bank -->
+          <path d="M62 112 93 52 160 77 150 153
+                   78 155Z"
+                fill="url(#pgv2steel)"/>
+
+          <!-- Right cylinder bank -->
+          <path d="M180 77 245 52 278 112
+                   261 155 190 153Z"
+                fill="url(#pgv2steel)"/>
+
+          <!-- Cylinder head covers -->
+          <path d="M89 42 155 65 149 87 76 67Z"
+                fill="#255b80"/>
+          <path d="M185 65 251 42 265 67 192 87Z"
+                fill="#255b80"/>
+
+          <!-- Engine top manifold -->
+          <path d="M141 59 199 59 219 91
+                   205 130 135 130 121 91Z"
+                fill="url(#pgv2steel)"/>
+
+          <path d="M154 31h32v29h-32z"
+                fill="#25577a"/>
+          <path d="M144 21h52v14h-52z"
+                fill="#86c6e5"/>
+
+          <!-- Front engine -->
+          <path d="M77 152 264 152 251 204
+                   91 204Z"
+                fill="url(#pgv2steel)"/>
+
+          <path d="M94 160h153v36H94z"
+                fill="#0a3556"/>
+
+          <!-- Valve and cooling details -->
+          <path d="M88 84l53 18m-60-5 59 18
+                   m-52 0 49 14
+                   M252 84l-53 18m60-5-59 18
+                   m52 0-49 14"
+                fill="none"
+                stroke="#a7f2ff"
+                stroke-width="4"/>
+
+          <!-- Front pulleys -->
+          <circle cx="170" cy="178" r="37"
+                  fill="#69b8dc"/>
+          <circle cx="170" cy="178" r="27"
+                  fill="#0c304e"/>
+          <circle cx="170" cy="178" r="16"
+                  fill="#4bb7e8"/>
+          <circle cx="170" cy="178" r="7"
+                  fill="#d5fbff"/>
+
+          <circle cx="108" cy="184" r="17"
+                  fill="#6ac4e7"/>
+          <circle cx="108" cy="184" r="9"
+                  fill="#103c5b"/>
+
+          <circle cx="232" cy="184" r="17"
+                  fill="#6ac4e7"/>
+          <circle cx="232" cy="184" r="9"
+                  fill="#103c5b"/>
+
+          <!-- Belt -->
+          <path d="M108 167Q170 130 232 167
+                   M108 201Q170 228 232 201"
+                fill="none"
+                stroke="#a8eeff"
+                stroke-width="3"/>
+
+          <!-- Side components -->
+          <path d="M45 117 18 102 13 139
+                   45 153Z"
+                fill="#438db5"/>
+          <path d="M296 117 322 102 327 139
+                   296 153Z"
+                fill="#438db5"/>
+
+          <!-- Exhaust headers -->
+          <path d="M78 155 49 188 72 219
+                   M98 157 78 193 100 225
+                   M261 155 291 188 268 219
+                   M242 157 261 193 240 225"
+                fill="none"
+                stroke="#74d9ff"
+                stroke-width="7"/>
+
+          <!-- Mounting feet -->
+          <path d="M97 204 71 237h64l14-30
+                   M243 204l26 33h-64l-14-30"
+                fill="url(#pgv2steel)"/>
+        </g>
+
+        <!-- Holographic highlight lines -->
+        <g fill="none" stroke="#8cefff"
+           stroke-width="1" opacity=".6">
+          <path d="M15 245h310"/>
+          <path d="M38 252h264"/>
+          <path d="M72 258h196"/>
+        </g>
+      </svg>`;
+    }
+
+    const departments=[
+      ["Engine & Filters","alternator"],
+      ["Brakes","brakes"],
+      ["Battery & Electrical","battery"],
+      ["Suspension",null]
+    ];
+
+    const select=document.getElementById("partSelect");
+    const grid=document.getElementById("pg3-departments");
+
+    if(!select || !grid)return;
+
+    Array.from(grid.children).forEach((card,index)=>{
+      const [name,value]=departments[index]||[];
+      if(!name)return;
+
+      const button=document.createElement("button");
+      button.type="button";
+      button.className="pg3-dept-button";
+      button.textContent=value?"Explore Parts →":"Coming Soon";
+      button.disabled=!value;
+
+      button.addEventListener("click",()=>{
+        const option=Array.from(select.options)
+          .find(o=>o.value===value);
+
+        if(!option)return;
+
+        select.value=value;
+        select.dispatchEvent(new Event("change",{bubbles:true}));
+
+        grid.querySelectorAll(".pg3-card")
+          .forEach(el=>el.classList.remove("pg3-dept-active"));
+
+        card.classList.add("pg3-dept-active");
+
+        const heading=Array.from(
+          section.querySelectorAll(".pg3-heading")
+        ).find(el=>el.textContent.includes("PART OPTIONS"));
+
+        if(heading){
+          heading.scrollIntoView({
+            behavior:"smooth",
+            block:"start"
+          });
+        }
+      });
+
+      card.appendChild(button);
+    });
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",upgradeShowroom,{
+      once:true
+    });
+  }else{
+    upgradeShowroom();
+  }
+})();
+</script>
+<!-- END OPTION 3 VISUAL UPGRADE 2 -->
+
 </body>
 </html>
