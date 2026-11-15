@@ -712,6 +712,17 @@ function getVehicleHologram(vehicle) {
   if (make === 'jeep' && model.includes('wrangler')) {
     return '4EBE8E20-BFAF-4B2C-9084-C52045F60EC0.png';
   }
+  
+  // Dodge Challenger hologram (2015-2023)
+  if (
+    make === 'dodge' &&
+    model.includes('challenger') &&
+    Number(vehicle.year) >= 2015 &&
+    Number(vehicle.year) <= 2023
+  ) {
+    return 'dodge-challenger-hologram.png.PNG';
+  }
+
 // Ford Bronco hologram
 if (
   make === 'ford' &&
