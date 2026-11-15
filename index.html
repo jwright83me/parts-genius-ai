@@ -713,6 +713,19 @@ function getVehicleHologram(vehicle) {
     return '4EBE8E20-BFAF-4B2C-9084-C52045F60EC0.png';
   }
   
+  
+  // Chevy Silverado 1500 hologram (2019–2024)
+  if (
+    (make === 'chevrolet' || make === 'chevy') &&
+    model.includes('silverado') &&
+    !model.includes('2500') &&
+    !model.includes('3500') &&
+    Number(vehicle.year) >= 2019 &&
+    Number(vehicle.year) <= 2024
+  ) {
+    return 'chevy-silverado-hologram.png.PNG';
+  }
+
   // Dodge Challenger hologram (2015-2023)
   if (
     make === 'dodge' &&
