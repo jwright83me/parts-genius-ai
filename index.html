@@ -3479,5 +3479,271 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 </style>
 <!-- END ENGINE ZOOM V11 -->
 
+
+<!-- PARTS GENIUS AI — SMART PARTS FINDER V12 -->
+<style>
+#pg12-finder {
+  margin:18px 0;
+  padding:18px;
+  border:1px solid #287da9;
+  border-radius:18px;
+  background:linear-gradient(145deg,#0a2942,#061522);
+  color:#eaf8ff;
+}
+#pg12-finder h3 {margin:0 0 10px}
+#pg12-finder .pg12-note {
+  font-size:12px;
+  color:#a9c8dc;
+  line-height:1.6;
+}
+#pg12-vehicle {
+  padding:12px;
+  margin:12px 0;
+  border:1px solid #245d80;
+  border-radius:12px;
+  background:#071b2e;
+}
+#pg12-query {
+  width:100%;
+  padding:13px;
+  margin:10px 0;
+  border:1px solid #367da7;
+  border-radius:11px;
+  background:#031321;
+  color:white;
+  font-size:16px;
+}
+.pg12-button {
+  padding:11px;
+  margin:4px 5px 4px 0;
+  border:1px solid #3ac9ff;
+  border-radius:10px;
+  background:#0a77b5;
+  color:white;
+  font-weight:bold;
+}
+.pg12-result {
+  margin-top:12px;
+  padding:12px;
+  border:1px solid #245d80;
+  border-radius:12px;
+}
+</style>
+
+<script>
+(function() {
+  const categories = [
+    {
+      name:"Engine & Filters",
+      terms:/filter|spark plug|coil|engine|sensor|pcv/i,
+      type:"filter"
+    },
+    {
+      name:"Brakes",
+      terms:/brake|rotor|caliper|pad|abs/i,
+      type:"brakes"
+    },
+    {
+      name:"Battery & Electrical",
+      terms:/battery|alternator|starter|electrical/i,
+      type:"battery"
+    },
+    {
+      name:"Suspension",
+      terms:/strut|shock|suspension|tie rod|ball joint/i,
+      type:null
+    }
+  ];
+
+  function getVehicle() {
+    try {
+      return JSON.parse(
+        localStorage.getItem("pgVehicle") || "null"
+      );
+    } catch(e) {
+      return null;
+    }
+  }
+
+  function initializeFinder() {
+    const location = document.querySelector(
+      "#parts .pg3-search-panel"
+    );
+
+    if (!location || document.getElementById("pg12-finder"))
+      return;
+
+    const panel = document.createElement("div");
+    panel.id = "pg12-finder";
+
+    panel.innerHTML = `
+      <h3>SMART PARTS FINDER</h3>
+      <p class="pg12-note">
+        Find the right department for your vehicle.
+      </p>
+
+      <div id="pg12-vehicle"></div>
+
+      <input id="pg12-query"
+        placeholder="Search brakes, filters, alternators..."
+        aria-label="Search for a part">
+
+      <button class="pg12-button"
+        id="pg12-search" type="button">
+        Find Parts
+      </button>
+
+      <button class="pg12-button"
+        id="pg12-change" type="button">
+        Change Vehicle
+      </button>
+
+      <div id="pg12-results" aria-live="polite"></div>
+
+      <p class="pg12-note">
+        Category suggestions only. Vehicle fitment,
+        prices and supplier inventory are not verified.
+      </p>
+    `;
+
+    location.parentNode.insertBefore(panel,location);
+
+    const vehicleBox = panel.querySelector("#pg12-vehicle");
+    const input = panel.querySelector("#pg12-query");
+    const results = panel.querySelector("#pg12-results");
+
+    function refreshVehicle() {
+      const v = getVehicle();
+
+      vehicleBox.textContent =
+        v && v.year && v.make && v.model
+        ? "YOUR VEHICLE: " +
+          [v.year,v.make,v.model,v.engine]
+            .filter(Boolean).join(" ")
+        : "No vehicle selected. Please save your vehicle.";
+    }
+
+    function searchParts() {
+      refreshVehicle();
+      results.replaceChildren();
+
+      const query = input.value.trim();
+
+      if (!query) {
+        results.textContent = "Enter a part name first.";
+        return;
+      }
+
+      const matches = categories.filter(c =>
+        c.terms.test(query)
+      );
+
+      if (!matches.length) {
+        results.textContent =
+          "No category found. Try a simpler part name.";
+        return;
+      }
+
+      matches.forEach(category => {
+        const card = document.createElement("div");
+        card.className = "pg12-result";
+
+        const title = document.createElement("strong");
+        title.textContent = category.name;
+        card.appendChild(title);
+
+        const description = document.createElement("p");
+        description.className = "pg12-note";
+        description.textContent =
+          "Possible department. Exact fitment not verified.";
+        card.appendChild(description);
+
+        if (category.type) {
+          const button = document.createElement("button");
+          button.className = "pg12-button";
+          button.textContent = "Explore Department";
+
+          button.onclick = function() {
+            const select =
+              document.getElementById("partSelect");
+
+            if (!select) return;
+
+            let type = category.type;
+
+            if (/alternator/i.test(query))
+              type = "alternator";
+
+            if (/starter/i.test(query))
+              type = "starter";
+
+            const available = Array.from(select.options)
+              .some(option => option.value === type);
+
+            if (!available) {
+              description.textContent =
+                "This department is coming soon.";
+              return;
+            }
+
+            select.value = type;
+            select.dispatchEvent(
+              new Event("change",{bubbles:true})
+            );
+
+            document.getElementById("partResults")
+              ?.scrollIntoView({
+                behavior:"smooth",
+                block:"start"
+              });
+          };
+
+          card.appendChild(button);
+        } else {
+          description.textContent =
+            "Suspension department coming soon.";
+        }
+
+        results.appendChild(card);
+      });
+    }
+
+    panel.querySelector("#pg12-search")
+      .addEventListener("click",searchParts);
+
+    input.addEventListener("keydown",e => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        searchParts();
+      }
+    });
+
+    panel.querySelector("#pg12-change")
+      .addEventListener("click",() => {
+        if (typeof window.show === "function")
+          window.show("vehicle");
+      });
+
+    document.addEventListener("click",e => {
+      if (e.target?.getAttribute("onclick")
+          ?.includes("saveVehicle()")) {
+        setTimeout(refreshVehicle,0);
+      }
+    });
+
+    refreshVehicle();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",initializeFinder
+    );
+  } else {
+    initializeFinder();
+  }
+})();
+</script>
+<!-- END SMART PARTS FINDER V12 -->
+
 </body>
 </html>
