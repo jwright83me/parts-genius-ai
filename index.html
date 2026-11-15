@@ -712,7 +712,15 @@ function getVehicleHologram(vehicle) {
   if (make === 'jeep' && model.includes('wrangler')) {
     return '4EBE8E20-BFAF-4B2C-9084-C52045F60EC0.png';
   }
-
+// Ford Bronco hologram
+if (
+  make === 'ford' &&
+  model.includes('bronco') &&
+  !model.includes('sport') &&
+  Number(vehicle.year) >= 2021
+) {
+  return 'ford-bronco-hologram.png.PNG';
+}
 
 
   // Other vehicles will use automatic image lookup later.
