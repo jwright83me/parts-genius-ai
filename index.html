@@ -4350,6 +4350,7 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
       channel.send(JSON.stringify({
         type: "session.update",
         session: {
+          type: "realtime",
           tools: [{
             type: "function",
             name: "save_vehicle_to_garage",
