@@ -3415,5 +3415,52 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 </style>
 <!-- END SHOWROOM POLISH V9 -->
 
+
+<!-- PARTS GENIUS AI — CLEAN ENGINE DISPLAY V10 -->
+<style>
+/* Keep the showroom contained */
+#parts.pg-option3 .pg3-stage {
+  overflow:hidden !important;
+  isolation:isolate !important;
+  background:#04111e !important;
+}
+
+/* Remove V9's artificial top overlay */
+#parts.pg-option3 .pg3-stage::before {
+  display:none !important;
+}
+
+/* Crop the text baked into the top of the image */
+#parts.pg-option3 .pg3-engine.pg5-ready {
+  overflow:hidden !important;
+  background:#04111e !important;
+}
+
+#parts.pg-option3 .pg3-engine.pg5-ready img {
+  width:100% !important;
+  height:100% !important;
+  object-fit:cover !important;
+  object-position:center center !important;
+  transform:scale(1.18) !important;
+  transform-origin:center center !important;
+  border-radius:0 !important;
+}
+
+/* Preserve the showroom caption */
+#parts.pg-option3 .pg3-stage-caption {
+  position:absolute !important;
+  z-index:5 !important;
+  bottom:0 !important;
+  left:0 !important;
+  right:0 !important;
+  background:linear-gradient(
+    to top,
+    #020b17ee,
+    transparent
+  ) !important;
+}
+</style>
+<!-- END CLEAN ENGINE DISPLAY V10 -->
+
 </body>
 </html>
