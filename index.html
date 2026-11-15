@@ -1136,6 +1136,12 @@ if (activeNovaImage &&
   novaHologram.style.transformOrigin = 'center center';
 }
 
+if (activeNovaImage &&
+    activeNovaImage.includes('chevy-silverado-hologram')) {
+  novaHologram.style.transform = 'scale(0.90) translateY(-4%)';
+  novaHologram.style.transformOrigin = 'center center';
+}
+
 // NOVA - Clickable voice button
 novaSection.style.position = 'relative';
 
