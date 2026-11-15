@@ -3355,5 +3355,65 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 </style>
 <!-- END SHOWROOM FULL BLEED V8 -->
 
+
+<!-- PARTS GENIUS AI — SHOWROOM POLISH V9 -->
+<style>
+/* Keep the realistic engine contained in the showroom */
+#parts.pg-option3 .pg3-stage {
+  position:relative !important;
+  overflow:hidden !important;
+  isolation:isolate !important;
+  background:#04111e !important;
+}
+
+/* Cover the image's unwanted top edge */
+#parts.pg-option3 .pg3-stage::before {
+  content:"" !important;
+  display:block !important;
+  position:absolute !important;
+  top:0 !important;
+  left:0 !important;
+  right:0 !important;
+  height:9% !important;
+  z-index:3 !important;
+  pointer-events:none !important;
+  background:linear-gradient(
+    to bottom,
+    #04111e 0%,
+    #04111edd 40%,
+    transparent 100%
+  ) !important;
+}
+
+/* Slightly widen the visible engine area */
+#parts.pg-option3 .pg3-engine.pg5-ready img {
+  object-fit:cover !important;
+  object-position:50% 50% !important;
+  transform:scale(0.96) !important;
+  transform-origin:center center !important;
+}
+
+/* Match the newly exposed edges to the showroom */
+#parts.pg-option3 .pg3-engine.pg5-ready {
+  background:
+    radial-gradient(
+      ellipse at 50% 70%,
+      #0a5a81,
+      #03111f 78%
+    ) !important;
+}
+
+/* Keep caption above the artwork */
+#parts.pg-option3 .pg3-stage-caption {
+  z-index:5 !important;
+  background:linear-gradient(
+    to top,
+    #020b17ee,
+    transparent
+  ) !important;
+}
+</style>
+<!-- END SHOWROOM POLISH V9 -->
+
 </body>
 </html>
