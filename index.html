@@ -2916,5 +2916,239 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 </script>
 <!-- END SHOWROOM IMAGE FIX V5 -->
 
+
+<!-- PARTS GENIUS AI — REALISTIC PARTS ICONS V6 -->
+<style>
+/* Realistic automotive image panels */
+#parts.pg-option3 .pg3-art.pg6-real-art {
+  position:relative;
+  overflow:hidden;
+  display:block;
+  width:100%;
+  height:clamp(100px,26vw,155px);
+  border:1px solid #35b9ed;
+  border-radius:15px;
+  background-color:#071827;
+  background-image:url("parts-genius-realistic-icons-v6.webp");
+  background-repeat:no-repeat;
+  background-size:200% 200%;
+  box-shadow:
+    inset 0 0 18px #00cfff22,
+    0 0 14px #00bfff22;
+}
+
+#parts.pg-option3 .pg6-real-art svg {
+  display:none !important;
+}
+
+#parts.pg-option3 .pg6-engine {
+  background-position:0% 0%;
+}
+
+#parts.pg-option3 .pg6-brakes {
+  background-position:100% 0%;
+}
+
+#parts.pg-option3 .pg6-battery {
+  background-position:0% 100%;
+}
+
+#parts.pg-option3 .pg6-suspension {
+  background-position:100% 100%;
+}
+
+/* Add showroom depth to cards */
+#parts.pg-option3 .pg3-card {
+  border:1px solid #42bce8;
+  border-radius:19px;
+  background:
+    radial-gradient(
+      ellipse at 50% 0%,
+      #155e8255,
+      transparent 75%
+    ),
+    linear-gradient(
+      150deg,
+      #122c41,
+      #040c17
+    );
+  box-shadow:
+    inset 0 1px 0 #b9efff33,
+    0 12px 26px #0009;
+}
+
+/* Image lighting */
+#parts.pg-option3 .pg6-real-art::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(
+      125deg,
+      #b6f5ff16,
+      transparent 38%
+    ),
+    linear-gradient(
+      0deg,
+      #00111d55,
+      transparent 40%
+    );
+}
+
+/* Preserve two columns on phones */
+#parts.pg-option3 #pg3-departments {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+
+#parts.pg-option3 .pg3-card {
+  min-width:0;
+}
+
+#parts.pg-option3 .pg3-dept-button {
+  border:1px solid #6ce4ff;
+  background:
+    linear-gradient(110deg,#07537d,#0b91c3);
+  box-shadow:0 0 14px #00bfff33;
+}
+
+/* Make image panels more compact on small phones */
+@media(max-width:390px) {
+  #parts.pg-option3 .pg3-art.pg6-real-art {
+    height:105px;
+  }
+
+  #parts.pg-option3 #pg3-departments {
+    gap:9px;
+  }
+}
+</style>
+
+<script>
+(function(){
+  const categoryClasses=[
+    "pg6-engine",
+    "pg6-brakes",
+    "pg6-battery",
+    "pg6-suspension"
+  ];
+
+  function updateDepartmentArtwork(){
+    const grid=document.getElementById("pg3-departments");
+    if(!grid)return;
+
+    const cards=Array.from(grid.children);
+
+    cards.forEach(function(card,index){
+      const art=card.querySelector(".pg3-art");
+      if(!art)return;
+
+      const category=categoryClasses[index];
+      if(!category)return;
+
+      art.classList.add(
+        "pg6-real-art",
+        category
+      );
+    });
+  }
+
+  function updatePartOptionArtwork(){
+    const section=document.getElementById("parts");
+    if(!section)return;
+
+    const select=document.getElementById("partSelect");
+    const results=document.getElementById("partResults");
+
+    if(!select || !results)return;
+
+    const selected=(select.value || "").toLowerCase();
+
+    let category="pg6-engine";
+
+    if(selected.includes("brake")){
+      category="pg6-brakes";
+    }else if(selected.includes("battery")){
+      category="pg6-battery";
+    }else if(selected.includes("suspension")){
+      category="pg6-suspension";
+    }
+
+    const cards=results.querySelectorAll(".pg3-card");
+
+    cards.forEach(function(card){
+      const art=card.querySelector(".pg3-art");
+      if(!art)return;
+
+      art.classList.remove(
+        ...categoryClasses
+      );
+
+      art.classList.add(
+        "pg6-real-art",
+        category
+      );
+    });
+  }
+
+  function updateAll(){
+    updateDepartmentArtwork();
+    updatePartOptionArtwork();
+  }
+
+  function start(){
+    updateAll();
+
+    const section=document.getElementById("parts");
+    if(!section)return;
+
+    const select=document.getElementById("partSelect");
+
+    if(select){
+      select.addEventListener("change",function(){
+        requestAnimationFrame(updatePartOptionArtwork);
+      });
+    }
+
+    const results=document.getElementById("partResults");
+
+    if(results){
+      const observer=new MutationObserver(function(){
+        updatePartOptionArtwork();
+      });
+
+      observer.observe(results,{
+        childList:true
+      });
+    }
+
+    // Refresh artwork if the showroom is initialized later.
+    let attempts=0;
+
+    const retry=setInterval(function(){
+      updateAll();
+      attempts++;
+
+      if(attempts>=15){
+        clearInterval(retry);
+      }
+    },300);
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener(
+      "DOMContentLoaded",
+      start,
+      {once:true}
+    );
+  }else{
+    start();
+  }
+})();
+</script>
+<!-- END REALISTIC PARTS ICONS V6 -->
+
 </body>
 </html>
