@@ -1162,5 +1162,167 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 }
 
 </script>
+
+<!-- PARTS GENIUS AI — OPTION 3 SHOWROOM -->
+<style>
+#parts.panel{
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+  min-height:1050px;
+  padding:26px 18px 95px;
+  background:
+    radial-gradient(ellipse at 50% 22%,#075a8b88,transparent 45%),
+    linear-gradient(180deg,#06192e,#020912 85%);
+  border:1px solid #2fbaff;
+  box-shadow:inset 0 0 90px #008cff22,0 20px 60px #0009;
+}
+#parts.panel::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background:
+    repeating-linear-gradient(90deg,
+      transparent 0 72px,#16bfff16 73px 74px),
+    repeating-linear-gradient(0deg,
+      transparent 0 90px,#16bfff12 91px 92px);
+}
+.pg-showroom{text-align:center;margin-bottom:28px}
+.pg-eyebrow{
+  color:#65dcff;font-size:11px;font-weight:900;
+  letter-spacing:3px;margin-bottom:12px;
+}
+.pg-showroom h3{
+  font-size:clamp(26px,7vw,39px);
+  line-height:1.1;color:white;
+  margin:0 0 12px;
+  text-shadow:0 0 25px #00aeff66;
+}
+.pg-showroom p{
+  color:#aacde4;font-size:13px;
+  line-height:1.6;max-width:340px;
+  margin:0 auto 18px;
+}
+.pg-engine-stage{
+  position:relative;height:290px;
+  display:grid;place-items:center;
+  overflow:hidden;
+  border-radius:22px;
+  background:
+    radial-gradient(ellipse at 50% 70%,#00baff44,transparent 53%),
+    linear-gradient(150deg,#071e36,#03101e);
+  border:1px solid #258bc088;
+}
+.pg-engine-stage::before{
+  content:"";
+  position:absolute;
+  width:250px;height:90px;
+  bottom:22px;left:50%;
+  transform:translateX(-50%);
+  border:2px solid #36d9ff;
+  border-radius:50%;
+  box-shadow:0 0 25px #00cfff, inset 0 0 40px #00cfff55;
+}
+.pg-engine-stage::after{
+  content:"";
+  position:absolute;inset:0;
+  pointer-events:none;
+  background:repeating-linear-gradient(
+    0deg,transparent 0 18px,#65dcff09 19px 20px);
+}
+.pg-engine-icon{
+  position:relative;z-index:1;
+  font-size:116px;line-height:1;
+  filter:drop-shadow(0 0 20px #00bfff);
+  transform:translateY(-20px);
+}
+.pg-stage-label{
+  position:absolute;bottom:12px;
+  left:0;right:0;color:#7ce8ff;
+  font-size:10px;font-weight:800;
+  letter-spacing:2px;
+}
+.pg-search-title{
+  font-size:20px;font-weight:900;
+  color:white;margin:20px 0 14px;
+}
+#parts.panel .field{
+  position:relative;z-index:2;
+  padding:17px;border-radius:18px;
+  background:#071a2de8;
+  border:1px solid #218fd0;
+  box-shadow:0 0 24px #009dff1c;
+}
+#parts.panel #partSelect{
+  border:1px solid #3fcaff;
+  background:#061626;
+}
+#parts.panel #partResults{
+  display:grid;gap:16px;
+  position:relative;z-index:2;
+  margin-top:20px;
+}
+#parts.panel .part{
+  border:1px solid #2cbcff;
+  border-radius:20px;
+  background:linear-gradient(145deg,#102e49,#061323);
+  box-shadow:0 12px 28px #0007,0 0 22px #009fff20;
+  padding:22px 18px;
+}
+#parts.panel .part strong{
+  font-size:18px;color:white;
+}
+#parts.panel .part .price{
+  color:#72e4ff;font-size:25px;
+  font-weight:900;
+}
+#parts.panel .part button{
+  background:linear-gradient(120deg,#07518c,#0099dc);
+  border:1px solid #51dfff;
+  box-shadow:0 0 16px #00aaff55;
+}
+.pg-trust-strip{
+  display:flex;justify-content:center;
+  gap:10px;flex-wrap:wrap;
+  margin:20px 0 6px;
+}
+.pg-trust-strip span{
+  border:1px solid #237cad;
+  border-radius:30px;
+  padding:8px 11px;
+  color:#8cdfff;font-size:10px;
+  font-weight:800;letter-spacing:.4px;
+  background:#071a2b;
+}
+</style>
+<script>
+(function(){
+  const section=document.getElementById('parts');
+  if(!section || section.querySelector('.pg-showroom'))return;
+  const heading=section.querySelector('h2');
+  const showroom=document.createElement('div');
+  showroom.className='pg-showroom';
+  showroom.innerHTML=`
+    <div class="pg-eyebrow">PARTS GENIUS AI · DIGITAL SHOWROOM</div>
+    <h3>FIND THE RIGHT PART.<br>POWER YOUR NEXT DRIVE.</h3>
+    <p>Explore automotive components in a futuristic
+    digital showroom, then narrow your search by category.</p>
+    <div class="pg-engine-stage">
+      <div class="pg-engine-icon" aria-hidden="true">⚙️</div>
+      <div class="pg-stage-label">HOLOGRAPHIC PARTS DISPLAY</div>
+    </div>
+    <div class="pg-trust-strip">
+      <span>◈ SMART DISCOVERY</span>
+      <span>◈ VEHICLE FIRST</span>
+      <span>◈ FITMENT CHECKS</span>
+    </div>
+    <div class="pg-search-title">EXPLORE PARTS</div>`;
+  heading.insertAdjacentElement('afterend',showroom);
+})();
+</script>
+<!-- END OPTION 3 SHOWROOM -->
+
 </body>
 </html>
