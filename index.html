@@ -115,6 +115,69 @@
   box-shadow: 0 0 14px #00bfff55;
 }
 
+
+/* PARTS GENIUS AI — SHOP FOR PARTS REDESIGN */
+#parts.panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 760px;
+  border: 1px solid rgba(48,198,255,.48);
+  border-radius: 24px;
+  background:
+    radial-gradient(ellipse at 50% 15%,
+      rgba(12,135,215,.32),transparent 62%),
+    repeating-linear-gradient(90deg,
+      transparent 0 57px,
+      rgba(38,173,235,.065) 58px 59px),
+    #06111e;
+  box-shadow:
+    inset 0 0 80px rgba(0,135,255,.12),
+    0 18px 48px rgba(0,0,0,.4);
+}
+#parts.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg,
+      rgba(0,187,255,.19),transparent 35%),
+    repeating-linear-gradient(0deg,
+      transparent 0 83px,
+      rgba(37,170,236,.055) 84px 85px);
+}
+#parts.panel::after {
+  content: "";
+  position: absolute;
+  left: -25%;
+  right: -25%;
+  bottom: -95px;
+  height: 330px;
+  z-index: -1;
+  pointer-events: none;
+  transform: perspective(260px) rotateX(55deg);
+  transform-origin: center bottom;
+  background:
+    repeating-linear-gradient(90deg,
+      transparent 0 55px,
+      rgba(0,186,255,.17) 56px 57px),
+    repeating-linear-gradient(0deg,
+      transparent 0 55px,
+      rgba(0,186,255,.16) 56px 57px);
+  opacity: .5;
+}
+#parts.panel h2 {
+  color: #e9f9ff;
+  text-shadow: 0 0 22px rgba(24,180,255,.4);
+}
+#parts.panel .field,
+#parts.panel #partResults {
+  position: relative;
+  z-index: 1;
+}
+
 </style></head><body><main class="app"><header class="top"><div class="brand"><div class="mark">⚙</div><div><div class="logo">PARTS GENIUS<span>AI</span></div><div class="sublogo">FIND IT. FIX IT. DRIVE ON.</div></div></div><div class="demo">DEMO V4</div></header><section class="hero"><div class="hero-content"><div class="tag">YOUR AUTOMOTIVE <strong>AI CO-PILOT</strong></div><h1>Find it.<br><em>Fix it.</em><br>Drive on.</h1><p>Describe the problem. Explore possible causes. Find the parts you need.</p><button class="primary" onclick="show('diagnose')">✧ &nbsp; Start diagnosing &nbsp; →</button></div></section><div class="actions"><button class="action" onclick="show('vehicle')"><span class="ico"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14l-1.5-7h-11L5 17Z"/><path d="m7 10 2-4h6l2 4"/><path d="M5 17v2m14-2v2"/><circle cx="8" cy="15" r="1"/><circle cx="16" cy="15" r="1"/></svg></span>My Vehicle<small>Save & manage</small></button><button class="action" onclick="show('diagnose')"><span class="ico" style="color:#ffb341"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h10v3h3v8h-3v2H7v-2H4v-7h3z"/><path d="M9 7V4h6v3M10 12h4"/></svg></span>Diagnose<small>Find the cause</small></button><button class="action" onclick="show('parts')"><span class="ico"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1"/><circle cx="19" cy="20" r="1"/><path d="M2 3h2l3 13h13l2-9H5"/></svg></span>Find Parts<small>Compare prices</small></button><button class="action" onclick="show('vehicle')"><span class="ico"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a5 5 0 0 0-6.4 6.4L3 18a2 2 0 0 0 3 3l5.3-5.3a5 5 0 0 0 6.4-6.4L14 12l-3-3z"/></svg></span>Maintenance<small>Coming soon</small></button></div><section id="vehicle" class="panel"><h2><span class="sectionnum">01</span> Select Your Vehicle</h2><p class="small">Start with your vehicle details for more relevant results.</p><div class="scan-options"><button class="primary"><svg class="tiny-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14l-1.5-7h-11L5 17Z"/><path d="m7 10 2-4h6l2 4"/><path d="M5 17v2m14-2v2"/><circle cx="8" cy="15" r="1"/><circle cx="16" cy="15" r="1"/></svg> Year / Make / Model</button><button onclick="alert('VIN scanning is planned for a future release. For now, enter vehicle details manually.')"><svg class="tiny-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5v14m3-14v14m3-14v14m3-14v14m4-14v14m3-14v14"/></svg> VIN Scan</button><button onclick="alert('License plate lookup requires an authorized data service. Coming later.')"><svg class="tiny-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M5 10h2m3 0h4m3 0h2M5 14h3m4 0h7"/></svg> License Plate</button></div><label class="field">Year<select id="year"></select></label><label class="field">Make<select id="make"></select></label><label class="field">Model<select id="model"></select></label><label class="field">Engine / trim (optional)<input id="engine" value="2.0L turbo PHEV" placeholder="e.g. 2.0L"></label><button class="primary" onclick="saveVehicle()">Save Vehicle →</button><p id="vehicleSummary" class="muted">Demo vehicle prefilled — edit to try your own.</p><div id="savedVehiclesSection">
   <h3>My Saved Vehicles</h3>
   <div id="savedVehiclesList">
