@@ -1103,6 +1103,13 @@ novaHologram.style.cssText = 'position:absolute;left:13%;top:56%;width:66%;heigh
 novaSection.style.position = 'relative';
 novaSection.appendChild(novaHologram);
 novaHologram.style.display = activeNovaImage ? 'block' : 'none';
+
+if (activeNovaImage &&
+    activeNovaImage.includes('dodge-challenger-hologram')) {
+  novaHologram.style.transform = 'scale(1.25) translateY(8%)';
+  novaHologram.style.transformOrigin = 'center center';
+}
+
 // NOVA - Clickable voice button
 novaSection.style.position = 'relative';
 
