@@ -912,9 +912,22 @@ showroomLabel.style.cssText = `
 card.prepend(showroomLabel);
 const hologramImage = getVehicleHologram(vehicle);
 
+const isChallengerHologram =
+  hologramImage &&
+  hologramImage.includes('dodge-challenger-hologram');
+
+imageArea.style.overflow = 'hidden';
+
 imageArea.innerHTML = hologramImage
   ? `<img src="${hologramImage}" alt="Vehicle hologram"
-       style="width:100%;height:100%;object-fit:contain;border-radius:12px;">`
+       style="
+         width:100%;
+         height:100%;
+         object-fit:contain;
+         border-radius:12px;
+         transform:${isChallengerHologram ? 'scale(1.35)' : 'none'};
+         transform-origin:center center;
+       ">`
   : '<span style="font-size:70px;filter:drop-shadow(0 0 12px #00cfff)">🚙</span>';
 
     const selectButton = document.createElement('button');
