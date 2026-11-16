@@ -96,6 +96,10 @@ def chevy_camaro_hologram_image():
     return send_file("chevy-camaro-hologram.png.PNG")
 
 
+@app.get("/mercedes-c-class-hologram.png.PNG")
+def mercedes_c_class_hologram_image():
+    return send_file("mercedes-c-class-hologram.png.PNG")
+
 @app.get("/honda-civic-hologram.png.PNG")
 def honda_civic_hologram_image():
     return send_file("honda-civic-hologram.png.PNG")
