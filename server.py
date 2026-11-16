@@ -90,6 +90,11 @@ def chevy_silverado_hologram_image():
 def toyota_tacoma_hologram_image():
     return send_file("toyota-tacoma-hologram.png.PNG")
 
+
+@app.get("/chevy-camaro-hologram.png.PNG")
+def chevy_camaro_hologram_image():
+    return send_file("chevy-camaro-hologram.png.PNG")
+
 @app.get("/F084B039-9ADD-4259-B2FB-02100B23F54F.png")
 def transparent_sports_car_image():
     return send_file("F084B039-9ADD-4259-B2FB-02100B23F54F.png")
