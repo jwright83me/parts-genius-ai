@@ -737,6 +737,16 @@ function getVehicleHologram(vehicle) {
   }
 
 
+  // Honda Civic hologram (2016–2021)
+  if (
+    make === 'honda' &&
+    model.includes('civic') &&
+    Number(vehicle.year) >= 2016 &&
+    Number(vehicle.year) <= 2021
+  ) {
+    return 'honda-civic-hologram.png.PNG';
+  }
+
   // Toyota RAV4 hologram (2019–2025)
   if (
     make === 'toyota' &&
