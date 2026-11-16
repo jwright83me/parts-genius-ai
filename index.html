@@ -726,6 +726,17 @@ function getVehicleHologram(vehicle) {
     return 'chevy-silverado-hologram.png.PNG';
   }
 
+  // Toyota Tacoma hologram (2016–2023)
+  if (
+    make === 'toyota' &&
+    model.includes('tacoma') &&
+    Number(vehicle.year) >= 2016 &&
+    Number(vehicle.year) <= 2023
+  ) {
+    return 'toyota-tacoma-hologram.png.PNG';
+  }
+
+
   // Dodge Challenger hologram (2015-2023)
   if (
     make === 'dodge' &&
