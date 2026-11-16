@@ -757,6 +757,22 @@ function getVehicleHologram(vehicle) {
     return 'toyota-rav4-hologram.png.PNG';
   }
 
+
+  // Mercedes-Benz C-Class hologram (2015–2021)
+  if (
+    (make === 'mercedes-benz' ||
+     make === 'mercedes' ||
+     make === 'benz') &&
+    (model.includes('c-class') ||
+     model.includes('c class') ||
+     model.includes('c300') ||
+     model.includes('c 300')) &&
+    Number(vehicle.year) >= 2015 &&
+    Number(vehicle.year) <= 2021
+  ) {
+    return 'mercedes-c-class-hologram.png.PNG';
+  }
+
   // Chevrolet Camaro hologram (2016–2024)
   if (
     (make === 'chevrolet' || make === 'chevy') &&
