@@ -737,6 +737,16 @@ function getVehicleHologram(vehicle) {
   }
 
 
+  // Chevrolet Camaro hologram (2016–2024)
+  if (
+    (make === 'chevrolet' || make === 'chevy') &&
+    model.includes('camaro') &&
+    Number(vehicle.year) >= 2016 &&
+    Number(vehicle.year) <= 2024
+  ) {
+    return 'chevy-camaro-hologram.png.PNG';
+  }
+
   // Dodge Challenger hologram (2015-2023)
   if (
     make === 'dodge' &&
