@@ -737,6 +737,16 @@ function getVehicleHologram(vehicle) {
   }
 
 
+  // Toyota RAV4 hologram (2019–2025)
+  if (
+    make === 'toyota' &&
+    (model.includes('rav4') || model.includes('rav 4')) &&
+    Number(vehicle.year) >= 2019 &&
+    Number(vehicle.year) <= 2025
+  ) {
+    return 'toyota-rav4-hologram.png.PNG';
+  }
+
   // Chevrolet Camaro hologram (2016–2024)
   if (
     (make === 'chevrolet' || make === 'chevy') &&
