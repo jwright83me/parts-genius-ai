@@ -737,6 +737,20 @@ function getVehicleHologram(vehicle) {
   }
 
 
+  // Volkswagen ID. Buzz hologram (2025+)
+  if (
+    (make === 'volkswagen' || make === 'vw') &&
+    (
+      model.includes('id. buzz') ||
+      model.includes('id buzz') ||
+      model.includes('id.buzz') ||
+      model.includes('idbuzz')
+    ) &&
+    Number(vehicle.year) >= 2025
+  ) {
+    return 'vw-id-buzz-hologram.png.PNG';
+  }
+
   // Honda Civic hologram (2016–2021)
   if (
     make === 'honda' &&
