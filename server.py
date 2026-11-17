@@ -78,6 +78,22 @@ def jeep_hologram_transparent_test_image():
 def nova_showroom_background_image():
     return send_file("nova-showroom-background.png")
 
+@app.get("/nova-engine-air-filter.png")
+def nova_engine_air_filter_image():
+    return send_file("nova-engine-air-filter.png", mimetype="image/png")
+
+@app.get("/nova-cabin-air-filter.png")
+def nova_cabin_air_filter_image():
+    return send_file("nova-cabin-air-filter.png", mimetype="image/png")
+
+@app.get("/nova-ignition-coil.png")
+def nova_ignition_coil_image():
+    return send_file("nova-ignition-coil.png", mimetype="image/png")
+
+@app.get("/nova-wiper-blades.png")
+def nova_wiper_blades_image():
+    return send_file("nova-wiper-blades.png", mimetype="image/png")
+
 @app.get("/nova-spark-plug.png")
 def nova_spark_plug_image():
     return send_file("nova-spark-plug.png", mimetype="image/png")
