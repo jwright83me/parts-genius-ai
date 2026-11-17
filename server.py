@@ -96,10 +96,6 @@ def chevy_camaro_hologram_image():
     return send_file("chevy-camaro-hologram.png.PNG")
 
 
-@app.get("/bmw-3-series-hologram.png.PNG")
-def bmw_3_series_hologram_image():
-    return send_file("bmw-3-series-hologram.png.PNG")
-
 @app.get("/vw-id-buzz-hologram.png.PNG")
 def vw_id_buzz_hologram_image():
     return send_file("vw-id-buzz-hologram.png.PNG")
