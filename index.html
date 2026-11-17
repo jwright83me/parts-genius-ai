@@ -860,6 +860,21 @@ if (make === 'ford' &&
     (model.includes('f150') || model.includes('f-150'))) {
   return 'A467D657-7E13-4A55-9DCD-FE4A72519AB1.png';
 }
+// Generic minivan hologram; exclude Volkswagen models.
+const minivanModels = [
+  'sienna', 'odyssey', 'pacifica', 'voyager',
+  'town & country', 'town and country', 'grand caravan',
+  'caravan', 'carnival', 'sedona', 'quest',
+  'freestar', 'windstar', 'aerostar', 'uplander',
+  'venture', 'montana', 'silhouette', 'relay',
+  'entourage', 'mpv', 'previa', 'astro', 'safari',
+  'minivan', 'mini van', 'mini-van'
+];
+if (make !== 'volkswagen' && make !== 'vw' &&
+    minivanModels.some(name => model.includes(name))) {
+  return 'generic-minivan-hologram.png';
+}
+
 // Generic sedan hologram
 const sedanModels = [
   'camry', 'corolla', 'accord', 'civic',
