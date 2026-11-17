@@ -3837,6 +3837,11 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
   color:white;
   font-size:16px;
 }
+#pg12-common {
+  width:100%;min-height:52px;padding:12px;
+  background:#031321;color:#eaf8ff;border:1px solid #36cfff;
+  border-radius:11px;font-size:16px;box-sizing:border-box;
+}
 .pg12-button {
   padding:11px;
   margin:4px 5px 4px 0;
@@ -3908,8 +3913,31 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 
       <div id="pg12-vehicle"></div>
 
+      <label for="pg12-common" class="pg12-note" style="display:block;margin:12px 0 6px;font-weight:800;color:#bcecff">Choose a common part</label>
+      <select id="pg12-common" aria-label="Choose a common automotive part">
+        <option value="">Select a part or type below...</option>
+        <optgroup label="Maintenance & Filters">
+          <option>Oil Filter</option><option>Engine Air Filter</option><option>Cabin Air Filter</option><option>Fuel Filter</option><option>Spark Plugs</option><option>Ignition Coils</option><option>Wiper Blades</option><option>PCV Valve</option>
+        </optgroup>
+        <optgroup label="Brakes">
+          <option>Brake Pads</option><option>Brake Rotors</option><option>Brake Calipers</option><option>Brake Shoes</option><option>Brake Master Cylinder</option><option>ABS Sensor</option>
+        </optgroup>
+        <optgroup label="Electrical & Starting">
+          <option>Battery</option><option>Alternator</option><option>Starter</option><option>Headlight Bulbs</option><option>Fuses</option><option>Oxygen Sensor</option><option>Mass Air Flow Sensor</option>
+        </optgroup>
+        <optgroup label="Cooling & Heating">
+          <option>Radiator</option><option>Water Pump</option><option>Thermostat</option><option>Radiator Hose</option><option>Heater Core</option><option>Blower Motor</option>
+        </optgroup>
+        <optgroup label="Suspension & Steering">
+          <option>Struts</option><option>Shocks</option><option>Control Arms</option><option>Ball Joints</option><option>Tie Rod Ends</option><option>Wheel Bearings</option>
+        </optgroup>
+        <optgroup label="Fuel & Engine">
+          <option>Fuel Pump</option><option>Fuel Injectors</option><option>Serpentine Belt</option><option>Timing Belt</option><option>Engine Mount</option><option>Throttle Body</option>
+        </optgroup>
+      </select>
+      <label for="pg12-query" class="pg12-note" style="display:block;margin:12px 0 0">Or type any part name</label>
       <input id="pg12-query"
-        placeholder="Search brakes, filters, alternators..."
+        placeholder="Type a part name manually..."
         aria-label="Search for a part">
 
       <button class="pg12-button"
@@ -3933,6 +3961,13 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
     location.parentNode.insertBefore(panel,location);
 
     const vehicleBox = panel.querySelector("#pg12-vehicle");
+    const common = panel.querySelector("#pg12-common");
+    common.addEventListener("change", () => {
+      if (common.value) input.value = common.value;
+    });
+    input.addEventListener("input", () => {
+      if (common.value !== input.value) common.value = "";
+    });
     const input = panel.querySelector("#pg12-query");
     const results = panel.querySelector("#pg12-results");
 
