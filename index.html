@@ -708,6 +708,17 @@ function getVehicleHologram(vehicle) {
   const make = (vehicle.make || '').toLowerCase();
   const model = (vehicle.model || '').toLowerCase();
 
+  // Dedicated Ford Mustang hologram
+  if (make === 'ford' && model.includes('mustang')) {
+    return 'ford-mustang-hologram.png';
+  }
+
+  // Dedicated Honda CR-V hologram
+  if (make === 'honda' &&
+      (model.includes('cr-v') || model.includes('crv') || model.includes('cr v'))) {
+    return 'honda-crv-hologram.png';
+  }
+
   // Keep the existing Jeep hologram.
   if (make === 'jeep' && model.includes('wrangler')) {
     return 'jeep_hologram_transparent_test.png';
