@@ -2131,6 +2131,27 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
       starter:[
         ["Remanufactured starter","$110–$250","engine"],
         ["New starter","$160–$330","engine"]
+      ],
+      filter:[
+        ["Standard oil filter","$8–$18","engine"],
+        ["Premium oil filter","$12–$26","engine"]
+      ],
+      "brake-pads":[
+        ["Front brake pads","Price unavailable","brakes"],
+        ["Rear brake pads","Price unavailable","brakes"]
+      ],
+      "brake-rotors":[
+        ["Front brake rotor","Price unavailable","brakes"],
+        ["Rear brake rotor","Price unavailable","brakes"]
+      ],
+      "spark-plugs":[
+        ["Spark plug","Price unavailable","engine"]
+      ],
+      "o2-sensor":[
+        ["Oxygen (O2) sensor","Price unavailable","engine"]
+      ],
+      "maf-sensor":[
+        ["Mass air flow (MAF) sensor","Price unavailable","engine"]
       ]
     };
 
@@ -2139,7 +2160,7 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 
     function renderOption3Parts(){
       const type=existingSelect.value;
-      const items=samples[type]||samples.battery;
+      const items=samples[type]||[];
 
       results.className="pg3-grid";
       results.replaceChildren();
