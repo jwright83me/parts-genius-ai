@@ -3908,7 +3908,7 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
     panel.innerHTML = `
       <h3>SMART PARTS FINDER</h3>
       <p class="pg12-note">
-        Find the right department for your vehicle.
+        Find the right part for your vehicle.
       </p>
 
       <div id="pg12-vehicle"></div>
@@ -3962,14 +3962,14 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 
     const vehicleBox = panel.querySelector("#pg12-vehicle");
     const common = panel.querySelector("#pg12-common");
+    const input = panel.querySelector("#pg12-query");
+    const results = panel.querySelector("#pg12-results");
     common.addEventListener("change", () => {
       if (common.value) input.value = common.value;
     });
     input.addEventListener("input", () => {
       if (common.value !== input.value) common.value = "";
     });
-    const input = panel.querySelector("#pg12-query");
-    const results = panel.querySelector("#pg12-results");
 
     function refreshVehicle() {
       const v = getVehicle();
@@ -4091,6 +4091,13 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
     });
 
     refreshVehicle();
+    // Keep the displayed vehicle synchronized when returning to the Parts tab.
+    document.querySelectorAll('[data-tab="parts"],[onclick*="show(\\'parts\\')"]').forEach(tab => {
+      tab.addEventListener("click", () => setTimeout(refreshVehicle, 0));
+    });
+    window.addEventListener("storage", e => {
+      if (e.key === "pgVehicle") refreshVehicle();
+    });
   }
 
   if (document.readyState === "loading") {
