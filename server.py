@@ -74,6 +74,10 @@ def transparent_jeep_image():
 def jeep_hologram_transparent_test_image():
     return send_file("jeep_hologram_transparent_test.png")
 
+@app.get("/nova-showroom-background.png")
+def nova_showroom_background_image():
+    return send_file("nova-showroom-background.png")
+
 @app.get("/garage-bay-background.svg")
 def garage_bay_background_image():
     return send_file("garage-bay-background.svg", mimetype="image/svg+xml")
