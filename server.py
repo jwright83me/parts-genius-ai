@@ -78,6 +78,14 @@ def jeep_hologram_transparent_test_image():
 def nova_showroom_background_image():
     return send_file("nova-showroom-background.png")
 
+@app.get("/a_crisp_high_detail_product_shot_of_automotive_br.png")
+def brake_pads_showroom_image():
+    return send_file("a_crisp_high_detail_product_shot_of_automotive_br.png", mimetype="image/png")
+
+@app.get("/a_highly_detailed_photorealistic_studio_style_clo.png")
+def brake_rotor_showroom_image():
+    return send_file("a_highly_detailed_photorealistic_studio_style_clo.png", mimetype="image/png")
+
 @app.get("/alternator-corrected.jpg")
 def alternator_corrected_image():
     return send_file("alternator-corrected.jpg", mimetype="image/jpeg")
