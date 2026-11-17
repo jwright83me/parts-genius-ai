@@ -78,6 +78,14 @@ def jeep_hologram_transparent_test_image():
 def garage_bay_background_image():
     return send_file("garage-bay-background.svg", mimetype="image/svg+xml")
 
+@app.get("/ford-mustang-hologram.png")
+def ford_mustang_hologram_image():
+    return send_file("ford-mustang-hologram.png")
+
+@app.get("/honda-crv-hologram.png")
+def honda_crv_hologram_image():
+    return send_file("honda-crv-hologram.png")
+
 @app.get("/dodge-challenger-hologram.png.PNG")
 def dodge_challenger_hologram_image():
     return send_file("dodge-challenger-hologram.png.PNG")
