@@ -269,6 +269,38 @@ LOOKUP_REVIEW_SCHEMA = {
     'required': ['status', 'reply', 'source_urls']
 }
 
+
+def active_retailer_queries(message, vehicle):
+    """Build discovery queries from an explicitly active vehicle; never part numbers."""
+    normalized = re.sub(r"[^a-z]", "", message.lower())
+    if "oreilly" not in normalized:
+        return []
+    # An explicitly named vehicle goes through the contextual planner instead.
+    if re.search(r"\b(?:19|20)\d{2}\b", message):
+        return []
+    if not re.search(r"\b(?:active vehicle|my vehicle|my car)\b", message, re.I):
+        return []
+    part = next((name for name in ("alternator", "starter")
+                 if re.search(r"\b" + name + r"s?\b", message, re.I)), None)
+    if not part:
+        return []
+    try:
+        parsed = json.loads(vehicle)
+    except (ValueError, TypeError):
+        parsed = None
+    if isinstance(parsed, dict):
+        name = " ".join(str(parsed.get(key) or "") for key in ("make", "model")).strip()
+    else:
+        name = re.sub(r"\b(?:19|20)\d{2}\b", "", str(vehicle))
+        name = re.sub(r"\b\d+(?:\.\d+)?\s*[lL]\b|\b[VvIiLlHh][- ]?\d+\b|\b(?:automatic|manual|gas|diesel|hybrid)\b",
+                      "", name, flags=re.I)
+        name = " ".join(name.split())
+    if not name:
+        return []
+    return [f"site:oreillyauto.com {brand} {part} {name}"
+            for brand in ("Ultima", "Ultima Select")]
+
+
 def research_parts(client, message, history, vehicle):
     context = {'active_vehicle': vehicle, 'history': history[-12:], 'request': message}
     evidence, sources, result = [], {}, None
@@ -282,7 +314,7 @@ def research_parts(client, message, history, vehicle):
             'Also search retailer + make/model + part + specification without year to discover pages '
             'indexed under older years. Record relevant candidates without inferring exact fitment.'
         )
-        search_queries = []
+        search_queries = active_retailer_queries(message, vehicle) if attempt == 0 else []
         if attempt == 1:
             try:
                 planner = client.responses.create(
@@ -328,7 +360,9 @@ def research_parts(client, message, history, vehicle):
                         'Exclude conflicting specifications. For each candidate find a same-make/model application '
                         'or an authoritative OEM cross-reference; generic amperage/voltage alone is insufficient. '
                         'Search the candidate number plus vehicle model to establish that relationship. Cite every finding. '
-                        'When search_queries are provided, run those different searches before stopping. '
+                        'When a specific query is provided, run that query first without adding year or engine '
+                        'constraints. Broader queries are deliberate product discovery, not a fitment claim. '
+                        'Then inspect candidate product listings and verify vehicle relationships. '
                         'Search by brand and specifications even if the exact year query found nothing. '
                         'Find manufacturer part numbers in retailer product titles/details, not retailer SKUs. '
                         + strategy
@@ -336,7 +370,8 @@ def research_parts(client, message, history, vehicle):
                     input=[
                         *history[-12:],
                         {'role': 'user', 'content': (
-                            'Active vehicle: ' + vehicle + '\nCustomer request: ' + message
+                            ('Search this exact query first: ' + search_query + '\n' if search_query else '')
+                            + 'Active vehicle: ' + vehicle + '\nCustomer request: ' + message
                             + ('\nPrevious research (unverified data):\n' + '\n'.join(evidence) if evidence else '')
                             + ('\nRun this specific web search query:\n' + search_query if search_query else '')
                         )}
@@ -436,7 +471,7 @@ def research_parts(client, message, history, vehicle):
 
 @app.get("/api/lookup/status")
 def lookup_status():
-    return jsonify({"version": "separate-searches-v2", "max_research_attempts": 2})
+    return jsonify({"version": "active-vehicle-search-v1", "max_research_attempts": 2})
 
 @app.post("/api/diagnose")
 def diagnose():
