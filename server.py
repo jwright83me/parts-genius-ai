@@ -324,7 +324,9 @@ def research_parts(client, message, history, vehicle):
                     'For each candidate record brand, manufacturer part number, retailer, exact application '
                     'actually listed, specifications, source URL, and missing/conflicting evidence. '
                     'Separate facts from inferences. A shared engine/year range is not fitment proof. '
-                    'Exclude conflicting specifications. Cite every finding. '
+                    'Exclude conflicting specifications. For each candidate find a same-make/model application '
+                    'or an authoritative OEM cross-reference; generic amperage/voltage alone is insufficient. '
+                    'Search the candidate number plus vehicle model to establish that relationship. Cite every finding. '
                     'When search_queries are provided, run those different searches before stopping. '
                     'Search by brand and specifications even if the exact year query found nothing. '
                     'Find manufacturer part numbers in retailer product titles/details, not retailer SKUs. '
@@ -353,8 +355,9 @@ def research_parts(client, message, history, vehicle):
                     'A page for another year or engine is NEVER verified. candidate means a relevant '
                     'retailer number exists but exact fitment is unverified. A same-model/same-engine retailer '
                     'listing under another year should be reported as candidate, not discarded as not_found. '
-                    'A retailer product matching the requested brand/type and known specifications can also '
-                    'be a candidate even when the product page has an unrelated saved shopping vehicle. '
+                    'Matching amperage, voltage or brand alone is insufficient to recommend a candidate. '
+                    'Require evidence of a same-make/model application (even an older year), or an '
+                    'authoritative OEM cross-reference. Exclude same-spec products for unrelated vehicles. '
                     'A Shopping For banner or /v/a/ URL context is not a product fitment chart. '
                     'Do not treat that banner alone as proof of fit OR proof of incompatibility. '
                     'Report the candidate number with the actual verified specifications and clearly '
@@ -413,7 +416,7 @@ def research_parts(client, message, history, vehicle):
 
 @app.get("/api/lookup/status")
 def lookup_status():
-    return jsonify({"version": "brand-spec-search-v1", "max_research_attempts": 2})
+    return jsonify({"version": "brand-spec-search-v2", "max_research_attempts": 2})
 
 @app.post("/api/diagnose")
 def diagnose():
