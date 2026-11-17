@@ -296,10 +296,11 @@ def research_parts(client, message, history, vehicle):
                     'Exclude conflicting specifications. Cite every finding. ' + strategy
                 ),
                 input=json.dumps({'context': context, 'previous_research': evidence}),
-                tools=[{'type': 'web_search'}], tool_choice='required', max_output_tokens=1800
+                tools=[{'type': 'web_search'}], tool_choice='auto', max_output_tokens=1800
             )
-            evidence.append(research.output_text)
-            sources.update(lookup_sources(research))
+            found_sources = lookup_sources(research)
+            evidence.append(research.output_text if found_sources else 'No cited web evidence returned; do not use unsupported part numbers.')
+            sources.update(found_sources)
             review = client.responses.create(
                 model='gpt-4.1-mini',
                 instructions=(
@@ -344,7 +345,7 @@ def research_parts(client, message, history, vehicle):
 
 @app.get("/api/lookup/status")
 def lookup_status():
-    return jsonify({"version": "research-review-v1", "max_research_attempts": 2})
+    return jsonify({"version": "research-review-v2", "max_research_attempts": 2})
 
 @app.post("/api/diagnose")
 def diagnose():
