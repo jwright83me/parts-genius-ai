@@ -352,12 +352,12 @@ vinPanel.innerHTML=`
 
 <input type="file" id="pgVinCamera" accept="image/*" capture="environment" style="margin-top:10px">
 <button id="pgGuidedScan" type="button"
-style="display:block;margin-top:12px;padding:14px;background:#168bd0;color:white;border:0;border-radius:10px;font-weight:bold;width:100%">
-📷 Scan VIN with Guided Camera
+style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px;padding:13px 14px;min-height:66px;background:linear-gradient(115deg,#062544,#075a9e 58%,#142b79);color:white;border:1.5px solid #37d9ff;border-radius:13px;font-weight:800;width:100%;box-shadow:inset 0 0 12px rgba(47,198,255,.22),0 0 13px rgba(0,190,255,.30);text-shadow:0 0 8px rgba(78,207,255,.35);cursor:pointer">
+<svg viewBox="0 0 48 48" width="34" height="34" aria-hidden="true" style="flex:none;filter:drop-shadow(0 0 5px #25d9ff)"><path d="M5 16V8a3 3 0 0 1 3-3h8M32 5h8a3 3 0 0 1 3 3v8M43 32v8a3 3 0 0 1-3 3h-8M16 43H8a3 3 0 0 1-3-3v-8" stroke="#67eaff" stroke-width="3" fill="none" stroke-linecap="round"/><rect x="12" y="18" width="24" height="14" rx="3" stroke="#b2f6ff" stroke-width="2" fill="none"/><circle cx="24" cy="25" r="5" stroke="#39d9ff" stroke-width="2" fill="none"/></svg><span>Scan VIN with Guided Camera</span>
 </button>
 <button id="pgDecode" style="margin-top:12px;padding:14px;background:#00aeef;color:white;border:0;border-radius:10px;font-weight:bold">Decode VIN</button>
 <div style="margin-top:20px;padding-top:18px;border-top:1px solid rgba(55,176,255,.35)">
-  <button id="pgScanPlate" type="button" style="display:block;width:100%;padding:14px;background:#168bd0;color:white;border:0;border-radius:10px;font-weight:bold">📷 Scan License Plate</button>
+  <button id="pgScanPlate" type="button" style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px;padding:13px 14px;min-height:66px;background:linear-gradient(115deg,#062544,#075a9e 58%,#142b79);color:white;border:1.5px solid #37d9ff;border-radius:13px;font-weight:800;width:100%;box-shadow:inset 0 0 12px rgba(47,198,255,.22),0 0 13px rgba(0,190,255,.30);text-shadow:0 0 8px rgba(78,207,255,.35);cursor:pointer;margin-top:0"><svg viewBox="0 0 48 48" width="34" height="34" aria-hidden="true" style="flex:none;filter:drop-shadow(0 0 5px #25d9ff)"><path d="M5 16V8a3 3 0 0 1 3-3h8M32 5h8a3 3 0 0 1 3 3v8M43 32v8a3 3 0 0 1-3 3h-8M16 43H8a3 3 0 0 1-3-3v-8" stroke="#67eaff" stroke-width="3" fill="none" stroke-linecap="round"/><rect x="10" y="17" width="28" height="16" rx="3" stroke="#b2f6ff" stroke-width="2" fill="none"/><path d="M15 22h5m3 0h4m3 0h3M15 28h7m3 0h8" stroke="#39d9ff" stroke-width="2" stroke-linecap="round"/></svg><span>Scan License Plate</span></button>
   <div id="pgPlateCamera" style="display:none;margin-top:12px;padding:10px;background:#061522;border:1px solid #2ebcff;border-radius:12px">
     <div style="position:relative;overflow:hidden;border-radius:10px">
       <video id="pgPlateVideo" autoplay playsinline muted style="display:block;width:100%"></video>
@@ -392,6 +392,7 @@ document.getElementById('pgScanPlate').onclick = async () => {
     plateVideo.srcObject = plateCameraStream;
     plateCamera.style.display = 'block';
     await plateVideo.play();
+    plateCamera.scrollIntoView({behavior:'smooth',block:'center'});
   } catch (error) {
     stopPlateCamera();
     plateStatus.textContent = 'Unable to open the camera. Check browser camera permissions.';
@@ -464,6 +465,7 @@ guidedScanButton.onclick = async () => {
 
     vinVideo.srcObject = vinCameraStream;
     await vinVideo.play();
+    guidedCamera.scrollIntoView({behavior:'smooth',block:'center'});
 
   } catch (error) {
     guidedCamera.style.display = 'none';
