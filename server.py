@@ -283,6 +283,11 @@ For automotive parts:
   Do not infer fitment from a shared engine or an older indexed page.
   Do not speculate that design changes occurred without evidence.
   If variants differ, identify amperage, connector or other key distinction.
+  For alternators, establish the exact vehicle's OEM amperage and part
+  number from manufacturer evidence before comparing retailer candidates.
+  Exclude candidates with a conflicting amperage unless the manufacturer
+  explicitly lists that variant for the exact application.
+  Never suggest that different years "may be similar" as fitment evidence.
 - For O'Reilly requests, prefer oreillyauto.com product listings;
   cross-check exact year, model, engine and fitment notes.
 - A neighboring model year or a similar-looking part is not proof of fit.
