@@ -3985,90 +3985,43 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
     function searchParts() {
       refreshVehicle();
       results.replaceChildren();
-
-      const query = input.value.trim();
-
+      const query = input.value.trim() || common.value.trim();
       if (!query) {
-        results.textContent = "Enter a part name first.";
+        results.textContent = "Choose or enter a part first.";
+        return;
+      }
+      const select = document.getElementById("partSelect");
+      const normalized = query.toLowerCase();
+      let type = null;
+      if (/brake.*pad|pad.*brake/.test(normalized)) type = "brake-pads";
+      else if (/brake.*rotor|rotor.*brake/.test(normalized)) type = "brake-rotors";
+      else if (/alternator/.test(normalized)) type = "alternator";
+      else if (/starter/.test(normalized)) type = "starter";
+      else if (/battery/.test(normalized)) type = "battery";
+      else if (/filter/.test(normalized)) type = "filter";
+
+      if (select && type && Array.from(select.options).some(o => o.value === type)) {
+        select.value = type;
+        select.dispatchEvent(new Event("change", {bubbles:true}));
+        const target = document.getElementById("partResults");
+        if (target) requestAnimationFrame(() => target.scrollIntoView({behavior:"smooth",block:"start"}));
         return;
       }
 
-      const matches = categories.filter(c =>
-        c.terms.test(query)
-      );
-
+      const matches = categories.filter(c => c.terms.test(query));
       if (!matches.length) {
-        results.textContent =
-          "No category found. Try a simpler part name.";
+        results.textContent = "That part isn't in our sample catalog yet. Try another part.";
         return;
       }
-
       matches.forEach(category => {
         const card = document.createElement("div");
         card.className = "pg12-result";
-
         const title = document.createElement("strong");
         title.textContent = category.name;
-        card.appendChild(title);
-
         const description = document.createElement("p");
         description.className = "pg12-note";
-        description.textContent =
-          "Possible department. Exact fitment not verified.";
-        card.appendChild(description);
-
-        if (category.type) {
-          const button = document.createElement("button");
-          button.className = "pg12-button";
-          button.textContent = "Explore Department";
-
-          button.onclick = function() {
-            const select =
-              document.getElementById("partSelect");
-
-            if (!select) return;
-
-            let type = category.type;
-
-            if (/alternator/i.test(query))
-              type = "alternator";
-
-            if (/starter/i.test(query))
-              type = "starter";
-
-            if (/brake.*pad|pad.*brake/i.test(query))
-              type = "brake-pads";
-
-            if (/brake.*rotor|rotor.*brake/i.test(query))
-              type = "brake-rotors";
-
-            const available = Array.from(select.options)
-              .some(option => option.value === type);
-
-            if (!available) {
-              description.textContent =
-                "This department is coming soon.";
-              return;
-            }
-
-            select.value = type;
-            select.dispatchEvent(
-              new Event("change",{bubbles:true})
-            );
-
-            document.getElementById("partResults")
-              ?.scrollIntoView({
-                behavior:"smooth",
-                block:"start"
-              });
-          };
-
-          card.appendChild(button);
-        } else {
-          description.textContent =
-            "Suspension department coming soon.";
-        }
-
+        description.textContent = "This category does not have selectable sample parts yet.";
+        card.append(title, description);
         results.appendChild(card);
       });
     }
