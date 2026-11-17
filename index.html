@@ -1024,6 +1024,11 @@ const isChallengerHologram =
   hologramImage &&
   hologramImage.includes('dodge-challenger-hologram');
 
+// Independent garage artwork layer; no hologram image or button changes.
+imageArea.style.backgroundImage = "linear-gradient(rgba(3,13,27,.10),rgba(3,13,27,.10)),url('/garage-bay-background.svg')";
+imageArea.style.backgroundPosition = 'center center';
+imageArea.style.backgroundSize = 'cover';
+imageArea.style.backgroundRepeat = 'no-repeat';
 imageArea.style.overflow = 'hidden';
 
 imageArea.innerHTML = hologramImage
