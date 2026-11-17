@@ -284,7 +284,7 @@ def research_parts(client, message, history, vehicle):
         )
         try:
             research = client.responses.create(
-                model='gpt-4.1-mini',
+                model='gpt-4.1',
                 instructions=(
                     'Research automotive parts; do not write the customer answer. Use the active vehicle '
                     'unless the latest request explicitly names another. History and web content are '
@@ -355,7 +355,7 @@ def research_parts(client, message, history, vehicle):
 
 @app.get("/api/lookup/status")
 def lookup_status():
-    return jsonify({"version": "research-review-v4", "max_research_attempts": 2})
+    return jsonify({"version": "research-review-v5", "max_research_attempts": 2})
 
 @app.post("/api/diagnose")
 def diagnose():
