@@ -896,14 +896,23 @@ function showMyGarage() {
 
   const panel = document.createElement('section');
   panel.id = 'myGarageList';
+  // Premium futuristic garage bay: panel-only styling.
+  // Vehicle cards, holograms, buttons, and layout remain unchanged.
   panel.style.cssText = `
-    background:radial-gradient(ellipse 75% 48% at 50% 0%,rgba(46,137,202,.23),transparent 78%),linear-gradient(90deg,rgba(40,131,198,.10),transparent 9%,transparent 91%,rgba(40,131,198,.10)),repeating-linear-gradient(0deg,transparent 0px,transparent 56px,rgba(80,156,209,.035) 57px,transparent 58px),linear-gradient(155deg,#152436 0%,#081726 45%,#030b16 100%);
-    border:1px solid #168bd0;
+    background:
+      radial-gradient(ellipse 82% 22% at 50% 0%,rgba(55,175,255,.32),transparent 83%),
+      linear-gradient(180deg,rgba(98,199,255,.36) 0px,rgba(98,199,255,0) 3px),
+      linear-gradient(90deg,rgba(23,168,246,.38) 0px,rgba(23,168,246,.08) 5px,transparent 22px,transparent calc(100% - 22px),rgba(23,168,246,.08) calc(100% - 5px),rgba(23,168,246,.38) 100%),
+      repeating-linear-gradient(180deg,transparent 0px,transparent 104px,rgba(79,153,205,.11) 105px,rgba(79,153,205,.02) 107px,transparent 110px),
+      repeating-linear-gradient(90deg,transparent 0px,transparent 88px,rgba(67,133,186,.055) 89px,transparent 91px),
+      radial-gradient(ellipse 95% 42% at 50% 78%,rgba(6,94,171,.22),transparent 90%),
+      linear-gradient(135deg,#1a3044 0%,#0c2033 35%,#061423 75%,#081c2b 100%);
+    border:1px solid #3c9bd0;
     border-radius:22px;
     padding:20px;
     margin:20px 0;
     color:white;
-    box-shadow:0 0 24px rgba(0,174,255,.12);
+    box-shadow:inset 0 2px 0 rgba(115,214,255,.28),inset 0 0 45px rgba(10,117,202,.14),0 0 27px rgba(0,174,255,.18);
   `;
 
   const heading = document.createElement('div');
