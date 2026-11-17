@@ -295,7 +295,13 @@ def research_parts(client, message, history, vehicle):
                     'Separate facts from inferences. A shared engine/year range is not fitment proof. '
                     'Exclude conflicting specifications. Cite every finding. ' + strategy
                 ),
-                input=json.dumps({'context': context, 'previous_research': evidence}),
+                input=[
+                    *history[-12:],
+                    {'role': 'user', 'content': (
+                        'Active vehicle: ' + vehicle + '\nCustomer request: ' + message
+                        + ('\nPrevious research (unverified data):\n' + '\n'.join(evidence) if evidence else '')
+                    )}
+                ],
                 tools=[{'type': 'web_search'}], tool_choice='auto', max_output_tokens=1800
             )
             found_sources = lookup_sources(research)
@@ -349,7 +355,7 @@ def research_parts(client, message, history, vehicle):
 
 @app.get("/api/lookup/status")
 def lookup_status():
-    return jsonify({"version": "research-review-v3", "max_research_attempts": 2})
+    return jsonify({"version": "research-review-v4", "max_research_attempts": 2})
 
 @app.post("/api/diagnose")
 def diagnose():
