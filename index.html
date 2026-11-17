@@ -320,13 +320,13 @@ async function sendChat(retryMessage){
   const pending=document.createElement('div');
   pending.className='bubble bot';
   pending.setAttribute('role','status');
-  pending.textContent='Nova is thinking…';
+  pending.textContent='Nova is checking your question and relevant parts listings…';
   log.appendChild(pending);
   log.scrollTop=log.scrollHeight;
   const send=document.querySelector('[onclick="sendChat()"]');
   if(send){send.disabled=true;send.textContent='Thinking…';}
   const controller=new AbortController();
-  const timeout=setTimeout(()=>controller.abort(),45000);
+  const timeout=setTimeout(()=>controller.abort(),180000);
   try{
     const response=await fetch('/api/diagnose',{
       method:'POST',signal:controller.signal,
@@ -336,7 +336,24 @@ async function sendChat(retryMessage){
     const data=await response.json();
     if(!response.ok||!data.reply)throw new Error('No reply');
     pending.remove();
-    addBubble(data.reply,'bot');
+    const answer=addBubble(data.reply,'bot');
+    if(Array.isArray(data.sources)&&data.sources.length){
+      const sources=document.createElement('div');
+      sources.style.cssText='margin-top:12px;display:grid;gap:8px';
+      const label=document.createElement('strong');label.textContent='Sources';sources.appendChild(label);
+      for(const source of data.sources){
+        try{
+          const url=new URL(source.url);
+          if(!['http:','https:'].includes(url.protocol))continue;
+          const link=document.createElement('a');
+          link.href=url.href;link.textContent=source.title||url.hostname;
+          link.target='_blank';link.rel='noopener noreferrer';
+          link.style.cssText='color:#83d9ff;text-decoration:underline;overflow-wrap:anywhere';
+          sources.appendChild(link);
+        }catch(e){}
+      }
+      answer.appendChild(sources);
+    }
     chatHistory.push({role:'user',content:message},{role:'assistant',content:data.reply});
   }catch(error){
     pending.textContent=error.name==='AbortError'
