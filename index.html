@@ -4238,28 +4238,30 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
         const name = title.textContent.toLowerCase();
         const art = card.querySelector(".pg3-art");
 
-        const wrongImage =
-          /alternator|starter/.test(name);
+        // Use recognizable generic artwork rather than an image-pending card.
+        const partArtwork = /alternator/.test(name)
+          ? "/assets/parts-alternator-showroom.svg"
+          : /starter/.test(name)
+          ? "/assets/parts-starter-showroom.svg"
+          : null;
 
         if (art) {
-          art.style.display = wrongImage ? "none" : "";
-        }
-
-        if (wrongImage) {
-          const placeholder = document.createElement("div");
-          placeholder.className = "pg13-placeholder";
-
-          const symbol = document.createElement("span");
-          symbol.className = "pg13-symbol";
-          symbol.textContent = "⚙️";
-
-          const label = document.createElement("span");
-          label.textContent = /alternator/.test(name)
-            ? "ALTERNATOR IMAGE PENDING"
-            : "STARTER IMAGE PENDING";
-
-          placeholder.append(symbol,label);
-          card.insertBefore(placeholder,card.firstChild);
+          art.style.display = "";
+          if (partArtwork) {
+            art.classList.add("pg-specific-part-art");
+            art.style.setProperty("background-image", 'url("' + partArtwork + '")', "important");
+            art.style.setProperty("background-size", "cover", "important");
+            art.style.setProperty("background-position", "center", "important");
+            art.setAttribute("role", "img");
+            art.setAttribute("aria-label", name + " illustration");
+          } else {
+            art.classList.remove("pg-specific-part-art");
+            art.style.removeProperty("background-image");
+            art.style.removeProperty("background-size");
+            art.style.removeProperty("background-position");
+            art.removeAttribute("role");
+            art.removeAttribute("aria-label");
+          }
         }
 
         const note = document.createElement("div");
