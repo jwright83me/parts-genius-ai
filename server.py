@@ -347,6 +347,22 @@ def research_parts(client, message, history, vehicle):
                 raise
             app.logger.exception('Parts lookup retry failed')
             break
+    retailer_context = message + ' ' + ' '.join(
+        str(item.get('content', '')) for item in history[-4:]
+        if isinstance(item, dict) and item.get('role') == 'user'
+    )
+    if re.search(r"o['’]?\\s*reill|oreilly", retailer_context, re.I):
+        retailer_sources = [
+            source for source in result['sources']
+            if (urlparse(source['url']).hostname or '').lower() in
+               ('oreillyauto.com', 'www.oreillyauto.com')
+        ]
+        if result['status'] in ('verified', 'candidate') and not retailer_sources:
+            result = {
+                'status': 'not_found',
+                'reply': "I could not verify an O'Reilly part number for that vehicle from an O'Reilly listing. Other retailers' catalog numbers are not confirmed O'Reilly numbers.",
+                'sources': []
+            }
     reply = result['reply'].strip()
     if result['status'] != 'needs_details':
         reply += '\n\n' + FITMENT_NOTE
@@ -355,7 +371,7 @@ def research_parts(client, message, history, vehicle):
 
 @app.get("/api/lookup/status")
 def lookup_status():
-    return jsonify({"version": "research-review-v5", "max_research_attempts": 2})
+    return jsonify({"version": "research-review-v6", "max_research_attempts": 2})
 
 @app.post("/api/diagnose")
 def diagnose():
