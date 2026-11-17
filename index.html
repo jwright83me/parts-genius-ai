@@ -4091,9 +4091,9 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
     });
 
     refreshVehicle();
-    // Keep the displayed vehicle synchronized when returning to the Parts tab.
-    document.querySelectorAll('[data-tab="parts"],[onclick*="show(\\'parts\\')"]').forEach(tab => {
-      tab.addEventListener("click", () => setTimeout(refreshVehicle, 0));
+    // Refresh active vehicle when returning to Parts without affecting navigation.
+    document.addEventListener("click", e => {
+      if (e.target.closest('[data-tab="parts"]')) setTimeout(refreshVehicle, 0);
     });
     window.addEventListener("storage", e => {
       if (e.key === "pgVehicle") refreshVehicle();
