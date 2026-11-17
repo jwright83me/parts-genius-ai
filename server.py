@@ -78,6 +78,10 @@ def jeep_hologram_transparent_test_image():
 def garage_bay_background_image():
     return send_file("garage-bay-background.svg", mimetype="image/svg+xml")
 
+@app.get("/a_high_detail_neon_sci_fi_portrait_icon_a_close_u.png")
+def nova_avatar_icon_image():
+    return send_file("a_high_detail_neon_sci_fi_portrait_icon_a_close_u.png")
+
 @app.get("/generic-minivan-hologram.png")
 def generic_minivan_hologram_image():
     return send_file("generic-minivan-hologram.png")
