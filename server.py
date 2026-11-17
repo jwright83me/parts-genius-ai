@@ -82,6 +82,10 @@ def garage_bay_background_image():
 def nova_avatar_icon_image():
     return send_file("a_high_detail_neon_sci_fi_portrait_icon_a_close_u.png")
 
+@app.get("/nova-lab-background.png")
+def nova_lab_background_image():
+    return send_file("nova-lab-background.png")
+
 @app.get("/generic-minivan-hologram.png")
 def generic_minivan_hologram_image():
     return send_file("generic-minivan-hologram.png")
