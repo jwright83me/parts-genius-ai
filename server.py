@@ -129,6 +129,11 @@ def nova_remove_popup_image():
 def lunova_saved_popup_image():
     return send_file("F40BB214-234A-4897-80BD-04AB15101F4D.png")
 
+
+@app.get("/bmw-3-series-hologram.png.PNG")
+def bmw_3_series_hologram_image():
+    return send_file("bmw-3-series-hologram.png.PNG")
+
 @app.post("/api/diagnose")
 def diagnose():
     data = request.get_json(silent=True) or {}
