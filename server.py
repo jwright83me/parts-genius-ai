@@ -327,7 +327,8 @@ def research_parts(client, message, history, vehicle):
             selected = [sources[url] for url in checked['source_urls'] if url in sources]
             if checked['status'] in ('verified', 'candidate') and not selected:
                 checked = {'status': 'not_found', 'reply': 'I could not verify a part number from a source listing.', 'source_urls': []}
-            result = {**checked, 'sources': selected}
+            if not (result and result['status'] == 'candidate' and checked['status'] == 'not_found'):
+                result = {**checked, 'sources': selected}
             if checked['status'] in ('verified', 'needs_details'):
                 break
         except Exception:
