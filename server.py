@@ -380,7 +380,10 @@ def research_parts(client, message, history, vehicle):
                     'state that exact vehicle fitment is unverified. Never hide useful candidate numbers. '
                     'Include its brand, number, and actual listed year. Reject amperage/connector '
                     'conflicts; never assume similarity. not_found means no supported relevant number. '
-                    'needs_details means a missing vehicle detail is essential; ask only for that detail. '
+                    'needs_details means a genuinely missing detail has a documented effect on the part; '
+                    'cite the specific variant distinction. Never ask to confirm an engine already given. '
+                    'Do not ask for trim just because search failed. If no documented variant distinction '
+                    'exists, use candidate or not_found rather than needs_details. '
                     'Never say a part does not exist or is not listed based on search absence; say you could '
                     'not verify an exact listing. Do not mention unrelated-year products in not_found replies. '
                     'Only select sources supporting the reply; omit unrelated products. Write a concise plain-text '
@@ -401,7 +404,8 @@ def research_parts(client, message, history, vehicle):
                 checked = {'status': 'not_found', 'reply': 'I could not verify a part number from a source listing.', 'source_urls': []}
             if not (result and result['status'] == 'candidate' and checked['status'] == 'not_found'):
                 result = {**checked, 'sources': selected}
-            if checked['status'] in ('verified', 'needs_details'):
+            if checked['status'] == 'verified' or (
+                    checked['status'] == 'needs_details' and (not vehicle or attempt == 1)):
                 break
         except Exception:
             if result is None:
@@ -432,7 +436,7 @@ def research_parts(client, message, history, vehicle):
 
 @app.get("/api/lookup/status")
 def lookup_status():
-    return jsonify({"version": "separate-searches-v1", "max_research_attempts": 2})
+    return jsonify({"version": "separate-searches-v2", "max_research_attempts": 2})
 
 @app.post("/api/diagnose")
 def diagnose():
