@@ -341,6 +341,10 @@ def research_parts(client, message, history, vehicle):
     return {'reply': reply, 'sources': result['sources'], 'lookup_status': result['status']}
 
 
+@app.get("/api/lookup/status")
+def lookup_status():
+    return jsonify({"version": "research-review-v1", "max_research_attempts": 2})
+
 @app.post("/api/diagnose")
 def diagnose():
     data = request.get_json(silent=True) or {}
