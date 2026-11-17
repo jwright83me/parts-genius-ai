@@ -78,6 +78,14 @@ def jeep_hologram_transparent_test_image():
 def nova_showroom_background_image():
     return send_file("nova-showroom-background.png")
 
+@app.get("/alternator-corrected.jpg")
+def alternator_corrected_image():
+    return send_file("alternator-corrected.jpg", mimetype="image/jpeg")
+
+@app.get("/starter-corrected.jpg")
+def starter_corrected_image():
+    return send_file("starter-corrected.jpg", mimetype="image/jpeg")
+
 @app.get("/assets/parts-alternator-showroom.svg")
 def alternator_showroom_art():
     return send_file("assets/parts-alternator-showroom.svg", mimetype="image/svg+xml")
