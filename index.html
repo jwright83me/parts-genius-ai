@@ -356,8 +356,46 @@ style="display:block;margin-top:12px;padding:14px;background:#168bd0;color:white
 📷 Scan VIN with Guided Camera
 </button>
 <button id="pgDecode" style="margin-top:12px;padding:14px;background:#00aeef;color:white;border:0;border-radius:10px;font-weight:bold">Decode VIN</button>
+<div style="margin-top:22px;padding-top:18px;border-top:1px solid rgba(55,176,255,.35)">
+  <h3 style="margin:0 0 8px;color:#eaf8ff">📷 Scan License Plate</h3>
+  <p style="font-size:14px;color:#bad6ea">Photograph a license plate to read its characters. Confirm the plate and state before lookup.</p>
+  <input id="pgPlatePhoto" type="file" accept="image/*" capture="environment" style="width:100%;box-sizing:border-box;margin:10px 0;padding:12px;background:#061827;border:1px solid #316b94;border-radius:10px;color:white">
+  <input id="pgPlateNumber" maxlength="12" autocomplete="off" placeholder="Plate number" aria-label="License plate number" style="width:100%;box-sizing:border-box;padding:14px;margin:8px 0;border-radius:10px;font-size:16px">
+  <input id="pgPlateState" maxlength="30" autocomplete="address-level1" placeholder="State (e.g. California)" aria-label="License plate state" style="width:100%;box-sizing:border-box;padding:14px;margin:8px 0;border-radius:10px;font-size:16px">
+  <div id="pgPlateResult" role="status" style="font-size:14px;color:#b8d9ee;margin-top:8px">Plate-to-vehicle identification requires an authorized lookup service. VIN identification remains available above.</div>
+</div>
 <div id="pgVinResult" style="margin-top:14px"></div>`;
 document.body.appendChild(vinPanel);
+// Plate OCR reads visible characters only; it does not identify a vehicle.
+document.getElementById('pgPlatePhoto').addEventListener('change', async (event) => {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  const status = document.getElementById('pgPlateResult');
+  status.textContent = 'Reading license plate image...';
+  let worker;
+  try {
+    if (typeof Tesseract === 'undefined') throw new Error('Text recognition is unavailable');
+    worker = await Tesseract.createWorker('eng');
+    await worker.setParameters({
+      tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
+      preserve_interword_spaces: '0'
+    });
+    const scan = await worker.recognize(file);
+    const lines = (scan.data.text || '').toUpperCase().split(/\r?\n/)
+      .map(line => line.replace(/[^A-Z0-9]/g, ''))
+      .filter(line => line.length >= 2 && line.length <= 9);
+    if (lines.length) {
+      document.getElementById('pgPlateNumber').value = lines.sort((a,b) => b.length-a.length)[0];
+      status.textContent = 'Possible plate number detected. Verify every character and enter the state. Vehicle lookup is not yet connected.';
+    } else {
+      status.textContent = 'Could not read the plate clearly. Please enter the number manually.';
+    }
+  } catch (error) {
+    status.textContent = 'Plate scan unavailable. Please enter the plate number manually.';
+  } finally {
+    if (worker) await worker.terminate().catch(() => {});
+  }
+});
 const guidedScanButton = document.getElementById('pgGuidedScan');
 
 const guidedCamera = document.createElement('div');
