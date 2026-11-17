@@ -4303,6 +4303,16 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
             partImage.alt = name + " illustration";
             partImage.loading = "lazy";
             partImage.style.cssText = "display:block!important;width:100%;height:100%;min-height:100px;object-fit:cover;max-width:none;filter:none;transform:none";
+            if (/ignition coil|wiper blade/.test(name)) {
+              partImage.style.setProperty("object-fit","contain","important");
+              partImage.style.setProperty("width","94%","important");
+              partImage.style.setProperty("height","94%","important");
+              partImage.style.setProperty("min-height","0","important");
+              art.style.setProperty("align-items","center");
+              art.style.setProperty("background-color","#f5f7fa","important");
+            } else {
+              art.style.removeProperty("background-color");
+            }
             art.appendChild(partImage);
           } else {
             art.classList.remove("pg-specific-part-art");
