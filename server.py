@@ -78,6 +78,22 @@ def jeep_hologram_transparent_test_image():
 def nova_showroom_background_image():
     return send_file("nova-showroom-background.png")
 
+@app.get("/nova-spark-plug.png")
+def nova_spark_plug_image():
+    return send_file("nova-spark-plug.png", mimetype="image/png")
+
+@app.get("/nova-oil-filter.png")
+def nova_oil_filter_image():
+    return send_file("nova-oil-filter.png", mimetype="image/png")
+
+@app.get("/nova-o2-sensor.png")
+def nova_o2_sensor_image():
+    return send_file("nova-o2-sensor.png", mimetype="image/png")
+
+@app.get("/nova-maf-sensor.png")
+def nova_maf_sensor_image():
+    return send_file("nova-maf-sensor.png", mimetype="image/png")
+
 @app.get("/a_crisp_high_detail_product_shot_of_automotive_br.png")
 def brake_pads_showroom_image():
     return send_file("a_crisp_high_detail_product_shot_of_automotive_br.png", mimetype="image/png")
