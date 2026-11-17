@@ -304,6 +304,33 @@ def active_retailer_queries(message, vehicle):
 def research_parts(client, message, history, vehicle):
     context = {'active_vehicle': vehicle, 'history': history[-12:], 'request': message}
     evidence, sources, result = [], {}, None
+    discovery_queries = active_retailer_queries(message, vehicle)
+    amperage = None
+    if discovery_queries and re.search(r"alternators?", message, re.I):
+        try:
+            specification = client.responses.create(
+                model='gpt-4.1',
+                instructions=(
+                    'Look up the factory alternator amperage for the exact active vehicle and engine. '
+                    'Use official manufacturer specifications first. Do not search retailer alternators yet. '
+                    'Report only the amperage applicable to this engine/trim and cite the source. '
+                    'If multiple amperages apply and the correct one is unknown, state that clearly; '
+                    'do not choose one. Do not infer amperage from another model or year.'
+                ),
+                input='What is the factory alternator amperage for this vehicle? ' + vehicle,
+                tools=[{'type': 'web_search'}], tool_choice='auto', max_output_tokens=650
+            )
+            specification_sources = lookup_sources(specification)
+            if specification_sources:
+                evidence.append(specification.output_text)
+                sources.update(specification_sources)
+                ratings = set(re.findall(r"(?<!\d)([1-9]\d{1,2})\s*[- ]?\s*(?:amps?\b|amperes?\b|A\b)",
+                                         specification.output_text, re.I))
+                if len(ratings) == 1:
+                    amperage = next(iter(ratings))
+                    discovery_queries = [query + ' ' + amperage + ' amp' for query in discovery_queries]
+        except Exception:
+            app.logger.exception('Vehicle specification lookup unavailable; proceeding without inferred amperage')
     for attempt in range(2):
         strategy = (
             'Search the exact vehicle, engine, requested part and retailer. Establish OEM specifications '
@@ -314,7 +341,7 @@ def research_parts(client, message, history, vehicle):
             'Also search retailer + make/model + part + specification without year to discover pages '
             'indexed under older years. Record relevant candidates without inferring exact fitment.'
         )
-        search_queries = active_retailer_queries(message, vehicle) if attempt == 0 else []
+        search_queries = discovery_queries if attempt == 0 else []
         if attempt == 1:
             try:
                 planner = client.responses.create(
@@ -471,7 +498,7 @@ def research_parts(client, message, history, vehicle):
 
 @app.get("/api/lookup/status")
 def lookup_status():
-    return jsonify({"version": "active-vehicle-search-v1", "max_research_attempts": 2})
+    return jsonify({"version": "active-vehicle-search-v2", "max_research_attempts": 2})
 
 @app.post("/api/diagnose")
 def diagnose():
