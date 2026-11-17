@@ -309,10 +309,14 @@ def research_parts(client, message, history, vehicle):
                     'explicitly overridden. verified requires a cited manufacturer or requested retailer '
                     'explicitly listing exact year/make/model/engine and relevant specifications. '
                     'A page for another year or engine is NEVER verified. candidate means a relevant '
-                    'retailer number exists but exact fitment is unverified. Reject amperage/connector '
+                    'retailer number exists but exact fitment is unverified. A same-model/same-engine retailer '
+                    'listing under another year should be reported as candidate, not discarded as not_found. '
+                    'Include its brand, number, and actual listed year. Reject amperage/connector '
                     'conflicts; never assume similarity. not_found means no supported relevant number. '
                     'needs_details means a missing vehicle detail is essential; ask only for that detail. '
-                    'Do not claim not stocked just because search found nothing. Write a concise plain-text '
+                    'Never say a part does not exist or is not listed based on search absence; say you could '
+                    'not verify an exact listing. Do not mention unrelated-year products in not_found replies. '
+                    'Only select sources supporting the reply; omit unrelated products. Write a concise plain-text '
                     'reply with brand and number when supported. For candidate explicitly say '
                     '"Possible match—exact fitment unverified" and state the actual listed year/specification. '
                     'Never mix retailer SKU and manufacturer number. Never claim a candidate fits. '
@@ -345,7 +349,7 @@ def research_parts(client, message, history, vehicle):
 
 @app.get("/api/lookup/status")
 def lookup_status():
-    return jsonify({"version": "research-review-v2", "max_research_attempts": 2})
+    return jsonify({"version": "research-review-v3", "max_research_attempts": 2})
 
 @app.post("/api/diagnose")
 def diagnose():
@@ -365,7 +369,7 @@ def diagnose():
         return jsonify({"error": "AI is not configured."}), 503
 
     try:
-        client = OpenAI(timeout=40.0, max_retries=0)
+        client = OpenAI(timeout=30.0, max_retries=1)
         if is_parts_lookup(message, history):
             return jsonify(research_parts(client, message, history, vehicle))
 
