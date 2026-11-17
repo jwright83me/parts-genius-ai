@@ -963,13 +963,11 @@ function showMyGarage() {
   panel.style.cssText = `
     background-color:#06111f;
     background-image:
-      radial-gradient(ellipse 48% 105px at 50% 0px,rgba(101,192,244,.30) 0%,rgba(18,90,150,.13) 52%,transparent 100%),
-      radial-gradient(ellipse 62% 42% at 50% 100%,rgba(9,85,147,.23),transparent 90%),
-      linear-gradient(90deg,transparent 0%,rgba(89,195,255,.70) 1px,rgba(20,105,171,.17) 4px,transparent 15px,transparent calc(100% - 15px),rgba(20,105,171,.17) calc(100% - 4px),rgba(89,195,255,.70) calc(100% - 1px),transparent 100%),
-      linear-gradient(90deg,transparent 0%,rgba(75,145,189,.12) 14%,transparent 16%,transparent 84%,rgba(75,145,189,.12) 86%,transparent 100%),
-      repeating-linear-gradient(180deg,transparent 0px,transparent 146px,rgba(79,150,196,.13) 147px,rgba(100,187,234,.06) 148px,transparent 150px),
-      repeating-linear-gradient(90deg,transparent 0px,transparent 104px,rgba(70,126,168,.055) 105px,transparent 107px),
-      linear-gradient(155deg,#1b3042 0%,#0a1a2b 31%,#050f1d 66%,#0a2032 100%);
+      linear-gradient(180deg,rgba(3,14,27,.80),rgba(3,16,30,.86)),
+      url('/nova-lab-background.png');
+    background-position:center center;
+    background-size:cover;
+    background-repeat:no-repeat;
     border:1px solid rgba(91,185,239,.75);
     border-radius:22px;
     padding:20px;
