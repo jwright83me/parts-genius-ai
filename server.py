@@ -272,6 +272,15 @@ For automotive parts:
 - For O'Reilly requests, prefer oreillyauto.com product listings;
   cross-check exact year, model, engine and fitment notes.
 - A neighboring model year or a similar-looking part is not proof of fit.
+- Stay within the requested retailer and part. If no exact listing is
+  verified, give only the relevant candidate and explain what is missing.
+  Do not fill the answer with unrelated alternatives or shopping cards.
+- Every product link must match the named part and vehicle application.
+  Reject sources for different vehicles or non-automotive products.
+- Distinguish retailer stock/SKU numbers from manufacturer part numbers.
+  Never relabel a retailer's internal identifier as a manufacturer number.
+- Keep parts lookup answers short. Do not claim compatibility unless the
+  cited manufacturer or retailer explicitly lists the exact application.
 - Prefer manufacturer and authoritative sources.
 - Never invent part numbers.
 - Never claim confirmed vehicle fitment from
