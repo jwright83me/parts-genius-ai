@@ -70,6 +70,14 @@ def jeep_image():
 def transparent_jeep_image():
     return send_file("4EBE8E20-BFAF-4B2C-9084-C52045F60EC0.png")
 
+@app.get("/jeep_hologram_transparent_test.png")
+def jeep_hologram_transparent_test_image():
+    return send_file("jeep_hologram_transparent_test.png")
+
+@app.get("/garage-bay-background.svg")
+def garage_bay_background_image():
+    return send_file("garage-bay-background.svg", mimetype="image/svg+xml")
+
 @app.get("/dodge-challenger-hologram.png.PNG")
 def dodge_challenger_hologram_image():
     return send_file("dodge-challenger-hologram.png.PNG")
