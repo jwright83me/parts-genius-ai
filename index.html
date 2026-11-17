@@ -3998,7 +3998,30 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
     const input = panel.querySelector("#pg12-query");
     const results = panel.querySelector("#pg12-results");
     common.addEventListener("change", () => {
-      if (common.value) input.value = common.value;
+      if (common.value) {
+        input.value = common.value;
+        const direct = document.getElementById("partSelect");
+        const choice = common.value.toLowerCase();
+        const map = {
+          "oil filter":"filter",
+          "engine air filter":"engine-air-filter",
+          "cabin air filter":"cabin-air-filter",
+          "ignition coils":"ignition-coil",
+          "wiper blades":"wiper-blades",
+          "spark plugs":"spark-plugs",
+          "oxygen sensor":"o2-sensor",
+          "mass air flow sensor":"maf-sensor",
+          "brake pads":"brake-pads",
+          "brake rotors":"brake-rotors",
+          "battery":"battery",
+          "alternator":"alternator",
+          "starter":"starter"
+        };
+        if (direct && map[choice]) {
+          direct.value = map[choice];
+          direct.dispatchEvent(new Event("change", {bubbles:true}));
+        }
+      }
     });
     input.addEventListener("input", () => {
       if (common.value !== input.value) common.value = "";
@@ -4018,7 +4041,7 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
     function searchParts() {
       refreshVehicle();
       results.replaceChildren();
-      const query = common.value.trim() || input.value.trim();
+      const query = input.value.trim() || common.value.trim();
       if (!query) {
         results.textContent = "Choose or enter a part first.";
         return;
@@ -4041,6 +4064,7 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
       else if (/filter/.test(normalized)) type = "filter";
 
       if (select && type && Array.from(select.options).some(o => o.value === type)) {
+        common.value = Array.from(common.options).some(o => o.text.toLowerCase() === query.toLowerCase()) ? query : "";
         input.value = query;
         select.value = type;
         select.dispatchEvent(new Event("change", {bubbles:true}));
