@@ -4018,7 +4018,7 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
     function searchParts() {
       refreshVehicle();
       results.replaceChildren();
-      const query = input.value.trim() || common.value.trim();
+      const query = common.value.trim() || input.value.trim();
       if (!query) {
         results.textContent = "Choose or enter a part first.";
         return;
@@ -4041,6 +4041,7 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
       else if (/filter/.test(normalized)) type = "filter";
 
       if (select && type && Array.from(select.options).some(o => o.value === type)) {
+        input.value = query;
         select.value = type;
         select.dispatchEvent(new Event("change", {bubbles:true}));
         const target = document.getElementById("partResults");
