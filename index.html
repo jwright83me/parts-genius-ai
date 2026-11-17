@@ -708,6 +708,17 @@ function getVehicleHologram(vehicle) {
   const make = (vehicle.make || '').toLowerCase();
   const model = (vehicle.model || '').toLowerCase();
 
+  // Dedicated Tesla Model 3 hologram
+  if (make === 'tesla' &&
+      (model.includes('model 3') || model.includes('model3'))) {
+    return 'tesla-model-3-hologram.png';
+  }
+
+  // Dedicated Tesla Cybertruck hologram
+  if (make === 'tesla' && model.includes('cybertruck')) {
+    return 'tesla-cybertruck-hologram.png';
+  }
+
   // Dedicated Ford Mustang hologram
   if (make === 'ford' && model.includes('mustang')) {
     return 'ford-mustang-hologram.png';
