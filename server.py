@@ -351,7 +351,7 @@ def research_parts(client, message, history, vehicle):
         str(item.get('content', '')) for item in history[-4:]
         if isinstance(item, dict) and item.get('role') == 'user'
     )
-    if re.search(r"o['’]?\\s*reill|oreilly", retailer_context, re.I):
+    if "oreilly" in re.sub(r"[^a-z]", "", retailer_context.lower()):
         retailer_sources = [
             source for source in result['sources']
             if (urlparse(source['url']).hostname or '').lower() in
@@ -371,7 +371,7 @@ def research_parts(client, message, history, vehicle):
 
 @app.get("/api/lookup/status")
 def lookup_status():
-    return jsonify({"version": "research-review-v6", "max_research_attempts": 2})
+    return jsonify({"version": "research-review-v7", "max_research_attempts": 2})
 
 @app.post("/api/diagnose")
 def diagnose():
