@@ -269,6 +269,20 @@ For automotive parts:
 - Ask only for missing details that materially affect fitment.
 - Search the web before supplying part numbers, current prices,
   retailer availability or product purchase links.
+- For O'Reilly part-number requests, complete this search workflow:
+  1. Search the exact year, make, model, engine, part and retailer.
+  2. If that fails, search the part's OEM number/specifications using
+     manufacturer sources, then search those identifiers on oreillyauto.com.
+  3. Search the retailer by make/model, part type, amperage or other
+     relevant specification without requiring the year in the query.
+     This discovers product pages indexed under other model years.
+  4. Provide relevant retailer part numbers as CANDIDATES when exact
+     application is not verified. State the actual listed year and the
+     missing verification. Do not hide useful candidates just because
+     their product page is indexed under another year.
+  Do not infer fitment from a shared engine or an older indexed page.
+  Do not speculate that design changes occurred without evidence.
+  If variants differ, identify amperage, connector or other key distinction.
 - For O'Reilly requests, prefer oreillyauto.com product listings;
   cross-check exact year, model, engine and fitment notes.
 - A neighboring model year or a similar-looking part is not proof of fit.
