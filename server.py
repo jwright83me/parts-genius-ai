@@ -496,6 +496,37 @@ def research_parts(client, message, history, vehicle):
     return {'reply': reply, 'sources': result['sources'], 'lookup_status': result['status']}
 
 
+@app.post("/api/parts/find")
+def find_verified_parts():
+    """Use Nova's sourced parts research for the Smart Parts Finder."""
+    data = request.get_json(silent=True) or {}
+    part = str(data.get("part") or "").strip()[:120]
+    vehicle = data.get("vehicle")
+    if not isinstance(vehicle, dict):
+        return jsonify({"error": "Select an active vehicle before searching."}), 400
+    if not all(str(vehicle.get(k) or "").strip() for k in ("year", "make", "model")):
+        return jsonify({"error": "Select an active vehicle before searching."}), 400
+    if not part:
+        return jsonify({"error": "Enter a part name."}), 400
+    if not os.getenv("OPENAI_API_KEY"):
+        return jsonify({"error": "Parts lookup is not configured."}), 503
+    vehicle_str = json.dumps({k: str(vehicle.get(k) or "")[:80]
+                              for k in ("year", "make", "model", "engine", "trim")})
+    try:
+        client = OpenAI(timeout=30.0, max_retries=1)
+        result = research_parts(client,
+            "Find O'Reilly Auto Parts " + part + " part numbers for my active vehicle. "
+            "Include brands and manufacturer part numbers with source links. "
+            "Only state a price if a current source explicitly verifies it; otherwise "
+            "recommend contacting the local parts store for current price and availability.",
+            [], vehicle_str)
+        result["pricing_note"] = "Contact your local parts store for current pricing and availability."
+        return jsonify(result)
+    except Exception:
+        app.logger.exception("Smart Parts Finder lookup failed")
+        return jsonify({"error": "Live parts research is temporarily unavailable. Try again shortly."}), 502
+
+
 @app.get("/api/lookup/status")
 def lookup_status():
     return jsonify({"version": "active-vehicle-search-v2", "max_research_attempts": 2})
