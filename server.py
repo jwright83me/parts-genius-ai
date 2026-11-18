@@ -101,6 +101,46 @@ def nova_showroom_background_image():
 def nova_engine_air_filter_image():
     return send_file("nova-engine-air-filter.png", mimetype="image/png")
 
+@app.get("/nova-heater-core.jpg")
+def nova_heater_core_image():
+    return send_file("nova-heater-core.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-blower-motor.jpg")
+def nova_blower_motor_image():
+    return send_file("nova-blower-motor.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-struts.jpg")
+def nova_struts_image():
+    return send_file("nova-struts.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-shocks.jpg")
+def nova_shocks_image():
+    return send_file("nova-shocks.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-ball-joints.jpg")
+def nova_ball_joints_image():
+    return send_file("nova-ball-joints.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-sway-bar-links.jpg")
+def nova_sway_bar_links_image():
+    return send_file("nova-sway-bar-links.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-serpentine-belt.jpg")
+def nova_serpentine_belt_image():
+    return send_file("nova-serpentine-belt.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-timing-belt.jpg")
+def nova_timing_belt_image():
+    return send_file("nova-timing-belt.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-engine-mount.jpg")
+def nova_engine_mount_image():
+    return send_file("nova-engine-mount.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-throttle-body.jpg")
+def nova_throttle_body_image():
+    return send_file("nova-throttle-body.jpg", mimetype="image/jpeg")
+
 @app.get("/nova-fuel-filter.jpg")
 def nova_fuel_filter_image():
     return send_file("nova-fuel-filter.jpg", mimetype="image/jpeg")
