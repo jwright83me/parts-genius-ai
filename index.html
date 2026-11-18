@@ -1123,6 +1123,38 @@ if (
     return 'kia-k5-hologram.png';
   }
 
+  // Nova-5: dedicated luxury vehicle holograms, before generic fallbacks.
+  if (make === 'lexus' && (model === 'rx' || /^rx(?:\s|\d|-)/.test(model))) {
+    return 'lexus-rx-hologram.png';
+  }
+  if (make === 'lexus' && (model === 'es' || /^es(?:\s|\d|-)/.test(model))) {
+    return 'lexus-es-hologram.png';
+  }
+  if (make === 'cadillac' && model.includes('escalade')) {
+    return 'cadillac-escalade-hologram.png';
+  }
+  if (make === 'cadillac' && model.includes('xt5')) {
+    return 'cadillac-xt5-hologram.png';
+  }
+  if (make === 'acura' && model.includes('mdx')) {
+    return 'acura-mdx-hologram.png';
+  }
+  if (make === 'acura' && model.includes('rdx')) {
+    return 'acura-rdx-hologram.png';
+  }
+  if (make === 'buick' && model.includes('enclave')) {
+    return 'buick-enclave-hologram.png';
+  }
+  if (make === 'lincoln' && model.includes('navigator')) {
+    return 'lincoln-navigator-hologram.png';
+  }
+  if (make === 'audi' && (model === 'q5' || /^q5(?:\s|\d|-)/.test(model))) {
+    return 'audi-q5-hologram.png';
+  }
+  if (make === 'volvo' && model.includes('xc90')) {
+    return 'volvo-xc90-hologram.png';
+  }
+
   // Other vehicles will use automatic image lookup later.
 // Ford F-150 hologram
 if (make === 'ford' &&
@@ -1576,7 +1608,10 @@ const recentHologramNames = [
   'chevrolet-colorado', 'ford-ranger', 'toyota-tundra',
   'nissan-frontier', 'ford-escape', 'toyota-4runner',
   'chevrolet-traverse', 'honda-passport', 'hyundai-santa-fe',
-  'kia-k5'
+  'kia-k5',
+  'lexus-rx', 'lexus-es', 'cadillac-escalade', 'cadillac-xt5',
+  'acura-mdx', 'acura-rdx', 'buick-enclave', 'lincoln-navigator',
+  'audi-q5', 'volvo-xc90'
 ];
 const novaHologramSizingStyle = document.createElement('style');
 novaHologramSizingStyle.id = 'novaRecentHologramSizing';
