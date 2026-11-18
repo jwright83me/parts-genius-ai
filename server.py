@@ -101,6 +101,46 @@ def nova_showroom_background_image():
 def nova_engine_air_filter_image():
     return send_file("nova-engine-air-filter.png", mimetype="image/png")
 
+@app.get("/nova-fuel-filter.jpg")
+def nova_fuel_filter_image():
+    return send_file("nova-fuel-filter.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-pcv-valve.jpg")
+def nova_pcv_valve_image():
+    return send_file("nova-pcv-valve.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-brake-shoes.jpg")
+def nova_brake_shoes_image():
+    return send_file("nova-brake-shoes.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-brake-master-cylinder.jpg")
+def nova_brake_master_cylinder_image():
+    return send_file("nova-brake-master-cylinder.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-abs-sensor.jpg")
+def nova_abs_sensor_image():
+    return send_file("nova-abs-sensor.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-battery.jpg")
+def nova_battery_image():
+    return send_file("nova-battery.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-headlight-bulbs.jpg")
+def nova_headlight_bulbs_image():
+    return send_file("nova-headlight-bulbs.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-fuses.jpg")
+def nova_fuses_image():
+    return send_file("nova-fuses.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-radiator.jpg")
+def nova_radiator_image():
+    return send_file("nova-radiator.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-radiator-hose.jpg")
+def nova_radiator_hose_image():
+    return send_file("nova-radiator-hose.jpg", mimetype="image/jpeg")
+
 @app.get("/nova-fuel-pump.jpg")
 def nova_fuel_pump_image():
     return send_file("nova-fuel-pump.jpg", mimetype="image/jpeg")
