@@ -290,6 +290,46 @@ def nissan_sentra_hologram_image():
 def volkswagen_jetta_hologram_image():
     return send_file("volkswagen-jetta-hologram.png", mimetype="image/png")
 
+@app.get("/chevrolet-colorado-hologram.png")
+def chevrolet_colorado_hologram_image():
+    return send_file("chevrolet-colorado-hologram.png", mimetype="image/png")
+
+@app.get("/ford-ranger-hologram.png")
+def ford_ranger_hologram_image():
+    return send_file("ford-ranger-hologram.png", mimetype="image/png")
+
+@app.get("/toyota-tundra-hologram.png")
+def toyota_tundra_hologram_image():
+    return send_file("toyota-tundra-hologram.png", mimetype="image/png")
+
+@app.get("/nissan-frontier-hologram.png")
+def nissan_frontier_hologram_image():
+    return send_file("nissan-frontier-hologram.png", mimetype="image/png")
+
+@app.get("/ford-escape-hologram.png")
+def ford_escape_hologram_image():
+    return send_file("ford-escape-hologram.png", mimetype="image/png")
+
+@app.get("/toyota-4runner-hologram.png")
+def toyota_4runner_hologram_image():
+    return send_file("toyota-4runner-hologram.png", mimetype="image/png")
+
+@app.get("/chevrolet-traverse-hologram.png")
+def chevrolet_traverse_hologram_image():
+    return send_file("chevrolet-traverse-hologram.png", mimetype="image/png")
+
+@app.get("/honda-passport-hologram.png")
+def honda_passport_hologram_image():
+    return send_file("honda-passport-hologram.png", mimetype="image/png")
+
+@app.get("/hyundai-santa-fe-hologram.png")
+def hyundai_santa_fe_hologram_image():
+    return send_file("hyundai-santa-fe-hologram.png", mimetype="image/png")
+
+@app.get("/kia-k5-hologram.png")
+def kia_k5_hologram_image():
+    return send_file("kia-k5-hologram.png", mimetype="image/png")
+
 @app.get("/tesla-model-3-hologram.png")
 def tesla_model_3_hologram_image():
     return send_file("tesla-model-3-hologram.png")
