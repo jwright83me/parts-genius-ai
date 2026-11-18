@@ -4014,8 +4014,7 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
       <div id="pg12-results" aria-live="polite"></div>
 
       <p class="pg12-note">
-        Category suggestions only. Vehicle fitment,
-        prices and supplier inventory are not verified.
+        Nova researches real retailer part numbers using your active vehicle. Only sourced listings are shown; exact fitment and live store pricing may require confirmation.
       </p>
     `;
 
@@ -4066,7 +4065,7 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
         : "No vehicle selected. Please save your vehicle.";
     }
 
-    function searchParts() {
+    async function searchParts() {
       refreshVehicle();
       results.replaceChildren();
       const query = input.value.trim() || common.value.trim();
@@ -4074,6 +4073,69 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
         results.textContent = "Choose or enter a part first.";
         return;
       }
+      const vehicle = getVehicle();
+      if (!vehicle || !vehicle.year || !vehicle.make || !vehicle.model) {
+        results.textContent = "Please select and save an active vehicle before searching for specific parts.";
+        return;
+      }
+      const searchButton = panel.querySelector("#pg12-search");
+      searchButton.disabled = true;
+      searchButton.textContent = "Nova is researching...";
+      results.textContent = "Searching retailer listings and checking available fitment evidence. This can take a moment.";
+      try {
+        const response = await fetch("/api/parts/find", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({part: query, vehicle})
+        });
+        const data = await response.json();
+        if (!response.ok || data.error) throw new Error(data.error || "Parts research is unavailable.");
+        results.replaceChildren();
+        const card = document.createElement("div");
+        card.className = "pg12-result";
+        const title = document.createElement("strong");
+        title.textContent = data.lookup_status === "verified"
+          ? "Listed for your vehicle"
+          : data.lookup_status === "candidate"
+          ? "Possible match — exact fitment unverified"
+          : "Nova's parts research";
+        const summary = document.createElement("p");
+        summary.className = "pg12-note";
+        summary.style.whiteSpace = "pre-line";
+        summary.textContent = data.reply || "No sourced part number was returned.";
+        const pricing = document.createElement("p");
+        pricing.className = "pg12-note";
+        pricing.textContent = data.pricing_note ||
+          "Contact your local parts store for current pricing and availability.";
+        card.append(title, summary, pricing);
+        const sources = Array.isArray(data.sources) ? data.sources : [];
+        if (sources.length) {
+          const heading = document.createElement("strong");
+          heading.textContent = "Sources";
+          card.appendChild(heading);
+          sources.forEach(source => {
+            try {
+              const url = new URL(source.url);
+              if (url.protocol !== "https:" && url.protocol !== "http:") return;
+              const link = document.createElement("a");
+              link.href = url.href;
+              link.target = "_blank";
+              link.rel = "noopener noreferrer";
+              link.textContent = source.title || url.hostname;
+              link.style.display = "block";
+              link.style.overflowWrap = "anywhere";
+              card.appendChild(link);
+            } catch(e) {}
+          });
+        }
+        results.appendChild(card);
+      } catch(error) {
+        results.textContent = error.message || "Unable to search parts right now.";
+      } finally {
+        searchButton.disabled = false;
+        searchButton.textContent = "Find Parts";
+      }
+      return;
       const select = document.getElementById("partSelect");
       const normalized = query.toLowerCase();
       let type = null;
