@@ -4204,15 +4204,15 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
         card.appendChild(head);
         const replyText = (data.reply || "No sourced part number was returned.").trim();
         // Keep Nova's complete researched answer, but visually separate part listings.
-        replyText.split(/\\n\\s*\\n/).forEach(paragraph => {
-          paragraph.split(/\\n(?=\\s*[-•]\\s)/).forEach(chunk => {
+        replyText.split(/\n\s*\n/).forEach(paragraph => {
+          paragraph.split(/\n(?=\s*[-•]\s)/).forEach(chunk => {
             const trimmed = chunk.trim();
             if (!trimmed) return;
-            if (/^[-•]\\s/.test(trimmed)) {
-              trimmed.split(/\\n(?=\\s*[-•]\\s)/).forEach(line => {
+            if (/^[-•]\s/.test(trimmed)) {
+              trimmed.split(/\n(?=\s*[-•]\s)/).forEach(line => {
                 const item = document.createElement("p");
                 item.className = "pg16-research-part";
-                item.textContent = line.replace(/^[-•]\\s*/, "");
+                item.textContent = line.replace(/^[-•]\s*/, "");
                 card.appendChild(item);
               });
             } else {
