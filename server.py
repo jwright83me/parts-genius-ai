@@ -277,6 +277,46 @@ def nova_avatar_icon_image():
 def nova_lab_background_image():
     return send_file("nova-lab-background.png")
 
+@app.get("/generic-high-roof-cargo-van-hologram.png")
+def generic_high_roof_cargo_van_hologram():
+    return send_file("generic-high-roof-cargo-van-hologram.png", mimetype="image/png")
+
+@app.get("/generic-compact-cargo-van-hologram.png")
+def generic_compact_cargo_van_hologram():
+    return send_file("generic-compact-cargo-van-hologram.png", mimetype="image/png")
+
+@app.get("/generic-traditional-full-size-van-hologram.png")
+def generic_traditional_full_size_van_hologram():
+    return send_file("generic-traditional-full-size-van-hologram.png", mimetype="image/png")
+
+@app.get("/generic-heavy-duty-pickup-hologram.png")
+def generic_heavy_duty_pickup_hologram():
+    return send_file("generic-heavy-duty-pickup-hologram.png", mimetype="image/png")
+
+@app.get("/generic-compact-pickup-hologram.png")
+def generic_compact_pickup_hologram():
+    return send_file("generic-compact-pickup-hologram.png", mimetype="image/png")
+
+@app.get("/generic-hatchback-hologram.png")
+def generic_hatchback_hologram():
+    return send_file("generic-hatchback-hologram.png", mimetype="image/png")
+
+@app.get("/generic-station-wagon-hologram.png")
+def generic_station_wagon_hologram():
+    return send_file("generic-station-wagon-hologram.png", mimetype="image/png")
+
+@app.get("/generic-electric-crossover-hologram.png")
+def generic_electric_crossover_hologram():
+    return send_file("generic-electric-crossover-hologram.png", mimetype="image/png")
+
+@app.get("/generic-subcompact-crossover-hologram.png")
+def generic_subcompact_crossover_hologram():
+    return send_file("generic-subcompact-crossover-hologram.png", mimetype="image/png")
+
+@app.get("/generic-cab-over-chassis-hologram.png")
+def generic_cab_over_chassis_hologram():
+    return send_file("generic-cab-over-chassis-hologram.png", mimetype="image/png")
+
 @app.get("/generic-minivan-hologram.png")
 def generic_minivan_hologram_image():
     return send_file("generic-minivan-hologram.png")
