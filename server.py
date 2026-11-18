@@ -182,6 +182,38 @@ def nova_lab_background_image():
 def generic_minivan_hologram_image():
     return send_file("generic-minivan-hologram.png")
 
+@app.get("/toyota-camry-hologram.png")
+def toyota_camry_hologram_image():
+    return send_file("toyota-camry-hologram.png", mimetype="image/png")
+
+@app.get("/honda-accord-hologram.png")
+def honda_accord_hologram_image():
+    return send_file("honda-accord-hologram.png", mimetype="image/png")
+
+@app.get("/nissan-altima-hologram.png")
+def nissan_altima_hologram_image():
+    return send_file("nissan-altima-hologram.png", mimetype="image/png")
+
+@app.get("/ram-1500-hologram.png")
+def ram_1500_hologram_image():
+    return send_file("ram-1500-hologram.png", mimetype="image/png")
+
+@app.get("/ford-explorer-hologram.png")
+def ford_explorer_hologram_image():
+    return send_file("ford-explorer-hologram.png", mimetype="image/png")
+
+@app.get("/chevy-equinox-hologram.png")
+def chevy_equinox_hologram_image():
+    return send_file("chevy-equinox-hologram.png", mimetype="image/png")
+
+@app.get("/toyota-highlander-hologram.png")
+def toyota_highlander_hologram_image():
+    return send_file("toyota-highlander-hologram.png", mimetype="image/png")
+
+@app.get("/subaru-outback-hologram.png")
+def subaru_outback_hologram_image():
+    return send_file("subaru-outback-hologram.png", mimetype="image/png")
+
 @app.get("/tesla-model-3-hologram.png")
 def tesla_model_3_hologram_image():
     return send_file("tesla-model-3-hologram.png")
