@@ -2,3 +2,6 @@ flask
 flask-cors
 openai
 gunicorn
+httpx
+psycopg[binary]>=3.2,<4
+stripe>=17,<18
