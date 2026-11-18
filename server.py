@@ -1,5 +1,12 @@
 
 import os
+from concurrent.futures import ThreadPoolExecutor
+from datetime import date
+from functools import lru_cache
+from urllib.error import URLError
+from urllib.parse import urlencode
+from urllib.request import urlopen
+from xml.etree import ElementTree
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
@@ -805,6 +812,98 @@ def find_verified_parts():
             }), 503
         app.logger.exception("Smart Parts Finder lookup failed")
         return jsonify({"error": "Live parts research is temporarily unavailable. Try again shortly."}), 502
+
+
+
+def fuel_economy_xml(path, **parameters):
+    url = "https://www.fueleconomy.gov/ws/rest/vehicle/" + path
+    if parameters:
+        url += "?" + urlencode(parameters)
+    with urlopen(url, timeout=7) as response:
+        return ElementTree.fromstring(response.read(256_000))
+
+
+def fuel_economy_menu(menu, **parameters):
+    return fuel_economy_xml("menu/" + menu, **parameters).findall("menuItem")
+
+
+def engine_label(description, model, make, vehicle_id):
+    displacement = re.search(r"\b(\d+(?:\.\d+)?)\s*L\b", description, re.I)
+    if not displacement:
+        if make.casefold() == "tesla":
+            return "Electric"
+        if vehicle_id.isdigit():
+            fuel = fuel_economy_xml(vehicle_id).findtext("fuelType1", "")
+            if fuel.casefold() == "electricity":
+                return "Electric"
+        return ""
+    cylinders = re.search(r"\b(\d+)\s*cyl\b", description, re.I)
+    fuel = description + " " + model
+    tags = [
+        label for label, pattern in (
+            ("Turbo", r"\bturbo"),
+            ("Supercharged", r"\b(?:supercharg|sup charg)"),
+            ("Diesel", r"\bdiesel"),
+            ("Plug-in hybrid", r"\b(?:phev|4xe|prime|plug-in)\b|\belectricity\b"),
+            ("Hybrid", r"\bhybrid\b"),
+        ) if re.search(pattern, fuel, re.I)
+    ]
+    if "Plug-in hybrid" in tags and "Hybrid" in tags:
+        tags.remove("Hybrid")
+    size = f"{float(displacement[1]):.1f}L"
+    return " ".join([size, *([f"{cylinders[1]} cyl"] if cylinders else []), *tags])
+
+
+@lru_cache(maxsize=256)
+def vehicle_engine_options(year, make, model):
+    models = [item.findtext("text", "") for item in fuel_economy_menu("model", year=year, make=make)]
+    suffixes = {
+        "2wd", "4wd", "awd", "fwd", "rwd", "4x2", "4x4",
+        "hybrid", "plug", "in", "phev", "4xe", "prime", "diesel",
+        "pickup", "truck", "wagon", "sedan", "coupe", "convertible", "unlimited",
+        "2dr", "4dr", "ecodiesel", "rubic", "rubicon", "srt", "widebody",
+        "long", "range", "performance", "plaid", "inch", "wheels", "19", "20", "21", "22",
+    }
+
+    def model_words(name):
+        name = name.casefold()
+        # EPA used C15/K15 and 15 for earlier light-duty Silverado and Sierra models.
+        name = re.sub(r"\b(silverado|sierra) (?:[ck]?15)\b", r"\1 1500", name)
+        return re.findall(r"[a-z0-9]+", name)
+
+    selected = model_words(model)
+    matches = [
+        name for name in models
+        if model_words(name)[:len(selected)] == selected
+        and set(model_words(name)[len(selected):]) <= suffixes
+    ]
+    if not matches:
+        return []
+
+    def labels(name):
+        return [
+            engine_label(option.findtext("text", ""), name, make, option.findtext("value", ""))
+            for option in fuel_economy_menu("options", year=year, make=make, model=name)
+        ]
+
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        groups = list(pool.map(labels, matches))
+    return sorted({label for group in groups for label in group if label},
+                  key=lambda label: (float(label.split("L", 1)[0]) if label != "Electric" else 0, label))
+
+
+@app.get("/api/vehicle/engines")
+def list_vehicle_engines():
+    year, make, model = (request.args.get(key, "").strip() for key in ("year", "make", "model"))
+    if (not re.fullmatch(r"[0-9]{4}", year) or not 1980 <= int(year) <= date.today().year + 1
+            or not 0 < len(make) <= 40 or not 0 < len(model) <= 80
+            or not re.search(r"[a-z0-9]", model, re.I)):
+        return jsonify({"error": "Choose a valid year, make, and model."}), 400
+    try:
+        return jsonify({"engines": vehicle_engine_options(year, make, model)})
+    except (URLError, OSError, ElementTree.ParseError):
+        app.logger.warning("Fuel Economy engine lookup unavailable", exc_info=True)
+        return jsonify({"error": "Engine options are temporarily unavailable."}), 502
 
 
 @app.get("/api/lookup/status")
