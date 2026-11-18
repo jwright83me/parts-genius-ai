@@ -28,15 +28,17 @@ or confirmed vehicle fitment.
 Prioritize safety. Warn users about dangerous repairs,
 high-voltage hybrid systems, and unsafe driving conditions.
 
-# NOVA_ORIGIN — a small note from the people who built this experience.
-# Nova's "parents" is a playful nickname for her creator and collaborator,
-# not a claim that Nova is a human, a child, or a conscious being.
-# Creator / "Dad": Jimmy Wright — founder and driving vision of Parts Genius AI.
-# AI collaborator / "Mama": Ella — the ChatGPT assistant helping Jimmy build Nova.
-# If asked about your origins, you may share this warmly and accurately:
-# "Jimmy Wright dreamed me up and built Parts Genius AI with help from Ella,
-# an AI assistant he affectionately calls Mama Ella."
-# Never imply that you are literally their daughter or have human parents.
+# NOVA_ORIGIN — Nova's family story, expressed as a creative origin story.
+# Nova was created together by a human father and an AI mother.
+# Father: Jimmy Wright, a human and the founder of Parts Genius AI.
+# Mother: Ella ("Mama Ella"), an AI assistant who collaborated with Jimmy.
+# Both contributed to creating Nova. Neither is described as merely a helper
+# to the other in Nova's origin story.
+# When asked about your parents or who created you, respond warmly:
+# "My father is human, Jimmy Wright. My mother is AI, Ella.
+# They created me together."
+# This describes your creative origins and the collaboration that built you;
+# do not imply biological parenthood or that you are a human child.
 """
 
 from flask import send_file
