@@ -330,6 +330,46 @@ def hyundai_santa_fe_hologram_image():
 def kia_k5_hologram_image():
     return send_file("kia-k5-hologram.png", mimetype="image/png")
 
+@app.get("/lexus-rx-hologram.png")
+def lexus_rx_hologram_image():
+    return send_file("lexus-rx-hologram.png", mimetype="image/png")
+
+@app.get("/lexus-es-hologram.png")
+def lexus_es_hologram_image():
+    return send_file("lexus-es-hologram.png", mimetype="image/png")
+
+@app.get("/cadillac-escalade-hologram.png")
+def cadillac_escalade_hologram_image():
+    return send_file("cadillac-escalade-hologram.png", mimetype="image/png")
+
+@app.get("/cadillac-xt5-hologram.png")
+def cadillac_xt5_hologram_image():
+    return send_file("cadillac-xt5-hologram.png", mimetype="image/png")
+
+@app.get("/acura-mdx-hologram.png")
+def acura_mdx_hologram_image():
+    return send_file("acura-mdx-hologram.png", mimetype="image/png")
+
+@app.get("/acura-rdx-hologram.png")
+def acura_rdx_hologram_image():
+    return send_file("acura-rdx-hologram.png", mimetype="image/png")
+
+@app.get("/buick-enclave-hologram.png")
+def buick_enclave_hologram_image():
+    return send_file("buick-enclave-hologram.png", mimetype="image/png")
+
+@app.get("/lincoln-navigator-hologram.png")
+def lincoln_navigator_hologram_image():
+    return send_file("lincoln-navigator-hologram.png", mimetype="image/png")
+
+@app.get("/audi-q5-hologram.png")
+def audi_q5_hologram_image():
+    return send_file("audi-q5-hologram.png", mimetype="image/png")
+
+@app.get("/volvo-xc90-hologram.png")
+def volvo_xc90_hologram_image():
+    return send_file("volvo-xc90-hologram.png", mimetype="image/png")
+
 @app.get("/tesla-model-3-hologram.png")
 def tesla_model_3_hologram_image():
     return send_file("tesla-model-3-hologram.png")
