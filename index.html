@@ -203,12 +203,12 @@
   z-index: 1;
 }
 
-</style></head><body><main class="app"><header class="top"><div class="brand"><div class="mark">⚙</div><div><div class="logo">PARTS GENIUS<span>AI</span></div><div class="sublogo">FIND IT. FIX IT. DRIVE ON.</div></div></div><div class="demo">DEMO V4</div></header><section class="hero"><div class="hero-content"><div class="tag">YOUR AUTOMOTIVE <strong>AI CO-PILOT</strong></div><h1>Find it.<br><em>Fix it.</em><br>Drive on.</h1><p>Describe the problem. Explore possible causes. Find the parts you need.</p><button class="primary" onclick="show('diagnose')">✧ &nbsp; Start diagnosing &nbsp; →</button></div></section><div class="actions"><button class="action" onclick="show('vehicle')"><span class="ico"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14l-1.5-7h-11L5 17Z"/><path d="m7 10 2-4h6l2 4"/><path d="M5 17v2m14-2v2"/><circle cx="8" cy="15" r="1"/><circle cx="16" cy="15" r="1"/></svg></span>My Vehicle<small>Save & manage</small></button><button class="action" onclick="show('diagnose')"><span class="ico" style="color:#ffb341"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h10v3h3v8h-3v2H7v-2H4v-7h3z"/><path d="M9 7V4h6v3M10 12h4"/></svg></span>Diagnose<small>Find the cause</small></button><button class="action" onclick="show('parts')"><span class="ico"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1"/><circle cx="19" cy="20" r="1"/><path d="M2 3h2l3 13h13l2-9H5"/></svg></span>Find Parts<small>Compare prices</small></button><button class="action" onclick="show('vehicle')"><span class="ico"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a5 5 0 0 0-6.4 6.4L3 18a2 2 0 0 0 3 3l5.3-5.3a5 5 0 0 0 6.4-6.4L14 12l-3-3z"/></svg></span>Maintenance<small>Coming soon</small></button></div><section id="vehicle" class="panel"><h2 style="display:flex;align-items:center"><img src="/a_high_detail_neon_sci_fi_portrait_icon_a_close_u.png" alt="Nova" style="width:36px;height:36px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:9px;box-shadow:0 0 9px rgba(36,197,255,.65)"> Select Your Vehicle</h2><p class="small">Start with your vehicle details for more relevant results.</p><div class="scan-options"><button class="primary"><svg class="tiny-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14l-1.5-7h-11L5 17Z"/><path d="m7 10 2-4h6l2 4"/><path d="M5 17v2m14-2v2"/><circle cx="8" cy="15" r="1"/><circle cx="16" cy="15" r="1"/></svg> Year / Make / Model</button><button onclick="openVinScannerFromVehicle()"><svg class="tiny-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5v14m3-14v14m3-14v14m3-14v14m4-14v14m3-14v14"/></svg> VIN Scan</button><button onclick="openPlateScannerFromVehicle()"><svg class="tiny-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M5 10h2m3 0h4m3 0h2M5 14h3m4 0h7"/></svg> License Plate</button></div><label class="field">Year<select id="year"></select></label><label class="field">Make<select id="make"></select></label><label class="field">Model<select id="model"></select></label><label class="field">Engine / trim (optional)<input id="engine" value="2.0L turbo PHEV" placeholder="e.g. 2.0L"></label><button class="primary" onclick="saveVehicle()">Save Vehicle →</button><p id="vehicleSummary" class="muted">Demo vehicle prefilled — edit to try your own.</p><div id="savedVehiclesSection">
+</style></head><body><main class="app"><header class="top"><div class="brand"><div class="mark">⚙</div><div><div class="logo">PARTS GENIUS<span>AI</span></div><div class="sublogo">FIND IT. FIX IT. DRIVE ON.</div></div></div><div class="demo">DEMO V4</div></header><section class="hero"><div class="hero-content"><div class="tag">YOUR AUTOMOTIVE <strong>AI CO-PILOT</strong></div><h1>Find it.<br><em>Fix it.</em><br>Drive on.</h1><p>Describe the problem. Explore possible causes. Find the parts you need.</p><button class="primary" onclick="show('diagnose')">✧ &nbsp; Start diagnosing &nbsp; →</button></div></section><div class="actions"><button class="action" onclick="show('vehicle')"><span class="ico"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14l-1.5-7h-11L5 17Z"/><path d="m7 10 2-4h6l2 4"/><path d="M5 17v2m14-2v2"/><circle cx="8" cy="15" r="1"/><circle cx="16" cy="15" r="1"/></svg></span>My Vehicle<small>Save & manage</small></button><button class="action" onclick="show('diagnose')"><span class="ico" style="color:#ffb341"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h10v3h3v8h-3v2H7v-2H4v-7h3z"/><path d="M9 7V4h6v3M10 12h4"/></svg></span>Diagnose<small>Find the cause</small></button><button class="action" onclick="show('parts')"><span class="ico"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1"/><circle cx="19" cy="20" r="1"/><path d="M2 3h2l3 13h13l2-9H5"/></svg></span>Find Parts<small>Browse previews</small></button><button class="action" onclick="show('vehicle')"><span class="ico"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a5 5 0 0 0-6.4 6.4L3 18a2 2 0 0 0 3 3l5.3-5.3a5 5 0 0 0 6.4-6.4L14 12l-3-3z"/></svg></span>Maintenance<small>Coming soon</small></button></div><section id="vehicle" class="panel"><h2 style="display:flex;align-items:center"><img src="/a_high_detail_neon_sci_fi_portrait_icon_a_close_u.png" alt="Nova" style="width:36px;height:36px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:9px;box-shadow:0 0 9px rgba(36,197,255,.65)"> Select Your Vehicle</h2><p class="small">Start with your vehicle details for more relevant results.</p><div class="scan-options"><button class="primary"><svg class="tiny-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14l-1.5-7h-11L5 17Z"/><path d="m7 10 2-4h6l2 4"/><path d="M5 17v2m14-2v2"/><circle cx="8" cy="15" r="1"/><circle cx="16" cy="15" r="1"/></svg> Year / Make / Model</button><button onclick="openVinScannerFromVehicle()"><svg class="tiny-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5v14m3-14v14m3-14v14m3-14v14m4-14v14m3-14v14"/></svg> VIN / Photo</button><button onclick="openPlateScannerFromVehicle()"><svg class="tiny-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M5 10h2m3 0h4m3 0h2M5 14h3m4 0h7"/></svg> License Plate</button></div><label class="field">Year<select id="year"></select></label><label class="field">Make<select id="make"></select></label><label class="field">Model<select id="model"></select></label><label class="field">Engine / trim (optional)<input id="engine" value="2.0L turbo PHEV" placeholder="e.g. 2.0L"></label><button class="primary" onclick="saveVehicle()">Save Vehicle →</button><p id="vehicleSummary" class="muted">Demo vehicle prefilled — edit to try your own.</p><div id="savedVehiclesSection">
   <h3>My Saved Vehicles</h3>
   <div id="savedVehiclesList">
     <p class="muted">No saved vehicles yet.</p>
   </div>
-</div></section><section id="diagnose" class="panel hidden"><div class="chat-head"><div class="chat-avatar">✦</div><div><h2 style="margin:0">Parts Genius Mechanic</h2><div class="muted">Interactive guided demo · not connected to live AI</div></div></div><div class="chat-log" id="chatLog" aria-live="polite"><div class="bubble bot">Hi! Tell me what your vehicle is doing. You can type or tap the microphone if your browser supports speech recognition. I'll ask a few questions to help narrow it down.</div></div><div class="chat-compose"><textarea id="chatInput" rows="2" placeholder="Example: My Jeep won't start, but the lights work..."></textarea><div class="chat-controls"><button type="button" id="micButton" onclick="startListening()" aria-label="Speak your symptoms">🎙 Speak</button><button type="button" class="primary" onclick="sendChat()">Send ➜</button></div></div><p class="muted small" id="micStatus">Voice dictation depends on browser permissions and support. No audio is saved by this demo.</p><p class="warning small">Prototype guidance only. For smoke, overheating, brake failure or other dangerous conditions, stop driving and seek qualified help. Do not buy a part based on symptoms alone.</p></section><section id="parts" class="panel hidden"><h2><span class="pg-parts-heading-icon" aria-hidden="true"><img src="/a_high_detail_neon_sci_fi_portrait_icon_a_close_u.png" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block"></span> Find Parts</h2><p id="partsVehicle" class="muted"></p><label class="field">Search a part<select id="partSelect" onchange="renderParts()"><option value="battery">Battery</option><option value="filter">Oil filter</option><option value="alternator">Alternator</option><option value="starter">Starter</option><option value="brake-pads">Brake Pads</option><option value="brake-rotors">Brake Rotors</option><option value="spark-plugs">Spark Plugs</option><option value="o2-sensor">Oxygen (O2) Sensor</option><option value="maf-sensor">Mass Air Flow Sensor</option><option value="engine-air-filter">Engine Air Filter</option><option value="cabin-air-filter">Cabin Air Filter</option><option value="ignition-coil">Ignition Coil</option><option value="wiper-blades">Wiper Blades</option></select><p class="parts-search-hint">Select a category to explore available part options.</p></label><div id="partResults"></div><p class="warning small">Illustrative prices only. Fitment, inventory and checkout are not connected. Verify specifications before buying.</p></section><section class="panel"><div class="tag">BUILT FOR CONFIDENCE</div><p class="small">Honest uncertainty. No invented inventory or prices. Safety first when a symptom could be dangerous.</p></section></main><nav><button onclick="window.scrollTo({top:0,behavior:'smooth'})"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 11 9-8 9 8v10h-7v-7h-4v7H3z"/></svg></span>Home</button><button onclick="show('vehicle')"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14l-1.5-7h-11L5 17Z"/><path d="m7 10 2-4h6l2 4"/><path d="M5 17v2m14-2v2"/><circle cx="8" cy="15" r="1"/><circle cx="16" cy="15" r="1"/></svg></span>My Vehicle</button><button onclick="show('diagnose')"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7"/><path d="m16 16 5 5"/></svg></span>Diagnose</button><button onclick="show('parts')"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1"/><circle cx="19" cy="20" r="1"/><path d="M2 3h2l3 13h13l2-9H5"/></svg></span>Parts</button><button onclick="alert('More features are planned for future versions.')"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span>More</button></nav><script>document.addEventListener('DOMContentLoaded', () => {
+</div></section><section id="diagnose" class="panel hidden"><div class="chat-head"><div class="chat-avatar">✦</div><div><h2 style="margin:0">Nova · Your AI Mechanic</h2><div class="muted">Interactive guided demo · not connected to live AI</div></div></div><div class="chat-log" id="chatLog" aria-live="polite"><div class="bubble bot">Hi! Tell me what your vehicle is doing. You can type or tap the microphone if your browser supports speech recognition. I'll ask a few questions to help narrow it down.</div></div><div class="chat-compose"><textarea id="chatInput" rows="2" placeholder="Example: My Jeep won't start, but the lights work..."></textarea><div class="chat-controls"><button type="button" id="micButton" onclick="startListening()" aria-label="Speak your symptoms">🎙 Speak</button><button type="button" class="primary" onclick="sendChat()">Send ➜</button></div></div><p class="muted small" id="micStatus">Voice dictation depends on browser permissions and support. No audio is saved by this demo.</p><p class="warning small">Prototype guidance only. For smoke, overheating, brake failure or other dangerous conditions, stop driving and seek qualified help. Do not buy a part based on symptoms alone.</p></section><section id="parts" class="panel hidden"><h2><span class="pg-parts-heading-icon" aria-hidden="true"><img src="/a_high_detail_neon_sci_fi_portrait_icon_a_close_u.png" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block"></span> Find Parts</h2><p id="partsVehicle" class="muted"></p><label class="field">Search a part<select id="partSelect" onchange="renderParts()"><option value="battery">Battery</option><option value="filter">Oil filter</option><option value="alternator">Alternator</option><option value="starter">Starter</option><option value="brake-pads">Brake Pads</option><option value="brake-rotors">Brake Rotors</option><option value="spark-plugs">Spark Plugs</option><option value="o2-sensor">Oxygen (O2) Sensor</option><option value="maf-sensor">Mass Air Flow Sensor</option><option value="engine-air-filter">Engine Air Filter</option><option value="cabin-air-filter">Cabin Air Filter</option><option value="ignition-coil">Ignition Coil</option><option value="wiper-blades">Wiper Blades</option></select><p class="parts-search-hint">Select a category to explore available part options.</p></label><div id="partResults"></div><p class="warning small">Illustrative prices only. Fitment, inventory and checkout are not connected. Verify specifications before buying.</p></section><section class="panel"><div class="tag">BUILT FOR CONFIDENCE</div><p class="small">Honest uncertainty. No invented inventory or prices. Safety first when a symptom could be dangerous.</p></section></main><nav><button onclick="show('home')"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 11 9-8 9 8v10h-7v-7h-4v7H3z"/></svg></span>Home</button><button onclick="show('vehicle')"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14l-1.5-7h-11L5 17Z"/><path d="m7 10 2-4h6l2 4"/><path d="M5 17v2m14-2v2"/><circle cx="8" cy="15" r="1"/><circle cx="16" cy="15" r="1"/></svg></span>My Vehicle</button><button onclick="show('diagnose')"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7"/><path d="m16 16 5 5"/></svg></span>Diagnose</button><button onclick="show('parts')"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1"/><circle cx="19" cy="20" r="1"/><path d="M2 3h2l3 13h13l2-9H5"/></svg></span>Parts</button><button onclick="show('more')"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span>More</button></nav><script>document.addEventListener('DOMContentLoaded', () => {
   const yearSelect = document.getElementById('year');
   const saved = JSON.parse(localStorage.getItem('pgVehicle') || 'null');
   const selectedYear = saved?.year || '2022';
@@ -244,7 +244,7 @@ async function loadModels() {
 
   modelSelect.replaceChildren(new Option('Loading models...', ''));
 
-  if (!year || !make) return;
+  if (!year || !make) { modelSelect.replaceChildren(new Option('Select Make first','')); return; }
 
   try {
     const url = `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${encodeURIComponent(make)}/modelyear/${year}?format=json`;
@@ -252,6 +252,7 @@ async function loadModels() {
     if (!response.ok) throw new Error('Model lookup failed');
 
     const data = await response.json();
+    if(yearSelect.value!==year || makeSelect.value!==make)return;
     modelSelect.replaceChildren(new Option('Select Model', ''));
 
     const models = [...new Set(
@@ -264,12 +265,13 @@ async function loadModels() {
       modelSelect.value = saved.model || '';
     }
   } catch (error) {
-    modelSelect.replaceChildren(new Option('Models unavailable', ''));
+    if(yearSelect.value===year && makeSelect.value===make)modelSelect.replaceChildren(new Option('Models unavailable — change Make to retry', ''));
   }
 }
 
-yearSelect.addEventListener('change', loadModels);
-makeSelect.addEventListener('change', loadModels);
+const changedVehicle = () => { document.getElementById('engine').value=''; loadModels(); };
+yearSelect.addEventListener('change', changedVehicle);
+makeSelect.addEventListener('change', changedVehicle);
 loadModels();
 });const $=id=>document.getElementById(id);let vehicle={};function show(id){for(const x of ['vehicle','diagnose','parts'])$(x).classList.toggle('hidden',x!==id);if(id==='parts')renderParts();$(id).scrollIntoView({behavior:'smooth',block:'start'})}function saveVehicle(){vehicle={year:$('year').value,make:$('make').value.trim(),model:$('model').value.trim(),engine:$('engine').value.trim()};$('vehicleSummary').textContent='Selected: '+Object.values(vehicle).join(' ');$('partsVehicle').textContent='Vehicle: '+Object.values(vehicle).join(' ');try{localStorage.setItem('pgVehicle',JSON.stringify(vehicle))}catch(e){}}const samples={battery:[['Standard replacement battery','$139–$219'],['Premium replacement battery','$189–$289']],filter:[['Standard oil filter','$8–$18'],['Premium oil filter','$12–$26']],alternator:[['Remanufactured alternator','$170–$340'],['New alternator','$230–$470']],starter:[['Remanufactured starter','$110–$250'],['New starter','$160–$330']],"brake-pads":[['Front brake pads','Illustrative price unavailable'],['Rear brake pads','Illustrative price unavailable']],"brake-rotors":[['Front brake rotor','Illustrative price unavailable'],['Rear brake rotor','Illustrative price unavailable']],"spark-plugs":[['Spark plug','Illustrative price unavailable']],"o2-sensor":[['Oxygen (O2) sensor','Illustrative price unavailable']],"maf-sensor":[['Mass air flow (MAF) sensor','Illustrative price unavailable']],"engine-air-filter":[['Engine air filter','Illustrative price unavailable']],"cabin-air-filter":[['Cabin air filter','Illustrative price unavailable']],"ignition-coil":[['Ignition coil','Illustrative price unavailable']],"wiper-blades":[['Windshield wiper blades','Illustrative price unavailable']]};function renderParts(){const type=$('partSelect').value;$('partResults').innerHTML=samples[type].map(([name,price])=>`<div class="part"><div><strong>${name}</strong><div class="muted">Illustrative category · fitment unverified</div></div><div class="price">${price}</div><button type="button"
 onclick="alert('Detailed product information and verified fitment are coming soon.')">View Details →</button></div>`).join('')}
@@ -280,11 +282,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const talkButton = document.createElement('button');
   talkButton.type = 'button';
-  talkButton.textContent = '🎙 Talk to Mechanic';
+  talkButton.textContent = '🎙 Talk to Nova';
   talkButton.onclick = async () => {
   if (voiceConnection) {
   stopVoice();
-  talkButton.textContent = '🎙 Talk to Mechanic';
+  talkButton.textContent = '🎙 Talk to Nova';
   return;
 }
   const password = prompt('Enter your private voice test password:');
@@ -300,42 +302,72 @@ document.addEventListener('DOMContentLoaded', () => {
   speakButton.insertAdjacentElement('afterend', talkButton);
 });
 let chatStep=0;
-function addBubble(message,who){const b=document.createElement('div');b.className='bubble '+who;b.textContent=message;$('chatLog').appendChild(b);$('chatLog').scrollTop=$('chatLog').scrollHeight;}
+function addBubble(message,who){const b=document.createElement('div');b.className='bubble '+who;b.textContent=message;$('chatLog').appendChild(b);$('chatLog').scrollTop=$('chatLog').scrollHeight;return b;}
 /*function sendChat(){const input=$('chatInput');const raw=input.value.trim();if(!raw)return;input.value='';addBubble(raw,'user');const t=raw.toLowerCase();let reply='';if(/overheat|steam|smoke|burning smell/.test(t)){reply='This could be unsafe. Pull over safely, shut off the engine and allow it to cool. Do not open a hot coolant cap. Do you see leaking coolant or a temperature warning? Avoid driving until it is checked.';}else if(/brake failure|no brakes|brake pedal to floor/.test(t)){reply='Do not drive the vehicle with compromised brakes. Arrange a tow or professional inspection. Is the pedal soft, or is there a warning light?';}else if(/won.t start|not start|no start|click|crank|starter/.test(t)){reply='Let’s narrow down the starting issue. When you turn the key or press Start, do you hear rapid clicks, one click, normal cranking, or nothing at all?';chatStep=1;}else if(chatStep===1){reply=/rapid|multiple|dim|weak/.test(t)?'A weak 12V battery or poor terminal connection is possible. Check battery voltage and cable condition before replacing anything. Do the headlights dim when you try to start?':/one click|single click/.test(t)?'A single click can indicate a starting-circuit issue, but battery voltage and connections should be tested first. Do the dash lights dim?':/crank|turns over/.test(t)?'If the engine cranks normally but does not start, we should check for fault codes and whether fuel and ignition systems are operating. Is the check-engine light on?':'Thanks. Are there warning lights or any clicking noises when you try again?';chatStep=2;}else if(/check engine|p0[0-9]{3}|p1[0-9]{3}/.test(t)){reply='Please share the exact diagnostic code and vehicle year, make, model and engine. A trouble code points to a system to test, not necessarily a part to replace.';}else if(/oil|filter|battery|alternator/.test(t)){reply='I can help you research that part. First, confirm the year, make, model and engine, and whether you need a diagnosis or a replacement. Retailer prices and fitment are not live in this demo.';}else{reply='Thanks. What year, make, model and engine is the vehicle? Also, when does the issue happen, and are there any warning lights, noises or trouble codes?';}addBubble(reply,'bot');}*/
 function startListening(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const status=$('micStatus');if(!SR){status.textContent='Voice recognition is not available in this browser. You can type your message or use the keyboard microphone.';return;}const rec=new SR();rec.lang='en-US';rec.interimResults=false;rec.maxAlternatives=1;status.textContent='Listening…';rec.onresult=e=>{const words=e.results[0][0].transcript;$('chatInput').value=words;status.textContent='Speech captured. Tap Send to submit.';};rec.onerror=e=>{status.textContent='Microphone unavailable ('+e.error+'). Try typing or the keyboard microphone.';};rec.onend=()=>{if(status.textContent==='Listening…')status.textContent='Listening stopped. Tap Speak to try again.';};try{rec.start()}catch(e){status.textContent='Unable to start microphone. Please type instead.';}}
 $('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}});
 const chatHistory = [];
-async function sendChat(){
+let chatPending = false;
+async function sendChat(retryMessage){
+  if(chatPending)return;
   const input=document.getElementById('chatInput');
-  const message=input.value.trim();
+  const message=typeof retryMessage==='string'?retryMessage:input.value.trim();
   if(!message)return;
+  chatPending=true;
   addBubble(message,'user');
   input.value='';
+  const log=document.getElementById('chatLog');
+  const pending=document.createElement('div');
+  pending.className='bubble bot';
+  pending.setAttribute('role','status');
+  pending.textContent='Nova is checking your question and relevant parts listings…';
+  log.appendChild(pending);
+  log.scrollTop=log.scrollHeight;
+  const send=document.querySelector('[onclick="sendChat()"]');
+  if(send){send.disabled=true;send.textContent='Thinking…';}
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),180000);
   try{
     const response=await fetch('/api/diagnose',{
-      method:'POST',
+      method:'POST',signal:controller.signal,
       headers:{'Content-Type':'application/json'},
-  
-body:JSON.stringify({
-  message:message,
-  history:chatHistory,
-  
-vehicle:localStorage.getItem('pgVehicle')
-
-})
-
+      body:JSON.stringify({message,history:chatHistory,vehicle:localStorage.getItem('pgVehicle')})
     });
     const data=await response.json();
-    if(!response.ok)throw new Error(data.error||'Server error');
-    addBubble(data.reply||'No answer received.','bot');
-
-chatHistory.push({role:'user',content:message});
-chatHistory.push({role:'assistant',content:data.reply});
-
+    if(!response.ok||!data.reply)throw new Error('No reply');
+    pending.remove();
+    const answer=addBubble(data.reply,'bot');
+    if(Array.isArray(data.sources)&&data.sources.length){
+      const sources=document.createElement('div');
+      sources.style.cssText='margin-top:12px;display:grid;gap:8px';
+      const label=document.createElement('strong');label.textContent='Sources';sources.appendChild(label);
+      for(const source of data.sources){
+        try{
+          const url=new URL(source.url);
+          if(!['http:','https:'].includes(url.protocol))continue;
+          const link=document.createElement('a');
+          link.href=url.href;link.textContent=source.title||url.hostname;
+          link.target='_blank';link.rel='noopener noreferrer';
+          link.style.cssText='color:#83d9ff;text-decoration:underline;overflow-wrap:anywhere';
+          sources.appendChild(link);
+        }catch(e){}
+      }
+      answer.appendChild(sources);
+    }
+    chatHistory.push({role:'user',content:message},{role:'assistant',content:data.reply});
   }catch(error){
-    addBubble('AI connection error: '+error.message,'bot');
-  
-}
+    pending.textContent=error.name==='AbortError'
+      ?'Nova took too long to respond. Please try again.'
+      :'Nova could not connect. Please try again.';
+    const retry=document.createElement('button');
+    retry.type='button';retry.textContent='Retry message';
+    retry.onclick=()=>{if(chatPending)return;pending.remove();sendChat(message);};
+    pending.append(document.createElement('br'),retry);
+  }finally{
+    clearTimeout(timeout);chatPending=false;
+    if(send){send.disabled=false;send.textContent='Send ➜';}
+    log.scrollTop=log.scrollHeight;
+  }
 }
 document.querySelectorAll('*').forEach(el=>{
   if(el.children.length===0 && el.textContent.includes('Interactive guided demo')){
@@ -346,18 +378,16 @@ document.querySelectorAll('*').forEach(el=>{
 function openVinScannerFromVehicle() {
   const scanner = document.getElementById('pgGuidedScan');
   if (!scanner) return;
-  scanner.scrollIntoView({behavior:'smooth',block:'center'});
-  // Open the existing guided VIN camera directly from Select Your Vehicle.
-  scanner.click();
+  vinPanel.hidden=false;
+  scanner.scrollIntoView({behavior:'smooth',block:'center'}); document.getElementById('pgVin').focus();
 }
 
 function openPlateScannerFromVehicle() {
   const scanner = document.getElementById('pgScanPlate');
   const panel = document.getElementById('pgVinResult');
   if (!scanner) return;
-  scanner.scrollIntoView({behavior:'smooth',block:'center'});
-  // Open the existing guided plate camera, without changing its OCR or lookup behavior.
-  scanner.click();
+  vinPanel.hidden=false;
+  scanner.scrollIntoView({behavior:'smooth',block:'center'}); document.getElementById('pgPlateResult').textContent='Scan a plate to read its text. Vehicle identification still requires a VIN or Year / Make / Model.';
 }
 
 const vinPanel=document.createElement('section');
@@ -365,9 +395,9 @@ vinPanel.style.cssText='margin:20px auto;padding:20px;max-width:650px;border:1px
 vinPanel.innerHTML=`
 <h2 style="display:flex;align-items:center"><img src="/a_high_detail_neon_sci_fi_portrait_icon_a_close_u.png" alt="Nova" style="width:36px;height:36px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px;box-shadow:0 0 9px rgba(36,197,255,.65)"> Identify Your Vehicle</h2>
 <p>Enter your 17-character VIN to identify your vehicle.</p>
-<input id="pgVin" maxlength="17" placeholder="Enter VIN" style="width:100%;box-sizing:border-box;padding:14px;border-radius:10px;font-size:16px">
+<input id="pgVin" aria-label="17-character VIN" maxlength="17" placeholder="Enter VIN" style="width:100%;box-sizing:border-box;padding:14px;border-radius:10px;font-size:16px">
 
-<input type="file" id="pgVinCamera" accept="image/*" capture="environment" style="margin-top:10px">
+<input type="file" id="pgVinCamera" aria-label="Upload VIN photo" accept="image/*" style="margin-top:10px">
 <button id="pgGuidedScan" type="button"
 style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px;padding:13px 14px;min-height:66px;background:linear-gradient(115deg,#062544,#075a9e 58%,#142b79);color:white;border:1.5px solid #37d9ff;border-radius:13px;font-weight:800;width:100%;box-shadow:inset 0 0 12px rgba(47,198,255,.22),0 0 13px rgba(0,190,255,.30);text-shadow:0 0 8px rgba(78,207,255,.35);cursor:pointer">
 <svg viewBox="0 0 48 48" width="34" height="34" aria-hidden="true" style="flex:none;filter:drop-shadow(0 0 5px #25d9ff)"><path d="M5 16V8a3 3 0 0 1 3-3h8M32 5h8a3 3 0 0 1 3 3v8M43 32v8a3 3 0 0 1-3 3h-8M16 43H8a3 3 0 0 1-3-3v-8" stroke="#67eaff" stroke-width="3" fill="none" stroke-linecap="round"/><rect x="12" y="18" width="24" height="14" rx="3" stroke="#b2f6ff" stroke-width="2" fill="none"/><circle cx="24" cy="25" r="5" stroke="#39d9ff" stroke-width="2" fill="none"/></svg><span>Scan VIN with Guided Camera</span>
@@ -412,7 +442,7 @@ document.getElementById('pgScanPlate').onclick = async () => {
     plateCamera.scrollIntoView({behavior:'smooth',block:'center'});
   } catch (error) {
     stopPlateCamera();
-    plateStatus.textContent = 'Unable to open the camera. Check browser camera permissions.';
+    plateStatus.textContent = 'Camera unavailable. Use Year / Make / Model, or type your VIN instead. A plate photo alone cannot confirm vehicle fitment.';
   }
 };
 document.getElementById('pgCancelPlate').onclick = stopPlateCamera;
@@ -486,7 +516,7 @@ guidedScanButton.onclick = async () => {
 
   } catch (error) {
     guidedCamera.style.display = 'none';
-    alert('Unable to open camera: ' + error.message);
+    document.getElementById('pgVinResult').textContent='Camera unavailable. Type your VIN above or upload a VIN photo instead.'; document.getElementById('pgVin').focus();
   }
 };
 document.getElementById('pgCloseVin').onclick = () => {
@@ -972,6 +1002,188 @@ if (
 }
 
 
+  // Dedicated transparent holograms — match before generic vehicle types.
+  if (make === 'toyota' && model.includes('camry')) {
+    return 'toyota-camry-hologram.png';
+  }
+  if (make === 'honda' && model.includes('accord')) {
+    return 'honda-accord-hologram.png';
+  }
+  if (make === 'nissan' && model.includes('altima')) {
+    return 'nissan-altima-hologram.png';
+  }
+  if ((make === 'ram' || make === 'dodge') &&
+      /(?:^|[^0-9])1500(?:$|[^0-9])/.test(model) && !model.includes('promaster')) {
+    return 'ram-1500-hologram.png';
+  }
+  if (make === 'ford' && model.includes('explorer')) {
+    return 'ford-explorer-hologram.png';
+  }
+  if ((make === 'chevrolet' || make === 'chevy') && model.includes('equinox')) {
+    return 'chevy-equinox-hologram.png';
+  }
+  if (make === 'toyota' && model.includes('highlander')) {
+    return 'toyota-highlander-hologram.png';
+  }
+  if (make === 'subaru' && model.includes('outback')) {
+    return 'subaru-outback-hologram.png';
+  }
+
+  // Batch 2: dedicated blue vehicle holograms, prior to generic fallbacks.
+  if (make === 'toyota' && model.includes('corolla')) {
+    return 'toyota-corolla-hologram.png';
+  }
+  if (make === 'honda' && model.includes('pilot')) {
+    return 'honda-pilot-hologram.png';
+  }
+  if (make === 'nissan' && model.includes('rogue')) {
+    return 'nissan-rogue-hologram.png';
+  }
+  if (make === 'hyundai' && model.includes('tucson')) {
+    return 'hyundai-tucson-hologram.png';
+  }
+  if (make === 'kia' && model.includes('sportage')) {
+    return 'kia-sportage-hologram.png';
+  }
+  if (make === 'subaru' && model.includes('forester')) {
+    return 'subaru-forester-hologram.png';
+  }
+  if ((make === 'chevrolet' || make === 'chevy') && model.includes('tahoe')) {
+    return 'chevrolet-tahoe-hologram.png';
+  }
+  if (make === 'gmc' && model.includes('sierra') &&
+      /(?:^|[^0-9])1500(?:$|[^0-9])/.test(model)) {
+    return 'gmc-sierra-1500-hologram.png';
+  }
+  if (make === 'kia' && model.includes('telluride')) {
+    return 'kia-telluride-hologram.png';
+  }
+
+  // Batch 3 dedicated holograms: exact make + model, before generic fallback.
+  if (make === 'mazda' && (model.includes('cx-5') || model.includes('cx5') || model.includes('cx 5'))) {
+    return 'mazda-cx5-hologram.png';
+  }
+  if (make === 'jeep' && (model.includes('grand cherokee') || model.includes('grand-cherokee'))) {
+    return 'jeep-grand-cherokee-hologram.png';
+  }
+  if ((make === 'chevrolet' || make === 'chevy') && model.includes('corvette')) {
+    return 'chevrolet-corvette-hologram.png';
+  }
+  if (make === 'dodge' && model.includes('charger')) {
+    return 'dodge-charger-hologram.png';
+  }
+  if (make === 'subaru' && model.includes('crosstrek')) {
+    return 'subaru-crosstrek-hologram.png';
+  }
+  if (make === 'honda' && model.includes('odyssey')) {
+    return 'honda-odyssey-hologram.png';
+  }
+  if (make === 'toyota' && model.includes('sienna')) {
+    return 'toyota-sienna-hologram.png';
+  }
+  if (make === 'hyundai' && model.includes('elantra')) {
+    return 'hyundai-elantra-hologram.png';
+  }
+  if (make === 'nissan' && model.includes('sentra')) {
+    return 'nissan-sentra-hologram.png';
+  }
+  if ((make === 'volkswagen' || make === 'vw') && model.includes('jetta')) {
+    return 'volkswagen-jetta-hologram.png';
+  }
+
+  // Batch 4: model-specific holograms before generic fallback.
+  if ((make === 'chevrolet' || make === 'chevy') && model.includes('colorado')) {
+    return 'chevrolet-colorado-hologram.png';
+  }
+  if (make === 'ford' && model.includes('ranger')) {
+    return 'ford-ranger-hologram.png';
+  }
+  if (make === 'toyota' && model.includes('tundra')) {
+    return 'toyota-tundra-hologram.png';
+  }
+  if (make === 'nissan' && model.includes('frontier')) {
+    return 'nissan-frontier-hologram.png';
+  }
+  if (make === 'ford' && model.includes('escape')) {
+    return 'ford-escape-hologram.png';
+  }
+  if (make === 'toyota' && (model.includes('4runner') || model.includes('4 runner') || model.includes('4-runner'))) {
+    return 'toyota-4runner-hologram.png';
+  }
+  if ((make === 'chevrolet' || make === 'chevy') && model.includes('traverse')) {
+    return 'chevrolet-traverse-hologram.png';
+  }
+  if (make === 'honda' && model.includes('passport')) {
+    return 'honda-passport-hologram.png';
+  }
+  if (make === 'hyundai' && (model.includes('santa fe') || model.includes('santa-fe') || model.includes('santafe'))) {
+    return 'hyundai-santa-fe-hologram.png';
+  }
+  if (make === 'kia' && /(?:^|[^a-z0-9])k5(?:$|[^a-z0-9])/.test(model)) {
+    return 'kia-k5-hologram.png';
+  }
+
+  // Nova-5: dedicated luxury vehicle holograms, before generic fallbacks.
+  if (make === 'lexus' && (model === 'rx' || /^rx(?:\s|\d|-)/.test(model))) {
+    return 'lexus-rx-hologram.png';
+  }
+  if (make === 'lexus' && (model === 'es' || /^es(?:\s|\d|-)/.test(model))) {
+    return 'lexus-es-hologram.png';
+  }
+  if (make === 'cadillac' && model.includes('escalade')) {
+    return 'cadillac-escalade-hologram.png';
+  }
+  if (make === 'cadillac' && model.includes('xt5')) {
+    return 'cadillac-xt5-hologram.png';
+  }
+  if (make === 'acura' && model.includes('mdx')) {
+    return 'acura-mdx-hologram.png';
+  }
+  if (make === 'acura' && model.includes('rdx')) {
+    return 'acura-rdx-hologram.png';
+  }
+  if (make === 'buick' && model.includes('enclave')) {
+    return 'buick-enclave-hologram.png';
+  }
+  if (make === 'lincoln' && model.includes('navigator')) {
+    return 'lincoln-navigator-hologram.png';
+  }
+  if (make === 'audi' && (model === 'q5' || /^q5(?:\s|\d|-)/.test(model))) {
+    return 'audi-q5-hologram.png';
+  }
+  if (make === 'volvo' && model.includes('xc90')) {
+    return 'volvo-xc90-hologram.png';
+  }
+
+  // Nova-6: nine model-specific holograms, before generic fallbacks.
+  if ((make === 'chevrolet' || make === 'chevy') && model.includes('malibu')) {
+    return 'chevrolet-malibu-hologram.png';
+  }
+  if (make === 'hyundai' && model.includes('sonata')) {
+    return 'hyundai-sonata-hologram.png';
+  }
+  if (make === 'mazda' && (model.includes('mazda3') || model.includes('mazda 3') || model.includes('mazda-3') || model === '3')) {
+    return 'mazda3-hologram.png';
+  }
+  if ((make === 'volkswagen' || make === 'vw') && model.includes('passat')) {
+    return 'volkswagen-passat-hologram.png';
+  }
+  if (make === 'lexus' && (model === 'nx' || /^nx(?:\s|\d|-)/.test(model))) {
+    return 'lexus-nx-hologram.png';
+  }
+  if (make === 'infiniti' && (model.includes('qx60') || model.includes('qx 60'))) {
+    return 'infiniti-qx60-hologram.png';
+  }
+  if (make === 'buick' && model.includes('encore')) {
+    return 'buick-encore-hologram.png';
+  }
+  if (make === 'chrysler' && model.includes('pacifica')) {
+    return 'chrysler-pacifica-hologram.png';
+  }
+  if (make === 'mitsubishi' && model.includes('outlander')) {
+    return 'mitsubishi-outlander-hologram.png';
+  }
+
   // Other vehicles will use automatic image lookup later.
 // Ford F-150 hologram
 if (make === 'ford' &&
@@ -1267,8 +1479,21 @@ removeButton.onclick = () => {
 
   if (vehicleSection) {
     vehicleSection.parentElement.insertBefore(panel, vehicleSection);
+    addButton.type = 'button';
     addButton.onclick = () => {
-      vehicleSection.scrollIntoView({behavior:'smooth'});
+      // The vehicle panel is hidden in Garage/Home. Reveal it through
+      // the app navigator before scrolling or focusing its first field.
+      if (typeof window.show === 'function') {
+        window.show('vehicle');
+      } else {
+        vehicleSection.classList.remove('hidden');
+        vehicleSection.hidden = false;
+      }
+      requestAnimationFrame(() => {
+        vehicleSection.scrollIntoView({behavior:'smooth',block:'start'});
+        const year = document.getElementById('year');
+        if (year) year.focus({preventScroll:true});
+      });
     };
   } else {
     document.body.appendChild(panel);
@@ -1314,7 +1539,7 @@ popup.innerHTML = `
 
     <img id="pgSavedHologram"
       src="${getVehicleHologram(JSON.parse(localStorage.getItem('pgVehicle') || 'null')) || ''}"
-      style="position:absolute;left:24%;top:29%;width:30%;height:25%;object-fit:contain;mix-blend-mode:screen;pointer-events:none;filter:drop-shadow(0 0 8px cyan);">
+      style="position:absolute;left:18%;top:20%;width:42%;height:44%;object-fit:contain;mix-blend-mode:screen;pointer-events:none;filter:drop-shadow(0 0 8px cyan);">
 
     <button id="pgStartDiagnosis" aria-label="Begin Diagnosis"
       style="position:absolute;left:56%;top:43%;width:40%;height:13%;background:transparent;border:0;"></button>
@@ -1336,14 +1561,12 @@ popup.innerHTML = `
 
   document.getElementById('pgStartDiagnosis').onclick = () => {
     popup.remove();
-    const tab = document.querySelector('[data-tab="diagnose"]');
-    if (tab) tab.click();
+    show('diagnose');
   };
 
   document.getElementById('pgFindParts').onclick = () => {
     popup.remove();
-    const tab = document.querySelector('[data-tab="parts"]');
-    if (tab) tab.click();
+    show('parts');
   };
 };
   
@@ -1381,7 +1604,7 @@ if (activeNovaImage) {
 }
 
 novaHologram.alt = 'Vehicle hologram';
-novaHologram.style.cssText = 'position:absolute;left:13%;top:56%;width:66%;height:21%;object-fit:contain;mix-blend-mode:screen;filter:brightness(1.3) contrast(1.6) drop-shadow(0 0 8px #00cfff);pointer-events:none;z-index:5;';
+novaHologram.style.cssText = 'position:absolute;left:13%;top:49%;width:66%;height:21%;object-fit:contain;mix-blend-mode:screen;filter:brightness(1.3) contrast(1.6) drop-shadow(0 0 8px #00cfff);pointer-events:none;z-index:5;';
 novaSection.style.position = 'relative';
 novaSection.appendChild(novaHologram);
 novaHologram.style.display = activeNovaImage ? 'block' : 'none';
@@ -1397,6 +1620,37 @@ if (activeNovaImage &&
   novaHologram.style.transform = 'scale(1.04) translateY(-2%)';
   novaHologram.style.transformOrigin = 'center center';
 }
+
+// Enlarge only the recent transparent vehicle PNGs in Nova's hands.
+// My Garage card images and previous vehicle-specific tuning stay unchanged.
+// Attribute-based styles automatically apply after changing the active vehicle.
+const recentHologramNames = [
+  'toyota-camry', 'honda-accord', 'nissan-altima', 'ram-1500',
+  'ford-explorer', 'chevy-equinox', 'toyota-highlander', 'subaru-outback',
+  'toyota-corolla', 'honda-pilot', 'nissan-rogue', 'hyundai-tucson',
+  'kia-sportage', 'subaru-forester', 'chevrolet-tahoe',
+  'gmc-sierra-1500', 'kia-telluride',
+  'mazda-cx5', 'jeep-grand-cherokee', 'chevrolet-corvette',
+  'dodge-charger', 'subaru-crosstrek', 'honda-odyssey',
+  'toyota-sienna', 'hyundai-elantra', 'nissan-sentra',
+  'volkswagen-jetta',
+  'chevrolet-colorado', 'ford-ranger', 'toyota-tundra',
+  'nissan-frontier', 'ford-escape', 'toyota-4runner',
+  'chevrolet-traverse', 'honda-passport', 'hyundai-santa-fe',
+  'kia-k5',
+  'lexus-rx', 'lexus-es', 'cadillac-escalade', 'cadillac-xt5',
+  'acura-mdx', 'acura-rdx', 'buick-enclave', 'lincoln-navigator',
+  'audi-q5', 'volvo-xc90',
+  'chevrolet-malibu', 'hyundai-sonata', 'mazda3',
+  'volkswagen-passat', 'lexus-nx', 'infiniti-qx60',
+  'buick-encore', 'chrysler-pacifica', 'mitsubishi-outlander'
+];
+const novaHologramSizingStyle = document.createElement('style');
+novaHologramSizingStyle.id = 'novaRecentHologramSizing';
+novaHologramSizingStyle.textContent = recentHologramNames
+  .map(name => '#novaVehicleHologram[src$="' + name + '-hologram.png"]')
+  .join(',\n') + ' { transform:scale(1.45) translateY(1%);transform-origin:center center; }';
+document.head.appendChild(novaHologramSizingStyle);
 
 // NOVA - Clickable voice button
 novaSection.style.position = 'relative';
@@ -2217,7 +2471,7 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
           detail.hidden=false;
           detail.scrollIntoView({
             behavior:"smooth",
-            block:"nearest"
+            block:"center"
           });
         });
 
@@ -3884,6 +4138,77 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
   color:white;
   font-weight:bold;
 }
+/* Visible progress for Nova's sourced part-number research. */
+#pg12-search.pg12-researching{
+  opacity:1;
+  cursor:progress;
+  border-color:#7be8ff;
+  background:linear-gradient(115deg,#075d93,#159fce);
+  box-shadow:0 0 0 0 rgba(55,203,255,.5);
+  animation:pg12ResearchPulse 1.7s ease-in-out infinite;
+}
+#pg12-search.pg12-researching::before{
+  content:"";
+  display:inline-block;
+  width:14px;
+  height:14px;
+  margin-right:9px;
+  vertical-align:-2px;
+  border:2px solid rgba(255,255,255,.35);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:pg12ResearchSpin .85s linear infinite;
+}
+@keyframes pg12ResearchPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(55,203,255,.45);filter:brightness(1)}
+  50%{box-shadow:0 0 0 9px rgba(55,203,255,0);filter:brightness(1.18)}
+}
+@keyframes pg12ResearchSpin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){
+  #pg12-search.pg12-researching,
+  #pg12-search.pg12-researching::before{animation:none}
+}
+
+
+/* Unified real-results view: remove the redundant illustrative catalog. */
+#parts #partResults,
+#parts #pg13-vehicle-banner,
+#parts #pg3-detail,
+#parts #pg3-results-location,
+#parts .pg3-heading.pg16-retired-preview {display:none!important}
+#pg12-results{margin-top:16px;scroll-margin-top:22px}
+#pg12-results .pg12-result{
+  padding:20px 16px;
+  background:linear-gradient(145deg,#0a2c46,#061b30);
+  border:1px solid #45b9eb;
+  box-shadow:0 8px 22px rgba(0,0,0,.22);
+}
+#pg12-results .pg16-result-head{display:flex;align-items:center;gap:18px;margin-bottom:18px;min-width:0}
+#pg12-results .pg16-result-image{
+  width:150px;height:150px;min-width:150px;object-fit:contain;
+  padding:5px;border:1px solid #338caf;border-radius:13px;background:#0e354d;
+}
+#pg12-results .pg16-result-title{font-size:20px;line-height:1.3;font-weight:850;color:#f4fbff}
+#pg12-results .pg16-result-subtitle{font-size:14px;font-weight:750;color:#bcecff;margin-top:7px}
+#pg12-results .pg16-research-paragraph{
+  font-size:17px;line-height:1.6;font-weight:600;color:#e5f5ff;
+  margin:13px 0;overflow-wrap:anywhere;
+}
+#pg12-results .pg16-research-part{
+  padding:12px 13px;border:1px solid #2d698d;border-radius:10px;
+  background:#09273d;font-size:17px;line-height:1.55;
+  font-weight:750;color:#fff;margin:9px 0;overflow-wrap:anywhere;
+}
+#pg12-results .pg16-pricing-note{font-size:15px;line-height:1.55;font-weight:650;color:#d2edfa;margin-top:16px}
+#pg12-results .pg16-source-heading{font-size:16px;color:white;margin:20px 0 7px;display:block}
+#pg12-results a{font-size:15px;line-height:1.5;color:#79dfff;padding:7px 0;text-decoration:underline}
+#pg12-results:not(:empty){padding-bottom:8px}
+@media(max-width:600px){
+ #pg12-results .pg16-result-head{flex-direction:column;align-items:flex-start;gap:13px}
+ #pg12-results .pg16-result-image{width:100%;max-width:260px;height:190px;min-width:0;box-sizing:border-box;align-self:center;object-fit:contain}
+ #pg12-results .pg16-result-title{font-size:21px}
+}
+
 .pg12-result {
   margin-top:12px;
   padding:12px;
@@ -3986,8 +4311,7 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
       <div id="pg12-results" aria-live="polite"></div>
 
       <p class="pg12-note">
-        Category suggestions only. Vehicle fitment,
-        prices and supplier inventory are not verified.
+        Nova researches real retailer part numbers using your active vehicle. Only sourced listings are shown; exact fitment and live store pricing may require confirmation.
       </p>
     `;
 
@@ -4038,7 +4362,7 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
         : "No vehicle selected. Please save your vehicle.";
     }
 
-    function searchParts() {
+    async function searchParts() {
       refreshVehicle();
       results.replaceChildren();
       const query = input.value.trim() || common.value.trim();
@@ -4046,6 +4370,135 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
         results.textContent = "Choose or enter a part first.";
         return;
       }
+      const vehicle = getVehicle();
+      if (!vehicle || !vehicle.year || !vehicle.make || !vehicle.model) {
+        results.textContent = "Please select and save an active vehicle before searching for specific parts.";
+        return;
+      }
+      const searchButton = panel.querySelector("#pg12-search");
+      searchButton.disabled = true;
+      searchButton.classList.add("pg12-researching");
+      searchButton.setAttribute("aria-busy", "true");
+      searchButton.textContent = "Nova is researching...";
+      results.textContent = "Searching retailer listings and checking available fitment evidence. This can take a moment.";
+      try {
+        const response = await fetch("/api/parts/find", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({part: query, vehicle})
+        });
+        const data = await response.json();
+        if (!response.ok || data.error) throw new Error(data.error || "Parts research is unavailable.");
+        results.replaceChildren();
+        const card = document.createElement("div");
+        card.className = "pg12-result";
+        const head = document.createElement("div");
+        head.className = "pg16-result-head";
+        const imagePaths = [
+          [/fuel pump/i, "/nova-fuel-pump.jpg"],
+          [/fuel injectors?/i, "/nova-fuel-injector.jpg"],
+          [/control arms?/i, "/nova-control-arm.jpg"],
+          [/tie rod|tie-rod/i, "/nova-tie-rod-end.jpg"],
+          [/water pump/i, "/nova-water-pump.jpg"],
+          [/thermostat/i, "/nova-thermostat.jpg"],
+          [/brake caliper/i, "/nova-brake-caliper.jpg"],
+          [/wheel bearing|wheel hub|hub bearing/i, "/nova-wheel-bearing.jpg"],
+          [/cabin air filter/i, "/nova-cabin-air-filter.png"],
+          [/engine air filter/i, "/nova-engine-air-filter.png"],
+          [/oil filter/i, "/nova-oil-filter.png"],
+          [/alternator/i, "/alternator-corrected.jpg"],
+          [/starter/i, "/starter-corrected.jpg"],
+          [/spark plug/i, "/nova-spark-plug.png"],
+          [/ignition coil/i, "/nova-ignition-coil.png"],
+          [/wiper/i, "/nova-wiper-blades.png"],
+          [/oxygen|o2 sensor/i, "/nova-o2-sensor.png"],
+          [/mass air flow/i, "/nova-maf-sensor.png"],
+          [/brake pad/i, "/a_crisp_high_detail_product_shot_of_automotive_br.png"],
+          [/brake rotor/i, "/a_highly_detailed_photorealistic_studio_style_clo.png"]
+        ];
+        const matchingArt = imagePaths.find(entry => entry[0].test(query));
+        if (matchingArt) {
+          const thumb = document.createElement("img");
+          thumb.className = "pg16-result-image";
+          thumb.src = matchingArt[1];
+          thumb.alt = "Illustrative " + query + " image";
+          thumb.loading = "lazy";
+          thumb.onerror = () => thumb.remove();
+          head.appendChild(thumb);
+        }
+        const headings = document.createElement("div");
+        const title = document.createElement("div");
+        title.className = "pg16-result-title";
+        title.textContent = query;
+        const subtitle = document.createElement("div");
+        subtitle.className = "pg16-result-subtitle";
+        subtitle.textContent = data.lookup_status === "verified"
+          ? "Listed for your vehicle"
+          : data.lookup_status === "candidate"
+          ? "Possible match — exact fitment unverified"
+          : "Nova's sourced parts research";
+        headings.append(title, subtitle);
+        head.appendChild(headings);
+        card.appendChild(head);
+        const replyText = (data.reply || "No sourced part number was returned.").trim();
+        // Keep Nova's complete researched answer, but visually separate part listings.
+        replyText.split(/\n\s*\n/).forEach(paragraph => {
+          paragraph.split(/\n(?=\s*[-•]\s)/).forEach(chunk => {
+            const trimmed = chunk.trim();
+            if (!trimmed) return;
+            if (/^[-•]\s/.test(trimmed)) {
+              trimmed.split(/\n(?=\s*[-•]\s)/).forEach(line => {
+                const item = document.createElement("p");
+                item.className = "pg16-research-part";
+                item.textContent = line.replace(/^[-•]\s*/, "");
+                card.appendChild(item);
+              });
+            } else {
+              const text = document.createElement("p");
+              text.className = "pg16-research-paragraph";
+              text.style.whiteSpace = "pre-line";
+              text.textContent = trimmed;
+              card.appendChild(text);
+            }
+          });
+        });
+        const pricing = document.createElement("p");
+        pricing.className = "pg16-pricing-note";
+        pricing.textContent = data.pricing_note ||
+          "Contact your local parts store for current pricing and availability.";
+        // Avoid repeating the pricing note if Nova already included it.
+        if (!replyText.includes(pricing.textContent)) card.appendChild(pricing);
+        const sources = Array.isArray(data.sources) ? data.sources : [];
+        if (sources.length) {
+          const heading = document.createElement("strong");
+          heading.className = "pg16-source-heading";
+          heading.textContent = "Source listings";
+          card.appendChild(heading);
+          sources.forEach(source => {
+            try {
+              const url = new URL(source.url);
+              if (url.protocol !== "https:" && url.protocol !== "http:") return;
+              const link = document.createElement("a");
+              link.href = url.href;
+              link.target = "_blank";
+              link.rel = "noopener noreferrer";
+              link.textContent = source.title || url.hostname;
+              link.style.display = "block";
+              link.style.overflowWrap = "anywhere";
+              card.appendChild(link);
+            } catch(e) {}
+          });
+        }
+        results.appendChild(card);
+      } catch(error) {
+        results.textContent = error.message || "Unable to search parts right now.";
+      } finally {
+        searchButton.disabled = false;
+        searchButton.classList.remove("pg12-researching");
+        searchButton.removeAttribute("aria-busy");
+        searchButton.textContent = "Find Parts";
+      }
+      return;
       const select = document.getElementById("partSelect");
       const normalized = query.toLowerCase();
       let type = null;
@@ -4061,14 +4514,17 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
       else if (/cabin\s*air\s*filter/.test(normalized)) type = "cabin-air-filter";
       else if (/ignition\s*coils?|\bcoils?\b/.test(normalized)) type = "ignition-coil";
       else if (/wiper\s*blades?|windshield\s*wipers?/.test(normalized)) type = "wiper-blades";
-      else if (/filter/.test(normalized)) type = "filter";
+      else if (/oil\s*filter/.test(normalized)) type = "filter";
 
       if (select && type && Array.from(select.options).some(o => o.value === type)) {
         common.value = Array.from(common.options).some(o => o.text.toLowerCase() === query.toLowerCase()) ? query : "";
         input.value = query;
         select.value = type;
         select.dispatchEvent(new Event("change", {bubbles:true}));
-        const target = document.getElementById("partResults");
+        const selectedVehicle = getVehicle();
+        results.textContent = 'Showing '+query+' category previews. '+
+          (selectedVehicle && selectedVehicle.model ? 'Exact fitment is not verified.' : 'No vehicle selected. Use Change Vehicle before checking compatibility.');
+        const target = document.getElementById("pg3-results-location");
         if (target) requestAnimationFrame(() => target.scrollIntoView({behavior:"smooth",block:"start"}));
         return;
       }
@@ -4817,6 +5273,188 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 })();
 </script>
 <!-- END NOVA V17 -->
+
+<!-- NOVA usability fixes: navigation, feature status and accessible controls -->
+<style>
+[hidden]{display:none!important}
+#novaHome{max-width:760px!important;margin:0 auto!important}
+#novaHome>img:first-child{transform:none!important}
+.nova-hero-action{position:absolute;left:69.2%;width:28.7%;height:4.85%;z-index:11;border:1px solid #51d9ff;border-radius:14px;color:white;background:linear-gradient(110deg,#03233b,#06486c);box-shadow:0 0 9px #00bfff;font-size:clamp(9px,1.5vw,17px);font-weight:750;padding:2px;cursor:pointer}
+.nova-hero-action:focus-visible,button:focus-visible{outline:3px solid #fff;outline-offset:3px}
+#novaHome>button[aria-label="Talk to Nova"]{left:23.4%!important;top:78.4%!important;width:55%!important;height:8.3%!important}
+#savedVehiclesSection,.pg3-search-panel{display:none!important}
+#pg12-finder{scroll-margin-top:18px}
+#pg3-results-location{scroll-margin-top:18px;width:100%}
+#parts #partResults.pg3-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#parts .pg3-stage{width:100%!important}
+@media(max-width:420px){#parts #partResults.pg3-grid{grid-template-columns:1fr!important}}
+#parts.pg-option3 .pg3-stage{aspect-ratio:4 / 3!important;max-height:none!important;height:auto!important;overflow:hidden}
+#parts.pg-option3 .pg3-engine.pg5-ready{max-height:none!important;min-height:0!important;height:100%!important}
+#parts.pg-option3 .pg3-engine.pg5-ready img{height:100%!important;object-fit:cover!important;transform:scale(1.04)!important}
+#novaMore button{margin:6px;min-height:44px}
+#novaPreviewNotice{padding:12px 16px;border:1px solid #28799d;border-radius:12px;color:#c7e9f9;background:#072033}
+#pgVinCamera{width:100%;box-sizing:border-box}
+#chatLog button{margin-top:10px}
+
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*{animation:none!important;transition:none!important}}
+</style>
+<script>
+(function(){
+ function initializeUsability(){
+  const home=document.getElementById('novaHome');
+  const more=document.createElement('section');
+  more.id='novaMore';more.className='panel';more.hidden=true;
+  more.innerHTML='<h2>About Nova & feature status</h2><p>Nova helps explain symptoms, trouble codes and diagnostic checks. Confirm the cause before buying a part.</p><p><strong>Available:</strong> AI chat, vehicle selection, My Garage and sample parts browsing.</p><p><strong>Preview:</strong> Parts images and any price ranges are illustrative. Supplier inventory, exact fitment, live price comparison and checkout are not connected.</p><p><strong>Coming later:</strong> Maintenance tracking. Voice is currently a private test and depends on browser support.</p><button type="button" data-nova-go="diagnose">Ask Nova</button><button type="button" data-nova-go="vehicle">My Vehicle & Garage</button><button type="button" data-nova-go="parts">Browse parts previews</button>';
+  document.querySelector('main').appendChild(more);
+  const notice=document.createElement('p');notice.id='novaPreviewNotice';
+  notice.textContent='Parts preview: live prices, supplier inventory, verified fitment and checkout are not connected yet.';
+  document.getElementById('parts').querySelector('h2').after(notice);
+  // Keep one Garage and place all VIN methods beside vehicle selection.
+  vinPanel.id='novaVinPanel';vinPanel.hidden=true;
+  document.getElementById('vehicle').appendChild(vinPanel);
+  const manual=document.querySelector('#vehicle .scan-options button');
+  manual.onclick=()=>{vinPanel.hidden=true;document.getElementById('year').focus();};
+  const showBase=window.show;
+  window.show=function(id){
+   more.hidden=id!=='more';
+   home.hidden=id!=='home';
+   document.querySelector('.actions').hidden=id!=='home';
+   const garage=document.getElementById('myGarageList');
+   if(garage)garage.hidden=!['home','vehicle'].includes(id);
+   if(id==='home'||id==='more'){
+    ['vehicle','diagnose','parts'].forEach(key=>document.getElementById(key).classList.add('hidden'));
+    (id==='home'?home:more).scrollIntoView({block:'start'});
+   }else showBase(id);
+   document.querySelectorAll('nav button').forEach(button=>{
+    const isCurrent=button.getAttribute('onclick')===`show('${id}')`;
+    if(isCurrent)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');
+   });
+  };
+  more.querySelectorAll('[data-nova-go]').forEach(button=>button.onclick=()=>show(button.dataset.novaGo));
+  const controls=[
+   ['Diagnose',15.75,()=>show('diagnose')],
+   ['Find Parts',21.2,()=>show('parts')],
+   ['Prices · Preview',26.65,()=>show('parts')],
+   ['Repair Guidance',32.1,()=>{show('diagnose');const input=document.getElementById('chatInput');input.value='Please help me understand the diagnostic checks and repair options for my vehicle.';input.focus();}],
+   ['Select Vehicle',37.6,()=>show('vehicle')]
+  ];
+  controls.forEach(([label,top,action])=>{
+   const button=document.createElement('button');button.type='button';
+   button.className='nova-hero-action';button.textContent=label+' ›';button.style.top=top+'%';button.onclick=action;home.appendChild(button);
+  });
+  const saved=window.saveVehicle;
+  window.saveVehicle=function(){
+   if(!document.getElementById('year').value||!document.getElementById('make').value||!document.getElementById('model').value){
+    document.getElementById('vehicleSummary').textContent='Choose a year, make and model before saving.';return;
+   }
+   saved();
+  };
+  // Retire the old sample/preview catalog after the unified sourced finder takes over.
+  const previewHeading=Array.from(document.querySelectorAll('#parts .pg3-heading'))
+    .find(el=>el.textContent.trim()==='PART OPTIONS');
+  if(previewHeading)previewHeading.classList.add('pg16-retired-preview');
+  const previewNotice=document.querySelector('#parts > p.warning.small');
+  if(previewNotice && /Illustrative prices/i.test(previewNotice.textContent))
+    previewNotice.hidden=true;
+  const previewHint=document.querySelector('#novaPreviewNotice');
+  if(previewHint)previewHint.textContent='Nova researches sourced part numbers. Confirm fitment and current store pricing before purchasing.';
+  // One primary finder; common choices and free text lead to the same results.
+  const finder=document.getElementById('pg12-finder');
+  const intro=document.querySelector('#parts .pg3-intro');
+  if(finder&&intro)intro.after(finder);
+  const resultLocation=document.getElementById('pg3-results-location');
+  if(finder&&resultLocation){
+   finder.after(resultLocation);
+   const detail=document.getElementById('pg3-detail');if(detail)resultLocation.after(detail);
+   const heading=Array.from(document.querySelectorAll('#parts .pg3-heading')).find(el=>el.textContent.trim()==='PART OPTIONS');if(heading)resultLocation.before(heading);
+  }
+  const maintenance=document.querySelector('.actions button:last-child');maintenance.disabled=true;maintenance.removeAttribute('onclick');
+  document.getElementById('chatInput').setAttribute('aria-label','Message Nova');
+  document.getElementById('pgVinResult').setAttribute('role','status');
+  show('home');
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initializeUsability,{once:true});
+ else initializeUsability();
+})();
+</script>
+
+
+<!-- EXPLORE PARTS CATEGORY ROUTING V16 -->
+<style>
+#pg16-category-panel{margin:18px 0 24px;padding:17px;border:1px solid #36b5ec;border-radius:16px;background:linear-gradient(140deg,#0a2942,#061724);color:#eaf7ff;scroll-margin-top:20px}
+#pg16-category-panel[hidden]{display:none!important}
+#pg16-category-panel h3{margin:0 0 7px;color:white;font-size:19px}
+#pg16-category-panel p{margin:0 0 13px;font-size:12px;line-height:1.5;color:#add9ed}
+#pg16-category-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#pg16-category-options button{background:linear-gradient(115deg,#103954,#075381);border:1px solid #32bfe9;border-radius:11px;color:#fff;padding:13px 7px;font-weight:750;font-size:13px;min-height:54px;cursor:pointer}
+#pg16-category-options button:focus-visible,.pg3-dept-button:focus-visible{outline:3px solid white;outline-offset:2px}
+@media(max-width:360px){#pg16-category-options{grid-template-columns:1fr}}
+</style>
+<script>
+(function(){
+ "use strict";
+ const departments=[
+  {name:"Engine & Filters",parts:["Oil Filter","Engine Air Filter","Cabin Air Filter","Fuel Filter","Spark Plugs","PCV Valve","Serpentine Belt","Water Pump","Thermostat","Fuel Injectors"]},
+  {name:"Brakes",parts:["Front Brake Pads","Rear Brake Pads","Front Brake Rotors","Rear Brake Rotors","Brake Calipers","Brake Shoes","Brake Master Cylinder","ABS Sensor"]},
+  {name:"Battery & Electrical",parts:["Battery","Alternator","Starter","Ignition Coils","Oxygen Sensor","Mass Air Flow Sensor","Headlight Bulbs","Fuses"]},
+  {name:"Suspension",parts:["Front Struts","Rear Shocks","Control Arms","Ball Joints","Inner Tie Rod Ends","Outer Tie Rod Ends","Wheel Bearings","Sway Bar Links"]}
+ ];
+ function initialize(){
+  const grid=document.getElementById("pg3-departments");
+  const finder=document.getElementById("pg12-finder");
+  if(!grid||!finder||document.getElementById("pg16-category-panel"))return;
+  const panel=document.createElement("section");
+  panel.id="pg16-category-panel";
+  panel.hidden=true;
+  panel.setAttribute("aria-label","Choose a part to research");
+  const title=document.createElement("h3");
+  const details=document.createElement("p");
+  details.textContent="Choose a part. Nova will research O'Reilly listings for your active vehicle and show only sourced part numbers. Current store pricing and exact fitment may need confirmation.";
+  const options=document.createElement("div");
+  options.id="pg16-category-options";
+  panel.append(title,details,options);
+  grid.after(panel);
+  const buttons=Array.from(grid.querySelectorAll(".pg3-dept-button"));
+  departments.forEach((department,index)=>{
+   const button=buttons[index];
+   if(!button)return;
+   button.disabled=false;
+   button.textContent="Explore Parts →";
+   button.addEventListener("click",function(event){
+    // The legacy department handler navigates to sample cards. Replace its route.
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    grid.querySelectorAll(".pg3-card").forEach(card=>card.classList.remove("pg3-dept-active"));
+    button.closest(".pg3-card")?.classList.add("pg3-dept-active");
+    title.textContent=department.name;
+    options.replaceChildren();
+    department.parts.forEach(part=>{
+      const choice=document.createElement("button");
+      choice.type="button";
+      choice.textContent=part;
+      choice.addEventListener("click",()=>{
+       const input=finder.querySelector("#pg12-query");
+       const select=finder.querySelector("#pg12-common");
+       const search=finder.querySelector("#pg12-search");
+       if(!input||!search)return;
+       if(select)select.value="";
+       input.value=part;
+       input.dispatchEvent(new Event("input",{bubbles:true}));
+       finder.scrollIntoView({behavior:"smooth",block:"start"});
+       search.click();
+      });
+      options.appendChild(choice);
+    });
+    panel.hidden=false;
+    panel.scrollIntoView({behavior:"smooth",block:"start"});
+   },true);
+  });
+ }
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initialize);
+ else initialize();
+})();
+</script>
+<!-- END EXPLORE PARTS CATEGORY ROUTING V16 -->
 
 </body>
 </html>
