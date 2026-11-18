@@ -19,7 +19,7 @@ def install_membership(app):
     app.config["NOVA_MEMBERSHIP_ENABLED"] = enabled
     if enabled:
         for key in (
-            "NOVA_SESSION_SECRET", "NOVA_SITE_URL", "NOVA_BILLING_DATABASE_URL",
+            "NOVA_SESSION_SECRET", "NOVA_SITE_URL",
             "SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY", "STRIPE_SECRET_KEY", "STRIPE_PRICE_ID",
         ):
             if not os.getenv(key):
@@ -37,20 +37,37 @@ def install_membership(app):
         if not stripe.api_key.startswith(("sk_test_", "rk_test_")):
             raise RuntimeError("This membership rollout requires Stripe test credentials")
         stripe.default_http_client = stripe.HTTPXClient(timeout=(5, 15))
-        with connect() as db:
-            db.execute("SELECT pg_advisory_xact_lock(38204912)")
-            db.execute("""
-                CREATE TABLE IF NOT EXISTS nova_membership (
-                    user_id uuid PRIMARY KEY,
-                    stripe_customer text UNIQUE,
-                    checkout_session text
-                )
-            """)
+        try:
+            with connect() as db:
+                db.execute("SELECT pg_advisory_xact_lock(38204912)")
+                db.execute("""
+                    CREATE TABLE IF NOT EXISTS nova_membership (
+                        user_id uuid PRIMARY KEY,
+                        stripe_customer text UNIQUE,
+                        checkout_session text
+                    )
+                """)
+        except psycopg.Error:
+            raise RuntimeError('Nova membership database initialization failed. Check Railway database settings.') from None
     app.register_blueprint(membership)
 
 
 def connect():
-    return psycopg.connect(os.environ["NOVA_BILLING_DATABASE_URL"], connect_timeout=5)
+    password = os.getenv("NOVA_BILLING_DATABASE_PASSWORD")
+    if password:
+        host = os.getenv("NOVA_BILLING_DATABASE_HOST")
+        user = os.getenv("NOVA_BILLING_DATABASE_USER")
+        if not host or not user:
+            raise psycopg.ProgrammingError("Set the database host and user in Railway.")
+        return psycopg.connect(
+            host=host, port=5432, dbname="postgres", user=user, password=password,
+            sslmode="require", connect_timeout=5,
+        )
+
+    url = os.getenv("NOVA_BILLING_DATABASE_URL", "")
+    if not url.startswith(("postgresql://", "postgres://")):
+        raise psycopg.ProgrammingError("Set the database password or a PostgreSQL connection URL.")
+    return psycopg.connect(url, connect_timeout=5)
 
 
 def site_url():
