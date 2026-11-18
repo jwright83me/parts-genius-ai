@@ -451,7 +451,12 @@ def research_parts(client, message, history, vehicle):
                                         'No cited web evidence returned; do not use unsupported part numbers.')
                         sources.update(found_sources)
                         successful_searches += 1
-                    except Exception:
+                    except Exception as error:
+                        # Preserve upstream billing/rate-limit errors instead of
+                        # masking them as a generic failed part search.
+                        from openai import RateLimitError
+                        if isinstance(error, RateLimitError):
+                            raise
                         app.logger.exception('One parts research query failed')
                 if not successful_searches:
                     raise RuntimeError('Parts research is temporarily unavailable')
@@ -554,7 +559,14 @@ def find_verified_parts():
             [], vehicle_str)
         result["pricing_note"] = "Contact your local parts store for current pricing and availability."
         return jsonify(result)
-    except Exception:
+    except Exception as error:
+        from openai import RateLimitError
+        if isinstance(error, RateLimitError):
+            app.logger.warning("Parts Finder API quota or billing limit reached")
+            return jsonify({
+                "error": "Nova's live research is unavailable because the AI service has reached its usage or billing limit. Please contact the site owner; retry after service is restored.",
+                "code": "ai_usage_limit"
+            }), 503
         app.logger.exception("Smart Parts Finder lookup failed")
         return jsonify({"error": "Live parts research is temporarily unavailable. Try again shortly."}), 502
 
