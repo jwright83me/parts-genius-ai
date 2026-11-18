@@ -4165,6 +4165,10 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
         const head = document.createElement("div");
         head.className = "pg16-result-head";
         const imagePaths = [
+          [/water pump/i, "/nova-water-pump.jpg"],
+          [/thermostat/i, "/nova-thermostat.jpg"],
+          [/brake caliper/i, "/nova-brake-caliper.jpg"],
+          [/wheel bearing|wheel hub|hub bearing/i, "/nova-wheel-bearing.jpg"],
           [/cabin air filter/i, "/nova-cabin-air-filter.png"],
           [/engine air filter/i, "/nova-engine-air-filter.png"],
           [/oil filter/i, "/nova-oil-filter.png"],
