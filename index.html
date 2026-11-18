@@ -1059,6 +1059,38 @@ if (
     return 'kia-telluride-hologram.png';
   }
 
+  // Batch 3 dedicated holograms: exact make + model, before generic fallback.
+  if (make === 'mazda' && (model.includes('cx-5') || model.includes('cx5') || model.includes('cx 5'))) {
+    return 'mazda-cx5-hologram.png';
+  }
+  if (make === 'jeep' && (model.includes('grand cherokee') || model.includes('grand-cherokee'))) {
+    return 'jeep-grand-cherokee-hologram.png';
+  }
+  if ((make === 'chevrolet' || make === 'chevy') && model.includes('corvette')) {
+    return 'chevrolet-corvette-hologram.png';
+  }
+  if (make === 'dodge' && model.includes('charger')) {
+    return 'dodge-charger-hologram.png';
+  }
+  if (make === 'subaru' && model.includes('crosstrek')) {
+    return 'subaru-crosstrek-hologram.png';
+  }
+  if (make === 'honda' && model.includes('odyssey')) {
+    return 'honda-odyssey-hologram.png';
+  }
+  if (make === 'toyota' && model.includes('sienna')) {
+    return 'toyota-sienna-hologram.png';
+  }
+  if (make === 'hyundai' && model.includes('elantra')) {
+    return 'hyundai-elantra-hologram.png';
+  }
+  if (make === 'nissan' && model.includes('sentra')) {
+    return 'nissan-sentra-hologram.png';
+  }
+  if ((make === 'volkswagen' || make === 'vw') && model.includes('jetta')) {
+    return 'volkswagen-jetta-hologram.png';
+  }
+
   // Other vehicles will use automatic image lookup later.
 // Ford F-150 hologram
 if (make === 'ford' &&
@@ -1504,7 +1536,11 @@ const recentHologramNames = [
   'ford-explorer', 'chevy-equinox', 'toyota-highlander', 'subaru-outback',
   'toyota-corolla', 'honda-pilot', 'nissan-rogue', 'hyundai-tucson',
   'kia-sportage', 'subaru-forester', 'chevrolet-tahoe',
-  'gmc-sierra-1500', 'kia-telluride'
+  'gmc-sierra-1500', 'kia-telluride',
+  'mazda-cx5', 'jeep-grand-cherokee', 'chevrolet-corvette',
+  'dodge-charger', 'subaru-crosstrek', 'honda-odyssey',
+  'toyota-sienna', 'hyundai-elantra', 'nissan-sentra',
+  'volkswagen-jetta'
 ];
 const novaHologramSizingStyle = document.createElement('style');
 novaHologramSizingStyle.id = 'novaRecentHologramSizing';
