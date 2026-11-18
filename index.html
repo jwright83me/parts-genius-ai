@@ -1002,6 +1002,33 @@ if (
 }
 
 
+  // Dedicated transparent holograms — match before generic vehicle types.
+  if (make === 'toyota' && model.includes('camry')) {
+    return 'toyota-camry-hologram.png';
+  }
+  if (make === 'honda' && model.includes('accord')) {
+    return 'honda-accord-hologram.png';
+  }
+  if (make === 'nissan' && model.includes('altima')) {
+    return 'nissan-altima-hologram.png';
+  }
+  if ((make === 'ram' || make === 'dodge') &&
+      /(?:^|[^0-9])1500(?:$|[^0-9])/.test(model) && !model.includes('promaster')) {
+    return 'ram-1500-hologram.png';
+  }
+  if (make === 'ford' && model.includes('explorer')) {
+    return 'ford-explorer-hologram.png';
+  }
+  if ((make === 'chevrolet' || make === 'chevy') && model.includes('equinox')) {
+    return 'chevy-equinox-hologram.png';
+  }
+  if (make === 'toyota' && model.includes('highlander')) {
+    return 'toyota-highlander-hologram.png';
+  }
+  if (make === 'subaru' && model.includes('outback')) {
+    return 'subaru-outback-hologram.png';
+  }
+
   // Other vehicles will use automatic image lookup later.
 // Ford F-150 hologram
 if (make === 'ford' &&
