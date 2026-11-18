@@ -1029,6 +1029,36 @@ if (
     return 'subaru-outback-hologram.png';
   }
 
+  // Batch 2: dedicated blue vehicle holograms, prior to generic fallbacks.
+  if (make === 'toyota' && model.includes('corolla')) {
+    return 'toyota-corolla-hologram.png';
+  }
+  if (make === 'honda' && model.includes('pilot')) {
+    return 'honda-pilot-hologram.png';
+  }
+  if (make === 'nissan' && model.includes('rogue')) {
+    return 'nissan-rogue-hologram.png';
+  }
+  if (make === 'hyundai' && model.includes('tucson')) {
+    return 'hyundai-tucson-hologram.png';
+  }
+  if (make === 'kia' && model.includes('sportage')) {
+    return 'kia-sportage-hologram.png';
+  }
+  if (make === 'subaru' && model.includes('forester')) {
+    return 'subaru-forester-hologram.png';
+  }
+  if ((make === 'chevrolet' || make === 'chevy') && model.includes('tahoe')) {
+    return 'chevrolet-tahoe-hologram.png';
+  }
+  if (make === 'gmc' && model.includes('sierra') &&
+      /(?:^|[^0-9])1500(?:$|[^0-9])/.test(model)) {
+    return 'gmc-sierra-1500-hologram.png';
+  }
+  if (make === 'kia' && model.includes('telluride')) {
+    return 'kia-telluride-hologram.png';
+  }
+
   // Other vehicles will use automatic image lookup later.
 // Ford F-150 hologram
 if (make === 'ford' &&
