@@ -1324,8 +1324,21 @@ removeButton.onclick = () => {
 
   if (vehicleSection) {
     vehicleSection.parentElement.insertBefore(panel, vehicleSection);
+    addButton.type = 'button';
     addButton.onclick = () => {
-      vehicleSection.scrollIntoView({behavior:'smooth'});
+      // The vehicle panel is hidden in Garage/Home. Reveal it through
+      // the app navigator before scrolling or focusing its first field.
+      if (typeof window.show === 'function') {
+        window.show('vehicle');
+      } else {
+        vehicleSection.classList.remove('hidden');
+        vehicleSection.hidden = false;
+      }
+      requestAnimationFrame(() => {
+        vehicleSection.scrollIntoView({behavior:'smooth',block:'start'});
+        const year = document.getElementById('year');
+        if (year) year.focus({preventScroll:true});
+      });
     };
   } else {
     document.body.appendChild(panel);
