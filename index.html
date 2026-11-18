@@ -1414,7 +1414,7 @@ popup.innerHTML = `
 
     <img id="pgSavedHologram"
       src="${getVehicleHologram(JSON.parse(localStorage.getItem('pgVehicle') || 'null')) || ''}"
-      style="position:absolute;left:24%;top:29%;width:30%;height:25%;object-fit:contain;mix-blend-mode:screen;pointer-events:none;filter:drop-shadow(0 0 8px cyan);">
+      style="position:absolute;left:18%;top:20%;width:42%;height:44%;object-fit:contain;mix-blend-mode:screen;pointer-events:none;filter:drop-shadow(0 0 8px cyan);">
 
     <button id="pgStartDiagnosis" aria-label="Begin Diagnosis"
       style="position:absolute;left:56%;top:43%;width:40%;height:13%;background:transparent;border:0;"></button>
@@ -1495,6 +1495,23 @@ if (activeNovaImage &&
   novaHologram.style.transform = 'scale(1.04) translateY(-2%)';
   novaHologram.style.transformOrigin = 'center center';
 }
+
+// Enlarge only the recent transparent vehicle PNGs in Nova's hands.
+// My Garage card images and previous vehicle-specific tuning stay unchanged.
+// Attribute-based styles automatically apply after changing the active vehicle.
+const recentHologramNames = [
+  'toyota-camry', 'honda-accord', 'nissan-altima', 'ram-1500',
+  'ford-explorer', 'chevy-equinox', 'toyota-highlander', 'subaru-outback',
+  'toyota-corolla', 'honda-pilot', 'nissan-rogue', 'hyundai-tucson',
+  'kia-sportage', 'subaru-forester', 'chevrolet-tahoe',
+  'gmc-sierra-1500', 'kia-telluride'
+];
+const novaHologramSizingStyle = document.createElement('style');
+novaHologramSizingStyle.id = 'novaRecentHologramSizing';
+novaHologramSizingStyle.textContent = recentHologramNames
+  .map(name => '#novaVehicleHologram[src$="' + name + '-hologram.png"]')
+  .join(',\n') + ' { transform:scale(1.45) translateY(1%);transform-origin:center center; }';
+document.head.appendChild(novaHologramSizingStyle);
 
 // NOVA - Clickable voice button
 novaSection.style.position = 'relative';
