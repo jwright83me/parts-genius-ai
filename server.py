@@ -82,6 +82,22 @@ def nova_showroom_background_image():
 def nova_engine_air_filter_image():
     return send_file("nova-engine-air-filter.png", mimetype="image/png")
 
+@app.get("/nova-fuel-pump.jpg")
+def nova_fuel_pump_image():
+    return send_file("nova-fuel-pump.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-fuel-injector.jpg")
+def nova_fuel_injector_image():
+    return send_file("nova-fuel-injector.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-control-arm.jpg")
+def nova_control_arm_image():
+    return send_file("nova-control-arm.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-tie-rod-end.jpg")
+def nova_tie_rod_end_image():
+    return send_file("nova-tie-rod-end.jpg", mimetype="image/jpeg")
+
 @app.get("/nova-water-pump.jpg")
 def nova_water_pump_image():
     return send_file("nova-water-pump.jpg", mimetype="image/jpeg")
