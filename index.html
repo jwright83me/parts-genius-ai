@@ -3912,6 +3912,37 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
   color:white;
   font-weight:bold;
 }
+/* Visible progress for Nova's sourced part-number research. */
+#pg12-search.pg12-researching{
+  opacity:1;
+  cursor:progress;
+  border-color:#7be8ff;
+  background:linear-gradient(115deg,#075d93,#159fce);
+  box-shadow:0 0 0 0 rgba(55,203,255,.5);
+  animation:pg12ResearchPulse 1.7s ease-in-out infinite;
+}
+#pg12-search.pg12-researching::before{
+  content:"";
+  display:inline-block;
+  width:14px;
+  height:14px;
+  margin-right:9px;
+  vertical-align:-2px;
+  border:2px solid rgba(255,255,255,.35);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:pg12ResearchSpin .85s linear infinite;
+}
+@keyframes pg12ResearchPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(55,203,255,.45);filter:brightness(1)}
+  50%{box-shadow:0 0 0 9px rgba(55,203,255,0);filter:brightness(1.18)}
+}
+@keyframes pg12ResearchSpin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){
+  #pg12-search.pg12-researching,
+  #pg12-search.pg12-researching::before{animation:none}
+}
+
 .pg12-result {
   margin-top:12px;
   padding:12px;
@@ -4080,6 +4111,8 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
       }
       const searchButton = panel.querySelector("#pg12-search");
       searchButton.disabled = true;
+      searchButton.classList.add("pg12-researching");
+      searchButton.setAttribute("aria-busy", "true");
       searchButton.textContent = "Nova is researching...";
       results.textContent = "Searching retailer listings and checking available fitment evidence. This can take a moment.";
       try {
@@ -4133,6 +4166,8 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
         results.textContent = error.message || "Unable to search parts right now.";
       } finally {
         searchButton.disabled = false;
+        searchButton.classList.remove("pg12-researching");
+        searchButton.removeAttribute("aria-busy");
         searchButton.textContent = "Find Parts";
       }
       return;
