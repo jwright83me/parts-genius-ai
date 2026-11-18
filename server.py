@@ -250,6 +250,46 @@ def gmc_sierra_1500_image():
 def kia_telluride_image():
     return send_file("kia-telluride-hologram.png", mimetype="image/png")
 
+@app.get("/mazda-cx5-hologram.png")
+def mazda_cx5_hologram_image():
+    return send_file("mazda-cx5-hologram.png", mimetype="image/png")
+
+@app.get("/jeep-grand-cherokee-hologram.png")
+def jeep_grand_cherokee_hologram_image():
+    return send_file("jeep-grand-cherokee-hologram.png", mimetype="image/png")
+
+@app.get("/chevrolet-corvette-hologram.png")
+def chevrolet_corvette_hologram_image():
+    return send_file("chevrolet-corvette-hologram.png", mimetype="image/png")
+
+@app.get("/dodge-charger-hologram.png")
+def dodge_charger_hologram_image():
+    return send_file("dodge-charger-hologram.png", mimetype="image/png")
+
+@app.get("/subaru-crosstrek-hologram.png")
+def subaru_crosstrek_hologram_image():
+    return send_file("subaru-crosstrek-hologram.png", mimetype="image/png")
+
+@app.get("/honda-odyssey-hologram.png")
+def honda_odyssey_hologram_image():
+    return send_file("honda-odyssey-hologram.png", mimetype="image/png")
+
+@app.get("/toyota-sienna-hologram.png")
+def toyota_sienna_hologram_image():
+    return send_file("toyota-sienna-hologram.png", mimetype="image/png")
+
+@app.get("/hyundai-elantra-hologram.png")
+def hyundai_elantra_hologram_image():
+    return send_file("hyundai-elantra-hologram.png", mimetype="image/png")
+
+@app.get("/nissan-sentra-hologram.png")
+def nissan_sentra_hologram_image():
+    return send_file("nissan-sentra-hologram.png", mimetype="image/png")
+
+@app.get("/volkswagen-jetta-hologram.png")
+def volkswagen_jetta_hologram_image():
+    return send_file("volkswagen-jetta-hologram.png", mimetype="image/png")
+
 @app.get("/tesla-model-3-hologram.png")
 def tesla_model_3_hologram_image():
     return send_file("tesla-model-3-hologram.png")
