@@ -948,7 +948,7 @@ function getVehicleHologram(vehicle) {
   }
 
   // Dedicated Ford Mustang hologram
-  if (make === 'ford' && model.includes('mustang')) {
+  if (make === 'ford' && model.includes('mustang') && !/mach[ -]?e/.test(model)) {
     return 'ford-mustang-hologram.png';
   }
 
@@ -970,6 +970,7 @@ function getVehicleHologram(vehicle) {
     model.includes('silverado') &&
     !model.includes('2500') &&
     !model.includes('3500') &&
+    !/\bhd\b/.test(model) &&
     Number(vehicle.year) >= 2019 &&
     Number(vehicle.year) <= 2024
   ) {
@@ -1270,6 +1271,31 @@ if (make === 'ford' &&
     (model.includes('f150') || model.includes('f-150'))) {
   return 'A467D657-7E13-4A55-9DCD-FE4A72519AB1.png';
 }
+// Shared artwork for known vehicle body styles, after model-specific artwork.
+const vehicleLabel = (make.trim() + ' ' + model.trim()).replace(/\s+/g, ' ');
+const sharedHolograms = [
+  [/^(Ford Transit|Mercedes-Benz e?Sprinter|Ram ProMaster (?:1500|2500|3500)|Nissan NV)$/i, 'generic-high-roof-cargo-van-hologram.png'],
+  [/^(Ford Transit Connect|Ram ProMaster City|Nissan NV200|Mercedes-Benz Metris)$/i, 'generic-compact-cargo-van-hologram.png'],
+  [/^(Chevrolet Express|GMC Savana)$/i, 'generic-traditional-full-size-van-hologram.png'],
+  [/^(Ford F-(?:250|350|450)|Ram (?:2500|3500)|GMC Sierra HD|Chevrolet Silverado HD)$/i, 'generic-heavy-duty-pickup-hologram.png'],
+  [/^(Ford Maverick|Hyundai Santa Cruz)$/i, 'generic-compact-pickup-hologram.png'],
+  [/^(Honda Fit|Volkswagen (?:Golf|Golf GTI|Golf R|GTI|e-Golf)|Nissan (?:Leaf|Versa Note)|Mitsubishi Mirage|Chevrolet Spark|Hyundai Veloster(?: N)?|BMW i3)$/i, 'generic-hatchback-hologram.png'],
+  [/^(Audi (?:A4 allroad|A6 allroad|RS 6 Avant)|Volvo V(?:60|90)(?:CC)?|Buick Regal TourX|Volkswagen Golf (?:Alltrack|SportWagen))$/i, 'generic-station-wagon-hologram.png'],
+  [/^(Tesla Model [XY]|Ford Mustang Mach-E|Hyundai Ioniq (?:5(?: N)?|9)|Kia EV6|Volkswagen ID\.4|Nissan Ariya(?: Hatchback| MPV)?|Toyota (?:bZ4X|bZ)|Subaru Solterra|Honda Prologue)$/i, 'generic-electric-crossover-hologram.png'],
+  [/^(Honda HR-V|Nissan Kicks(?: MPV| Play)?|Hyundai (?:Venue|Kona(?: N)?)|Kia Seltos|Mazda CX-(?:3|30)|Chevrolet (?:Trax|Trailblazer)|Buick Envista|Volkswagen Taos|Jeep Renegade|Lexus UX)$/i, 'generic-subcompact-crossover-hologram.png'],
+  [/^Mitsubishi (?:FE|FG|FK|FM)[\dC]/i, 'generic-cab-over-chassis-hologram.png']
+];
+const sharedHologram = sharedHolograms.find(([pattern]) => pattern.test(vehicleLabel));
+if (sharedHologram) return sharedHologram[1];
+
+// Reuse existing pickup silhouettes for similar models and newer model years.
+if (/^(gmc sierra(?: limited)?|chevrolet silverado(?: 1500)?|nissan titan)$/.test(vehicleLabel)) {
+  return make === 'chevrolet' ? 'chevy-silverado-hologram.png.PNG' : 'gmc-sierra-1500-hologram.png';
+}
+if (/^(gmc canyon|honda ridgeline|jeep gladiator|toyota tacoma)$/.test(vehicleLabel)) {
+  return 'ford-ranger-hologram.png';
+}
+
 // Generic minivan hologram; exclude Volkswagen models.
 const minivanModels = [
   'sienna', 'odyssey', 'pacifica', 'voyager',
