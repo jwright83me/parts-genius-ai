@@ -1,5 +1,12 @@
 
 import os
+from concurrent.futures import ThreadPoolExecutor
+from datetime import date
+from functools import lru_cache
+from urllib.error import URLError
+from urllib.parse import urlencode
+from urllib.request import urlopen
+from xml.etree import ElementTree
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
@@ -93,6 +100,86 @@ def nova_showroom_background_image():
 @app.get("/nova-engine-air-filter.png")
 def nova_engine_air_filter_image():
     return send_file("nova-engine-air-filter.png", mimetype="image/png")
+
+@app.get("/nova-heater-core.jpg")
+def nova_heater_core_image():
+    return send_file("nova-heater-core.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-blower-motor.jpg")
+def nova_blower_motor_image():
+    return send_file("nova-blower-motor.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-struts.jpg")
+def nova_struts_image():
+    return send_file("nova-struts.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-shocks.jpg")
+def nova_shocks_image():
+    return send_file("nova-shocks.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-ball-joints.jpg")
+def nova_ball_joints_image():
+    return send_file("nova-ball-joints.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-sway-bar-links.jpg")
+def nova_sway_bar_links_image():
+    return send_file("nova-sway-bar-links.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-serpentine-belt.jpg")
+def nova_serpentine_belt_image():
+    return send_file("nova-serpentine-belt.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-timing-belt.jpg")
+def nova_timing_belt_image():
+    return send_file("nova-timing-belt.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-engine-mount.jpg")
+def nova_engine_mount_image():
+    return send_file("nova-engine-mount.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-throttle-body.jpg")
+def nova_throttle_body_image():
+    return send_file("nova-throttle-body.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-fuel-filter.jpg")
+def nova_fuel_filter_image():
+    return send_file("nova-fuel-filter.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-pcv-valve.jpg")
+def nova_pcv_valve_image():
+    return send_file("nova-pcv-valve.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-brake-shoes.jpg")
+def nova_brake_shoes_image():
+    return send_file("nova-brake-shoes.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-brake-master-cylinder.jpg")
+def nova_brake_master_cylinder_image():
+    return send_file("nova-brake-master-cylinder.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-abs-sensor.jpg")
+def nova_abs_sensor_image():
+    return send_file("nova-abs-sensor.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-battery.jpg")
+def nova_battery_image():
+    return send_file("nova-battery.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-headlight-bulbs.jpg")
+def nova_headlight_bulbs_image():
+    return send_file("nova-headlight-bulbs.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-fuses.jpg")
+def nova_fuses_image():
+    return send_file("nova-fuses.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-radiator.jpg")
+def nova_radiator_image():
+    return send_file("nova-radiator.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-radiator-hose.jpg")
+def nova_radiator_hose_image():
+    return send_file("nova-radiator-hose.jpg", mimetype="image/jpeg")
 
 @app.get("/nova-fuel-pump.jpg")
 def nova_fuel_pump_image():
@@ -189,6 +276,46 @@ def nova_avatar_icon_image():
 @app.get("/nova-lab-background.png")
 def nova_lab_background_image():
     return send_file("nova-lab-background.png")
+
+@app.get("/generic-high-roof-cargo-van-hologram.png")
+def generic_high_roof_cargo_van_hologram():
+    return send_file("generic-high-roof-cargo-van-hologram.png", mimetype="image/png")
+
+@app.get("/generic-compact-cargo-van-hologram.png")
+def generic_compact_cargo_van_hologram():
+    return send_file("generic-compact-cargo-van-hologram.png", mimetype="image/png")
+
+@app.get("/generic-traditional-full-size-van-hologram.png")
+def generic_traditional_full_size_van_hologram():
+    return send_file("generic-traditional-full-size-van-hologram.png", mimetype="image/png")
+
+@app.get("/generic-heavy-duty-pickup-hologram.png")
+def generic_heavy_duty_pickup_hologram():
+    return send_file("generic-heavy-duty-pickup-hologram.png", mimetype="image/png")
+
+@app.get("/generic-compact-pickup-hologram.png")
+def generic_compact_pickup_hologram():
+    return send_file("generic-compact-pickup-hologram.png", mimetype="image/png")
+
+@app.get("/generic-hatchback-hologram.png")
+def generic_hatchback_hologram():
+    return send_file("generic-hatchback-hologram.png", mimetype="image/png")
+
+@app.get("/generic-station-wagon-hologram.png")
+def generic_station_wagon_hologram():
+    return send_file("generic-station-wagon-hologram.png", mimetype="image/png")
+
+@app.get("/generic-electric-crossover-hologram.png")
+def generic_electric_crossover_hologram():
+    return send_file("generic-electric-crossover-hologram.png", mimetype="image/png")
+
+@app.get("/generic-subcompact-crossover-hologram.png")
+def generic_subcompact_crossover_hologram():
+    return send_file("generic-subcompact-crossover-hologram.png", mimetype="image/png")
+
+@app.get("/generic-cab-over-chassis-hologram.png")
+def generic_cab_over_chassis_hologram():
+    return send_file("generic-cab-over-chassis-hologram.png", mimetype="image/png")
 
 @app.get("/generic-minivan-hologram.png")
 def generic_minivan_hologram_image():
@@ -805,6 +932,98 @@ def find_verified_parts():
             }), 503
         app.logger.exception("Smart Parts Finder lookup failed")
         return jsonify({"error": "Live parts research is temporarily unavailable. Try again shortly."}), 502
+
+
+
+def fuel_economy_xml(path, **parameters):
+    url = "https://www.fueleconomy.gov/ws/rest/vehicle/" + path
+    if parameters:
+        url += "?" + urlencode(parameters)
+    with urlopen(url, timeout=7) as response:
+        return ElementTree.fromstring(response.read(256_000))
+
+
+def fuel_economy_menu(menu, **parameters):
+    return fuel_economy_xml("menu/" + menu, **parameters).findall("menuItem")
+
+
+def engine_label(description, model, make, vehicle_id):
+    displacement = re.search(r"\b(\d+(?:\.\d+)?)\s*L\b", description, re.I)
+    if not displacement:
+        if make.casefold() == "tesla":
+            return "Electric"
+        if vehicle_id.isdigit():
+            fuel = fuel_economy_xml(vehicle_id).findtext("fuelType1", "")
+            if fuel.casefold() == "electricity":
+                return "Electric"
+        return ""
+    cylinders = re.search(r"\b(\d+)\s*cyl\b", description, re.I)
+    fuel = description + " " + model
+    tags = [
+        label for label, pattern in (
+            ("Turbo", r"\bturbo"),
+            ("Supercharged", r"\b(?:supercharg|sup charg)"),
+            ("Diesel", r"\bdiesel"),
+            ("Plug-in hybrid", r"\b(?:phev|4xe|prime|plug-in)\b|\belectricity\b"),
+            ("Hybrid", r"\bhybrid\b"),
+        ) if re.search(pattern, fuel, re.I)
+    ]
+    if "Plug-in hybrid" in tags and "Hybrid" in tags:
+        tags.remove("Hybrid")
+    size = f"{float(displacement[1]):.1f}L"
+    return " ".join([size, *([f"{cylinders[1]} cyl"] if cylinders else []), *tags])
+
+
+@lru_cache(maxsize=256)
+def vehicle_engine_options(year, make, model):
+    models = [item.findtext("text", "") for item in fuel_economy_menu("model", year=year, make=make)]
+    suffixes = {
+        "2wd", "4wd", "awd", "fwd", "rwd", "4x2", "4x4",
+        "hybrid", "plug", "in", "phev", "4xe", "prime", "diesel",
+        "pickup", "truck", "wagon", "sedan", "coupe", "convertible", "unlimited",
+        "2dr", "4dr", "ecodiesel", "rubic", "rubicon", "srt", "widebody",
+        "long", "range", "performance", "plaid", "inch", "wheels", "19", "20", "21", "22",
+    }
+
+    def model_words(name):
+        name = name.casefold()
+        # EPA used C15/K15 and 15 for earlier light-duty Silverado and Sierra models.
+        name = re.sub(r"\b(silverado|sierra) (?:[ck]?15)\b", r"\1 1500", name)
+        return re.findall(r"[a-z0-9]+", name)
+
+    selected = model_words(model)
+    matches = [
+        name for name in models
+        if model_words(name)[:len(selected)] == selected
+        and set(model_words(name)[len(selected):]) <= suffixes
+    ]
+    if not matches:
+        return []
+
+    def labels(name):
+        return [
+            engine_label(option.findtext("text", ""), name, make, option.findtext("value", ""))
+            for option in fuel_economy_menu("options", year=year, make=make, model=name)
+        ]
+
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        groups = list(pool.map(labels, matches))
+    return sorted({label for group in groups for label in group if label},
+                  key=lambda label: (float(label.split("L", 1)[0]) if label != "Electric" else 0, label))
+
+
+@app.get("/api/vehicle/engines")
+def list_vehicle_engines():
+    year, make, model = (request.args.get(key, "").strip() for key in ("year", "make", "model"))
+    if (not re.fullmatch(r"[0-9]{4}", year) or not 1980 <= int(year) <= date.today().year + 1
+            or not 0 < len(make) <= 40 or not 0 < len(model) <= 80
+            or not re.search(r"[a-z0-9]", model, re.I)):
+        return jsonify({"error": "Choose a valid year, make, and model."}), 400
+    try:
+        return jsonify({"engines": vehicle_engine_options(year, make, model)})
+    except (URLError, OSError, ElementTree.ParseError):
+        app.logger.warning("Fuel Economy engine lookup unavailable", exc_info=True)
+        return jsonify({"error": "Engine options are temporarily unavailable."}), 502
 
 
 @app.get("/api/lookup/status")
