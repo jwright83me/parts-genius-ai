@@ -5006,5 +5006,83 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 })();
 </script>
 
+
+<!-- EXPLORE PARTS CATEGORY ROUTING V16 -->
+<style>
+#pg16-category-panel{margin:18px 0 24px;padding:17px;border:1px solid #36b5ec;border-radius:16px;background:linear-gradient(140deg,#0a2942,#061724);color:#eaf7ff;scroll-margin-top:20px}
+#pg16-category-panel[hidden]{display:none!important}
+#pg16-category-panel h3{margin:0 0 7px;color:white;font-size:19px}
+#pg16-category-panel p{margin:0 0 13px;font-size:12px;line-height:1.5;color:#add9ed}
+#pg16-category-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#pg16-category-options button{background:linear-gradient(115deg,#103954,#075381);border:1px solid #32bfe9;border-radius:11px;color:#fff;padding:13px 7px;font-weight:750;font-size:13px;min-height:54px;cursor:pointer}
+#pg16-category-options button:focus-visible,.pg3-dept-button:focus-visible{outline:3px solid white;outline-offset:2px}
+@media(max-width:360px){#pg16-category-options{grid-template-columns:1fr}}
+</style>
+<script>
+(function(){
+ "use strict";
+ const departments=[
+  {name:"Engine & Filters",parts:["Oil Filter","Engine Air Filter","Cabin Air Filter","Fuel Filter","Spark Plugs","PCV Valve","Serpentine Belt","Water Pump","Thermostat","Fuel Injectors"]},
+  {name:"Brakes",parts:["Front Brake Pads","Rear Brake Pads","Front Brake Rotors","Rear Brake Rotors","Brake Calipers","Brake Shoes","Brake Master Cylinder","ABS Sensor"]},
+  {name:"Battery & Electrical",parts:["Battery","Alternator","Starter","Ignition Coils","Oxygen Sensor","Mass Air Flow Sensor","Headlight Bulbs","Fuses"]},
+  {name:"Suspension",parts:["Front Struts","Rear Shocks","Control Arms","Ball Joints","Inner Tie Rod Ends","Outer Tie Rod Ends","Wheel Bearings","Sway Bar Links"]}
+ ];
+ function initialize(){
+  const grid=document.getElementById("pg3-departments");
+  const finder=document.getElementById("pg12-finder");
+  if(!grid||!finder||document.getElementById("pg16-category-panel"))return;
+  const panel=document.createElement("section");
+  panel.id="pg16-category-panel";
+  panel.hidden=true;
+  panel.setAttribute("aria-label","Choose a part to research");
+  const title=document.createElement("h3");
+  const details=document.createElement("p");
+  details.textContent="Choose a part. Nova will research O'Reilly listings for your active vehicle and show only sourced part numbers. Current store pricing and exact fitment may need confirmation.";
+  const options=document.createElement("div");
+  options.id="pg16-category-options";
+  panel.append(title,details,options);
+  grid.after(panel);
+  const buttons=Array.from(grid.querySelectorAll(".pg3-dept-button"));
+  departments.forEach((department,index)=>{
+   const button=buttons[index];
+   if(!button)return;
+   button.disabled=false;
+   button.textContent="Explore Parts →";
+   button.addEventListener("click",function(event){
+    // The legacy department handler navigates to sample cards. Replace its route.
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    grid.querySelectorAll(".pg3-card").forEach(card=>card.classList.remove("pg3-dept-active"));
+    button.closest(".pg3-card")?.classList.add("pg3-dept-active");
+    title.textContent=department.name;
+    options.replaceChildren();
+    department.parts.forEach(part=>{
+      const choice=document.createElement("button");
+      choice.type="button";
+      choice.textContent=part;
+      choice.addEventListener("click",()=>{
+       const input=finder.querySelector("#pg12-query");
+       const select=finder.querySelector("#pg12-common");
+       const search=finder.querySelector("#pg12-search");
+       if(!input||!search)return;
+       if(select)select.value="";
+       input.value=part;
+       input.dispatchEvent(new Event("input",{bubbles:true}));
+       finder.scrollIntoView({behavior:"smooth",block:"start"});
+       search.click();
+      });
+      options.appendChild(choice);
+    });
+    panel.hidden=false;
+    panel.scrollIntoView({behavior:"smooth",block:"start"});
+   },true);
+  });
+ }
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initialize);
+ else initialize();
+})();
+</script>
+<!-- END EXPLORE PARTS CATEGORY ROUTING V16 -->
+
 </body>
 </html>
