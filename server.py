@@ -214,6 +214,42 @@ def toyota_highlander_hologram_image():
 def subaru_outback_hologram_image():
     return send_file("subaru-outback-hologram.png", mimetype="image/png")
 
+@app.get("/toyota-corolla-hologram.png")
+def toyota_corolla_image():
+    return send_file("toyota-corolla-hologram.png", mimetype="image/png")
+
+@app.get("/honda-pilot-hologram.png")
+def honda_pilot_image():
+    return send_file("honda-pilot-hologram.png", mimetype="image/png")
+
+@app.get("/nissan-rogue-hologram.png")
+def nissan_rogue_image():
+    return send_file("nissan-rogue-hologram.png", mimetype="image/png")
+
+@app.get("/hyundai-tucson-hologram.png")
+def hyundai_tucson_image():
+    return send_file("hyundai-tucson-hologram.png", mimetype="image/png")
+
+@app.get("/kia-sportage-hologram.png")
+def kia_sportage_image():
+    return send_file("kia-sportage-hologram.png", mimetype="image/png")
+
+@app.get("/subaru-forester-hologram.png")
+def subaru_forester_image():
+    return send_file("subaru-forester-hologram.png", mimetype="image/png")
+
+@app.get("/chevrolet-tahoe-hologram.png")
+def chevrolet_tahoe_image():
+    return send_file("chevrolet-tahoe-hologram.png", mimetype="image/png")
+
+@app.get("/gmc-sierra-1500-hologram.png")
+def gmc_sierra_1500_image():
+    return send_file("gmc-sierra-1500-hologram.png", mimetype="image/png")
+
+@app.get("/kia-telluride-hologram.png")
+def kia_telluride_image():
+    return send_file("kia-telluride-hologram.png", mimetype="image/png")
+
 @app.get("/tesla-model-3-hologram.png")
 def tesla_model_3_hologram_image():
     return send_file("tesla-model-3-hologram.png")
