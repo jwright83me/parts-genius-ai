@@ -372,8 +372,9 @@ document.addEventListener('DOMContentLoaded', () => {
   talkButton.textContent = '🎙 Talk to Nova';
   return;
 }
-  const password = prompt('Enter your private voice test password:');
-  if (!password) return;
+  const memberVoice = document.documentElement.dataset.novaMembership === 'enabled';
+  const password = memberVoice ? '' : prompt('Enter your private voice test password:');
+  if (!memberVoice && !password) return;
   await startVoice(password);
   if (voiceConnection) {
   talkButton.textContent = '🔴 End Conversation';
@@ -5581,6 +5582,164 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 })();
 </script>
 <!-- END EXPLORE PARTS CATEGORY ROUTING V16 -->
+
+<style>
+#nova-membership { max-width: 420px; padding: 24px; border: 1px solid #2a6589; border-radius: 16px; background: #091522; color: #e8f4ff; }
+#nova-membership::backdrop { background: #000a; }
+#nova-membership label { display: block; margin: 12px 0; }
+#nova-membership input { display: block; width: 100%; margin-top: 6px; }
+#nova-membership [hidden] { display: none; }
+#nova-membership-open { margin-left: auto; }
+</style>
+<script>
+(() => {
+  const bootstrap = async () => {
+    const api = async (path, body) => {
+      const response = await fetch('/api/membership/' + path, body === undefined ? {} : {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Membership is temporarily unavailable.');
+      return result;
+    };
+
+    const dialog = document.createElement('dialog');
+    dialog.id = 'nova-membership';
+    dialog.setAttribute('aria-labelledby', 'nova-membership-title');
+    dialog.innerHTML = `
+      <h2 id="nova-membership-title">Nova Membership</h2>
+      <p>Get full access for 3 days free. A card is required. Then $9.99 USD per month until you cancel. Cancel online before your trial ends to avoid the first charge.</p>
+      <form id="nova-membership-login">
+        <label>Email <input type="email" name="email" autocomplete="email" required maxlength="254"></label>
+        <label id="nova-membership-code" hidden>Code from your email
+          <input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" disabled>
+        </label>
+        <button type="submit" class="primary">Email me a code</button>
+        <button type="button" id="nova-membership-reset" hidden>Use another email</button>
+      </form>
+      <div id="nova-membership-account" hidden>
+        <p id="nova-membership-email"></p>
+        <button type="button" id="nova-membership-checkout" class="primary">Start 3-Day Free Trial</button>
+        <button type="button" id="nova-membership-manage">Manage Subscription</button>
+        <button type="button" id="nova-membership-signout">Sign Out</button>
+      </div>
+      <p id="nova-membership-message" role="status" aria-live="polite"></p>
+      <form method="dialog"><button>Close</button></form>`;
+    const login = dialog.querySelector('#nova-membership-login');
+    const codeRow = dialog.querySelector('#nova-membership-code');
+    const email = login.elements.namedItem('email');
+    const code = login.elements.namedItem('code');
+    const submit = login.querySelector('[type=submit]');
+    const reset = dialog.querySelector('#nova-membership-reset');
+    const account = dialog.querySelector('#nova-membership-account');
+    const checkout = dialog.querySelector('#nova-membership-checkout');
+    const manage = dialog.querySelector('#nova-membership-manage');
+    const signout = dialog.querySelector('#nova-membership-signout');
+    const message = dialog.querySelector('#nova-membership-message');
+    const button = document.createElement('button');
+    button.id = 'nova-membership-open';
+    button.type = 'button';
+    let state = {};
+    let awaitingCode = false;
+    let busy = false;
+
+    const setCodeStep = (next) => {
+      awaitingCode = next;
+      codeRow.hidden = reset.hidden = !next;
+      email.readOnly = next;
+      code.disabled = !next;
+      code.required = next;
+      code.value = '';
+      submit.textContent = next ? 'Verify Code' : 'Email me a code';
+    };
+
+    const render = (next) => {
+      state = next;
+      login.hidden = !!state.signedIn;
+      account.hidden = !state.signedIn;
+      dialog.querySelector('#nova-membership-email').textContent = state.email || '';
+      checkout.hidden = !!state.active || !!state.paymentPending;
+      manage.hidden = !state.canManage;
+      checkout.textContent = state.trialEligible ? 'Start 3-Day Free Trial' : 'Subscribe for $9.99/month';
+      button.textContent = state.signedIn ? 'Membership' : 'Start Free Trial';
+    };
+
+    const run = async (operation) => {
+      if (busy) return;
+      busy = true;
+      message.textContent = '';
+      for (const control of [submit, reset, checkout, manage, signout]) control.disabled = true;
+      try { await operation(); }
+      catch (error) { message.textContent = error.message || 'Please try again.'; }
+      finally {
+        busy = false;
+        for (const control of [submit, reset, checkout, manage, signout]) control.disabled = false;
+      }
+    };
+
+    const open = () => {
+      if (!dialog.open) dialog.showModal();
+      run(async () => {
+        render(await api('status'));
+        if (state.active) message.textContent = 'Your Nova access is active.';
+        if (state.paymentPending) message.textContent = 'Open Manage Subscription to review your payment.';
+      });
+    };
+
+    login.addEventListener('submit', (event) => {
+      event.preventDefault();
+      run(async () => {
+        if (awaitingCode) {
+          await api('verify', {email: email.value, code: code.value});
+          setCodeStep(false);
+          render(await api('status'));
+        } else {
+          await api('code', {email: email.value});
+          setCodeStep(true);
+          message.textContent = 'Check your email for a six-digit code.';
+          code.focus();
+        }
+      });
+    });
+    reset.onclick = () => { setCodeStep(false); message.textContent = ''; email.focus(); };
+    signout.onclick = () => run(async () => {
+      await api('signout', {});
+      login.reset();
+      setCodeStep(false);
+      render(await api('status'));
+    });
+    checkout.onclick = () => run(async () => {
+      const result = await api('checkout', {acceptMonthlyCharge: !state.trialEligible});
+      window.location.assign(result.url);
+    });
+    manage.onclick = () => run(async () => window.location.assign((await api('portal', {})).url));
+    button.onclick = open;
+    const initial = await api('status');
+    if (!initial.enabled) return;
+    render(initial);
+    document.documentElement.dataset.novaMembership = 'enabled';
+    document.body.appendChild(dialog);
+    document.querySelector('.top')?.appendChild(button);
+    if (window.show) {
+      const show = window.show;
+      window.show = function(section, ...args) {
+        if (['diagnose', 'parts'].includes(section) && !state.active) {
+          open();
+          return;
+        }
+        return show.call(this, section, ...args);
+      };
+    }
+    const url = new URL(window.location.href);
+    if (url.searchParams.has('membership')) {
+      url.searchParams.delete('membership');
+      history.replaceState(history.state, '', url);
+      open();
+    }
+  };
+  bootstrap().catch(() => {});
+})();
+</script>
 
 </body>
 </html>
