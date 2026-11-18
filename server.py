@@ -10,8 +10,10 @@ from xml.etree import ElementTree
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
+from membership import install_membership, membership_required
 
 app = Flask(__name__)
+install_membership(app)
 
 CORS(app, resources={
     r"/api/*": {"origins": [
@@ -897,6 +899,7 @@ def research_parts(client, message, history, vehicle):
 
 
 @app.post("/api/parts/find")
+@membership_required
 def find_verified_parts():
     """Use Nova's sourced parts research for the Smart Parts Finder."""
     data = request.get_json(silent=True) or {}
@@ -1031,6 +1034,7 @@ def lookup_status():
     return jsonify({"version": "active-vehicle-search-v2", "max_research_attempts": 2})
 
 @app.post("/api/diagnose")
+@membership_required
 def diagnose():
     data = request.get_json(silent=True) or {}
     message = str(data.get("message", "")).strip()
@@ -1188,6 +1192,7 @@ def test_voice_security():
 
     return jsonify({"security": "passed"})
 @app.post("/api/voice/session")
+@membership_required
 def create_voice_session():
     import hmac
     from flask import request
@@ -1195,7 +1200,9 @@ def create_voice_session():
     expected = os.getenv("VOICE_TEST_TOKEN")
     provided = request.headers.get("X-Voice-Test-Password", "")
 
-    if not expected or not hmac.compare_digest(provided, expected):
+    if not app.config["NOVA_MEMBERSHIP_ENABLED"] and (
+        not expected or not hmac.compare_digest(provided, expected)
+    ):
         return jsonify({"error": "Unauthorized"}), 401
     if os.getenv("VOICE_ENABLED") != "true":
         return jsonify({"error": "Voice is not enabled yet"}), 403
