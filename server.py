@@ -370,6 +370,42 @@ def audi_q5_hologram_image():
 def volvo_xc90_hologram_image():
     return send_file("volvo-xc90-hologram.png", mimetype="image/png")
 
+@app.get("/chevrolet-malibu-hologram.png")
+def chevrolet_malibu_hologram_image():
+    return send_file("chevrolet-malibu-hologram.png", mimetype="image/png")
+
+@app.get("/hyundai-sonata-hologram.png")
+def hyundai_sonata_hologram_image():
+    return send_file("hyundai-sonata-hologram.png", mimetype="image/png")
+
+@app.get("/mazda3-hologram.png")
+def mazda3_hologram_image():
+    return send_file("mazda3-hologram.png", mimetype="image/png")
+
+@app.get("/volkswagen-passat-hologram.png")
+def volkswagen_passat_hologram_image():
+    return send_file("volkswagen-passat-hologram.png", mimetype="image/png")
+
+@app.get("/lexus-nx-hologram.png")
+def lexus_nx_hologram_image():
+    return send_file("lexus-nx-hologram.png", mimetype="image/png")
+
+@app.get("/infiniti-qx60-hologram.png")
+def infiniti_qx60_hologram_image():
+    return send_file("infiniti-qx60-hologram.png", mimetype="image/png")
+
+@app.get("/buick-encore-hologram.png")
+def buick_encore_hologram_image():
+    return send_file("buick-encore-hologram.png", mimetype="image/png")
+
+@app.get("/chrysler-pacifica-hologram.png")
+def chrysler_pacifica_hologram_image():
+    return send_file("chrysler-pacifica-hologram.png", mimetype="image/png")
+
+@app.get("/mitsubishi-outlander-hologram.png")
+def mitsubishi_outlander_hologram_image():
+    return send_file("mitsubishi-outlander-hologram.png", mimetype="image/png")
+
 @app.get("/tesla-model-3-hologram.png")
 def tesla_model_3_hologram_image():
     return send_file("tesla-model-3-hologram.png")
