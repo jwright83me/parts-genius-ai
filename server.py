@@ -82,6 +82,22 @@ def nova_showroom_background_image():
 def nova_engine_air_filter_image():
     return send_file("nova-engine-air-filter.png", mimetype="image/png")
 
+@app.get("/nova-water-pump.jpg")
+def nova_water_pump_image():
+    return send_file("nova-water-pump.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-thermostat.jpg")
+def nova_thermostat_image():
+    return send_file("nova-thermostat.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-brake-caliper.jpg")
+def nova_brake_caliper_image():
+    return send_file("nova-brake-caliper.jpg", mimetype="image/jpeg")
+
+@app.get("/nova-wheel-bearing.jpg")
+def nova_wheel_bearing_image():
+    return send_file("nova-wheel-bearing.jpg", mimetype="image/jpeg")
+
 @app.get("/nova-cabin-air-filter.png")
 def nova_cabin_air_filter_image():
     return send_file("nova-cabin-air-filter.png", mimetype="image/png")
