@@ -1091,6 +1091,38 @@ if (
     return 'volkswagen-jetta-hologram.png';
   }
 
+  // Batch 4: model-specific holograms before generic fallback.
+  if ((make === 'chevrolet' || make === 'chevy') && model.includes('colorado')) {
+    return 'chevrolet-colorado-hologram.png';
+  }
+  if (make === 'ford' && model.includes('ranger')) {
+    return 'ford-ranger-hologram.png';
+  }
+  if (make === 'toyota' && model.includes('tundra')) {
+    return 'toyota-tundra-hologram.png';
+  }
+  if (make === 'nissan' && model.includes('frontier')) {
+    return 'nissan-frontier-hologram.png';
+  }
+  if (make === 'ford' && model.includes('escape')) {
+    return 'ford-escape-hologram.png';
+  }
+  if (make === 'toyota' && (model.includes('4runner') || model.includes('4 runner') || model.includes('4-runner'))) {
+    return 'toyota-4runner-hologram.png';
+  }
+  if ((make === 'chevrolet' || make === 'chevy') && model.includes('traverse')) {
+    return 'chevrolet-traverse-hologram.png';
+  }
+  if (make === 'honda' && model.includes('passport')) {
+    return 'honda-passport-hologram.png';
+  }
+  if (make === 'hyundai' && (model.includes('santa fe') || model.includes('santa-fe') || model.includes('santafe'))) {
+    return 'hyundai-santa-fe-hologram.png';
+  }
+  if (make === 'kia' && /(?:^|[^a-z0-9])k5(?:$|[^a-z0-9])/.test(model)) {
+    return 'kia-k5-hologram.png';
+  }
+
   // Other vehicles will use automatic image lookup later.
 // Ford F-150 hologram
 if (make === 'ford' &&
@@ -1540,7 +1572,11 @@ const recentHologramNames = [
   'mazda-cx5', 'jeep-grand-cherokee', 'chevrolet-corvette',
   'dodge-charger', 'subaru-crosstrek', 'honda-odyssey',
   'toyota-sienna', 'hyundai-elantra', 'nissan-sentra',
-  'volkswagen-jetta'
+  'volkswagen-jetta',
+  'chevrolet-colorado', 'ford-ranger', 'toyota-tundra',
+  'nissan-frontier', 'ford-escape', 'toyota-4runner',
+  'chevrolet-traverse', 'honda-passport', 'hyundai-santa-fe',
+  'kia-k5'
 ];
 const novaHologramSizingStyle = document.createElement('style');
 novaHologramSizingStyle.id = 'novaRecentHologramSizing';
