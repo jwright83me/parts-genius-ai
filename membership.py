@@ -47,8 +47,19 @@ def install_membership(app):
                         checkout_session text
                     )
                 """)
-        except psycopg.Error:
-            raise RuntimeError('Nova membership database initialization failed. Check Railway database settings.') from None
+        except psycopg.Error as error:
+            detail = str(error).lower()
+            if error.sqlstate == "28P01" or "password authentication failed" in detail:
+                reason = "database password rejected"
+            elif "tenant or user not found" in detail:
+                reason = "pooler does not recognize the database user"
+            elif "timed out" in detail or "timeout expired" in detail:
+                reason = "database connection timed out"
+            elif isinstance(error, psycopg.ProgrammingError):
+                reason = "invalid database configuration or query"
+            else:
+                reason = "database connection or initialization error"
+            raise RuntimeError(f"Nova membership database initialization failed: {reason}.") from None
     app.register_blueprint(membership)
 
 
