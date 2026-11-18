@@ -4475,6 +4475,16 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
         const head = document.createElement("div");
         head.className = "pg16-result-head";
         const imagePaths = [
+          [/\bheater cores?\b/i, "/nova-heater-core.jpg"],
+          [/\bblower motors?\b/i, "/nova-blower-motor.jpg"],
+          [/\bstruts?\b/i, "/nova-struts.jpg"],
+          [/\bshocks?(?: absorbers?)?\b/i, "/nova-shocks.jpg"],
+          [/\bball joints?\b/i, "/nova-ball-joints.jpg"],
+          [/\bsway[ -]bar (?:end )?links?\b/i, "/nova-sway-bar-links.jpg"],
+          [/\bserpentine belts?\b/i, "/nova-serpentine-belt.jpg"],
+          [/\btiming belts?\b/i, "/nova-timing-belt.jpg"],
+          [/\bengine mounts?\b/i, "/nova-engine-mount.jpg"],
+          [/\bthrottle bod(?:y|ies)\b/i, "/nova-throttle-body.jpg"],
           [/\bfuel filters?\b/i, "/nova-fuel-filter.jpg"],
           [/\bpcv valves?\b/i, "/nova-pcv-valve.jpg"],
           [/\bbrake shoes?\b/i, "/nova-brake-shoes.jpg"],
