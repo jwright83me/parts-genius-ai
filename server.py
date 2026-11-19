@@ -1233,7 +1233,7 @@ def create_voice_session():
     seconds = min(60 if trial else 120, (window.end - datetime.now(timezone.utc)).total_seconds())
     if seconds <= 0:
         raise UsageUnavailable()
-    budget = (15 if trial else 30) * CENT
+    budget = (8 if trial else 30) * CENT
     meter = UsageMeter(account_id(), "voice", window)
     reservation = meter.reserve(budget)
     headers = {"Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}"}

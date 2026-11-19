@@ -8,6 +8,8 @@ import httpx
 from websockets.exceptions import ConnectionClosed, ConnectionClosedOK, WebSocketException
 from websockets.sync.client import connect as connect_events
 
+from usage import UsageUnavailable
+
 logger = logging.getLogger(__name__)
 REALTIME_URL = "https://api.openai.com/v1/realtime/calls"
 
@@ -31,14 +33,16 @@ def response_cost(usage):
 
 
 def hang_up(call_id, headers):
+    status = None
     for _ in range(2):
         try:
             response = httpx.post(f"{REALTIME_URL}/{call_id}/hangup", headers=headers, timeout=5)
-            if response.is_success or response.status_code == 404:
+            status = response.status_code
+            if response.is_success or status in {404, 410}:
                 return True
         except httpx.RequestError:
             continue
-    logger.warning("Nova could not confirm voice hangup")
+    logger.warning("Nova could not confirm voice hangup: status=%s", status)
     return False
 
 
@@ -87,18 +91,20 @@ def monitor(events, call_id, headers, meter, reservation, budget, seconds):
             seen.add(response_id)
             usage = response.get("usage")
             if usage:
-                cost += response_cost(usage)
+                amount = response_cost(usage)
+                meter.record_voice_response(response_id, reservation, amount)
+                cost += amount
             elif response.get("status") != "failed":
                 uncertain = True
     except (TimeoutError, ConnectionClosedOK):
         pass
-    except (ConnectionClosed, OSError, ValueError, KeyError, TypeError):
+    except (ConnectionClosed, OSError, ValueError, KeyError, TypeError, UsageUnavailable) as error:
         uncertain = True
-        logger.warning("Nova voice metering ended without a complete event stream")
+        received_close = getattr(error, "rcvd", None)
+        logger.warning("Nova voice metering ended early: type=%s close_code=%s",
+                       type(error).__name__, getattr(received_close, "code", None))
     finally:
         ended = hang_up(call_id, headers)
         events.close()
-        if ended:
-            if uncertain or in_progress:
-                cost = max(cost, budget)
-            meter.settle_voice(call_id, reservation, cost)
+        if ended and not uncertain and not in_progress:
+            meter.release(reservation)

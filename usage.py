@@ -119,19 +119,26 @@ class UsageMeter:
         except psycopg.Error:
             logger.warning("Nova AI usage reservation could not be released")
 
-    def settle_voice(self, call_id, reservation, cost):
+    def record_voice_response(self, response_id, reservation, cost):
         try:
             with connect() as db:
-                db.execute("""
+                inserted = db.execute("""
                     INSERT INTO nova_private.ai_usage (
                         response_id, user_id, feature, model, input_tokens,
                         cached_input_tokens, output_tokens, web_search_calls, cycle_start, cost_nano
                     ) VALUES (%s, %s, 'voice', 'gpt-realtime', 0, 0, 0, 0, %s, %s)
                     ON CONFLICT (response_id) DO NOTHING
-                    """, (call_id, self.user_id, self.window.start, cost))
-                db.execute("DELETE FROM nova_private.ai_reservations WHERE id = %s", (reservation,))
+                    RETURNING response_id
+                    """, (response_id, self.user_id, self.window.start, cost)).fetchone()
+                if inserted:
+                    db.execute("""
+                        UPDATE nova_private.ai_reservations
+                        SET amount_nano = greatest(1, amount_nano - %s)
+                        WHERE id = %s
+                        """, (cost, reservation))
         except psycopg.Error:
-            logger.exception("Nova voice usage settlement failed")
+            logger.exception("Nova voice response usage write failed")
+            raise UsageUnavailable() from None
 
     def settle(self, reservation, response):
         usage = response.usage
