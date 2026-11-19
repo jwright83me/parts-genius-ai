@@ -84,7 +84,11 @@ def install_membership(app):
                 db.execute("""
                     ALTER TABLE nova_private.ai_reservations
                     ADD COLUMN IF NOT EXISTS feature text NOT NULL DEFAULT 'diagnose',
-                    ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now()
+                    ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now(),
+                    ADD COLUMN IF NOT EXISTS call_id text,
+                    ADD COLUMN IF NOT EXISTS closing boolean NOT NULL DEFAULT false,
+                    ADD COLUMN IF NOT EXISTS ended boolean NOT NULL DEFAULT false,
+                    ADD COLUMN IF NOT EXISTS released_at timestamptz
                 """)
                 db.execute("""
                     CREATE INDEX IF NOT EXISTS nova_ai_reservations_user_cycle

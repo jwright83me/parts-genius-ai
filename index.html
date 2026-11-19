@@ -368,8 +368,22 @@ document.addEventListener('DOMContentLoaded', () => {
   talkButton.textContent = '🎙 Talk to Nova';
   talkButton.onclick = async () => {
     if (voiceConnection) {
-      stopVoice();
-      talkButton.textContent = '🎙 Talk to Nova';
+      talkButton.disabled = true;
+      try {
+        if (voiceSession) {
+          voiceStream?.getAudioTracks().forEach(track => { track.enabled = false; });
+          await fetch('/api/voice/session/' + voiceSession + '/end', {
+            method: 'POST',
+            signal: AbortSignal.timeout(9000)
+          });
+        }
+      } catch {
+        // Local cleanup still ends the user's microphone session.
+      } finally {
+        stopVoice();
+        talkButton.textContent = '🎙 Talk to Nova';
+        talkButton.disabled = false;
+      }
       return;
     }
     talkButton.disabled = true;
@@ -800,6 +814,7 @@ let voiceConnection = null;
 let voiceStream = null;
 let voiceAudio = null;
 let voiceChannel = null;
+let voiceSession = null;
 function stopVoice() {
   if (voiceChannel) voiceChannel.close();
   if (voiceConnection) voiceConnection.close();
@@ -810,6 +825,7 @@ function stopVoice() {
     voiceAudio.srcObject = null;
   }
   voiceChannel = null;
+  voiceSession = null;
   voiceConnection = null;
   voiceStream = null;
   voiceAudio = null;
@@ -881,6 +897,7 @@ if (data.type === 'response.audio.delta' ||
     return;
   }
 
+  voiceSession = sdpResponse.headers.get('X-Nova-Voice-Session');
   const answer = await sdpResponse.text();
   await voiceConnection.setRemoteDescription({
     type: 'answer',

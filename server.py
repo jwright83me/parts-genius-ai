@@ -9,12 +9,13 @@ from urllib.parse import urlencode
 from urllib.request import urlopen
 from xml.etree import ElementTree
 import httpx
+import psycopg
 from flask import Flask, g, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
-from membership import account_id, install_membership, membership_required
+from membership import account_id, connect, install_membership, membership_required
 from usage import CENT, MeteredResponses, UsageLimit, UsageMeter, UsageUnavailable, billing_window
-from voice_meter import REALTIME_URL, start_meter
+from voice_meter import REALTIME_URL, hang_up, start_meter
 
 app = Flask(__name__)
 install_membership(app)
@@ -1280,10 +1281,50 @@ def create_voice_session():
     if not re.fullmatch(r"rtc_[A-Za-z0-9_-]{1,128}", call_id):
         app.logger.warning("Nova voice call did not include a valid call ID")
         return jsonify(error="Unable to start a metered voice call."), 502
+    try:
+        meter.attach_voice_call(reservation, call_id)
+    except psycopg.Error:
+        app.logger.exception("Nova could not save the voice call reference")
+        if hang_up(call_id, headers):
+            meter.release(reservation)
+        raise UsageUnavailable() from None
     if not start_meter(call_id, headers, meter, reservation, budget, seconds):
         return jsonify(error="Unable to start a metered voice call."), 502
     return app.response_class(response.content, mimetype="application/sdp",
-                              headers={"Cache-Control": "no-store"})
+                              headers={"Cache-Control": "no-store", "X-Nova-Voice-Session": str(reservation)})
+
+
+@app.post("/api/voice/session/<uuid:reservation>/end")
+def end_voice_session(reservation):
+    user_id = account_id()
+    if not user_id:
+        return jsonify(error="Sign in to end a voice call."), 401
+    if request.headers.get("Origin") != os.environ.get("NOVA_SITE_URL", "").rstrip("/"):
+        return jsonify(error="Open Nova to end a voice call."), 403
+    try:
+        with connect() as db:
+            row = db.execute("""
+                UPDATE nova_private.ai_reservations SET closing = true
+                WHERE id = %s AND user_id = %s AND feature = 'voice'
+                    AND NOT closing AND NOT ended AND released_at IS NULL AND call_id IS NOT NULL
+                RETURNING call_id
+                """, (reservation, user_id)).fetchone()
+        if not row:
+            return "", 204
+        headers = {"Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}"}
+        ended = hang_up(row[0], headers)
+        with connect() as db:
+            db.execute("""
+                UPDATE nova_private.ai_reservations SET ended = %s, closing = false
+                WHERE id = %s AND user_id = %s
+                """, (ended, reservation, user_id))
+    except psycopg.Error:
+        app.logger.exception("Nova voice end request could not update the reservation")
+        return jsonify(error="Nova could not confirm the end of the call."), 503
+    if not ended:
+        return jsonify(error="Nova could not confirm the end of the call."), 502
+    return "", 204
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))

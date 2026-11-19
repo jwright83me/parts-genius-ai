@@ -2,9 +2,10 @@
 import json
 import logging
 from threading import Thread
-from time import monotonic
+from time import monotonic, sleep
 
 import httpx
+import psycopg
 from websockets.exceptions import ConnectionClosed, ConnectionClosedOK, WebSocketException
 from websockets.sync.client import connect as connect_events
 
@@ -34,15 +35,16 @@ def response_cost(usage):
 
 def hang_up(call_id, headers):
     status = None
+    error_type = None
     for _ in range(2):
         try:
-            response = httpx.post(f"{REALTIME_URL}/{call_id}/hangup", headers=headers, timeout=5)
+            response = httpx.post(f"{REALTIME_URL}/{call_id}/hangup", headers=headers, timeout=httpx.Timeout(4, connect=3))
             status = response.status_code
             if response.is_success or status in {404, 410}:
                 return True
-        except httpx.RequestError:
-            continue
-    logger.warning("Nova could not confirm voice hangup: status=%s", status)
+        except httpx.RequestError as error:
+            error_type = type(error).__name__
+    logger.warning("Nova could not confirm voice hangup: status=%s type=%s", status, error_type)
     return False
 
 
@@ -73,6 +75,7 @@ def monitor(events, call_id, headers, meter, reservation, budget, seconds):
     cost = 0
     seen = set()
     uncertain = False
+    socket_lost = False
     in_progress = set()
     try:
         while cost < budget and (remaining := deadline - monotonic()) > 0:
@@ -98,13 +101,30 @@ def monitor(events, call_id, headers, meter, reservation, budget, seconds):
                 uncertain = True
     except (TimeoutError, ConnectionClosedOK):
         pass
-    except (ConnectionClosed, OSError, ValueError, KeyError, TypeError, UsageUnavailable) as error:
-        uncertain = True
+    except (ConnectionClosed, OSError) as error:
+        socket_lost = True
         received_close = getattr(error, "rcvd", None)
         logger.warning("Nova voice metering ended early: type=%s close_code=%s",
                        type(error).__name__, getattr(received_close, "code", None))
+    except (ValueError, KeyError, TypeError, UsageUnavailable):
+        uncertain = True
+        logger.warning("Nova voice usage stream could not be fully recorded")
     finally:
-        ended = hang_up(call_id, headers)
+        explicitly_ended = wait_for_close_confirmation(meter, reservation)
+        ended = explicitly_ended or hang_up(call_id, headers)
         events.close()
-        if ended and not uncertain and not in_progress:
+        if ended and not uncertain and not in_progress and (not socket_lost or explicitly_ended):
             meter.release(reservation)
+
+
+def wait_for_close_confirmation(meter, reservation):
+    deadline = monotonic() + 9
+    try:
+        while True:
+            closing, ended = meter.voice_close_state(reservation)
+            if ended or not closing or monotonic() >= deadline:
+                return ended
+            sleep(0.25)
+    except psycopg.Error:
+        logger.warning("Nova could not read voice close confirmation")
+        return False

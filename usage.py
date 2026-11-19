@@ -83,9 +83,10 @@ class UsageMeter:
                            AND coalesce(cycle_start, recorded_at) >= %s
                            AND coalesce(cycle_start, recorded_at) < %s),
                         (SELECT coalesce(sum(amount_nano), 0)
-                         FROM nova_private.ai_reservations WHERE user_id = %s AND cycle_start = %s),
+                         FROM nova_private.ai_reservations WHERE user_id = %s AND cycle_start = %s
+                           AND released_at IS NULL),
                         EXISTS (SELECT 1 FROM nova_private.ai_reservations
-                                WHERE user_id = %s AND cycle_start = %s AND feature = 'voice'
+                                WHERE user_id = %s AND cycle_start = %s AND feature = 'voice' AND released_at IS NULL
                                   AND created_at > now() - interval '5 minutes')
                     """,
                     (limit, self.user_id, window.start, window.end, self.user_id, window.start,
@@ -112,10 +113,28 @@ class UsageMeter:
             raise UsageUnavailable() from None
         return reservation
 
+    def attach_voice_call(self, reservation, call_id):
+        with connect() as db:
+            db.execute("UPDATE nova_private.ai_reservations SET call_id = %s WHERE id = %s",
+                       (call_id, reservation))
+
+    def voice_close_state(self, reservation):
+        with connect() as db:
+            return db.execute("""
+                SELECT closing, ended
+                FROM nova_private.ai_reservations WHERE id = %s
+                """, (reservation,)).fetchone() or (False, False)
+
     def release(self, reservation):
         try:
             with connect() as db:
-                db.execute("DELETE FROM nova_private.ai_reservations WHERE id = %s", (reservation,))
+                if self.feature == "voice":
+                    db.execute("""
+                        UPDATE nova_private.ai_reservations SET released_at = now()
+                        WHERE id = %s AND released_at IS NULL
+                        """, (reservation,))
+                else:
+                    db.execute("DELETE FROM nova_private.ai_reservations WHERE id = %s", (reservation,))
         except psycopg.Error:
             logger.warning("Nova AI usage reservation could not be released")
 
