@@ -259,13 +259,14 @@ def checkout():
                 or not price.recurring or price.recurring.interval != "month"
                 or price.recurring.interval_count != 1):
             return jsonify(error="Membership pricing is unavailable."), 503
+        # The v2 payload omits the legacy payment_method_types field.
         checkout_session = stripe.checkout.Session.create(
             customer=customer, mode="subscription", payment_method_collection="always",
             line_items=[{"price": price_id(), "quantity": 1}],
             subscription_data={} if previous else {"trial_period_days": 3},
             success_url=site_url() + "/?membership=complete",
             cancel_url=site_url() + "/?membership=return",
-            idempotency_key=f"nova-checkout-{customer}-{pending or 'first'}",
+            idempotency_key=f"nova-checkout-v2-{customer}-{pending or 'first'}",
         )
         db.execute("UPDATE nova_membership SET checkout_session = %s WHERE user_id = %s",
                    (checkout_session.id, user_id))
