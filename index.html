@@ -5662,7 +5662,7 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
       <form id="nova-membership-login">
         <label>Email <input type="email" name="email" autocomplete="email" required maxlength="254"></label>
         <label id="nova-membership-code" hidden>Code from your email
-          <input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" disabled>
+          <input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="(?:[0-9]{6}|[0-9]{8})" maxlength="8" disabled>
         </label>
         <button type="submit" class="primary">Email me a code</button>
         <button type="button" id="nova-membership-reset" hidden>Use another email</button>
@@ -5784,7 +5784,7 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
         } else {
           await api('code', {email: email.value});
           setCodeStep(true);
-          message.textContent = 'Check your email for a six-digit code.';
+          message.textContent = 'Check your email for your sign-in code.';
           code.focus();
         }
       });
