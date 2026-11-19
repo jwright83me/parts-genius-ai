@@ -811,16 +811,6 @@ function stopVoice() {
   voiceAudio = null;
 }
 async function startVoice() {
-  const response = await fetch('/api/voice/session', {method: 'POST'});
-  const data = await response.json();
-  if (!response.ok) {
-    if (data.code === 'membership_required' && window.openNovaMembership) {
-      window.openNovaMembership();
-    } else {
-      alert(data.error || 'Unable to start voice');
-    }
-    return;
-  }
   voiceConnection = new RTCPeerConnection();
 
 
@@ -865,20 +855,19 @@ if (data.type === 'response.audio.delta' ||
 };
   const offer = await voiceConnection.createOffer();
   await voiceConnection.setLocalDescription(offer);
-  const sdpResponse = await fetch(
-    'https://api.openai.com/v1/realtime/calls',
-    {
-      method: 'POST',
-      body: offer.sdp,
-      headers: {
-        'Authorization': 'Bearer ' + data.client_secret,
-        'Content-Type': 'application/sdp'
-      }
-    }
-  );
+  const sdpResponse = await fetch('/api/voice/session', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/sdp'},
+    body: voiceConnection.localDescription.sdp
+  });
   if (!sdpResponse.ok) {
-    alert("Unable to connect to the voice assistant.");
     stopVoice();
+    const data = await sdpResponse.json().catch(() => ({}));
+    if (data.code === 'membership_required' && window.openNovaMembership) {
+      window.openNovaMembership();
+    } else {
+      alert(data.error || 'Unable to connect to the voice assistant.');
+    }
     return;
   }
 

@@ -1,4 +1,5 @@
 
+import json
 import os
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date
@@ -7,6 +8,7 @@ from urllib.error import URLError
 from urllib.parse import urlencode
 from urllib.request import urlopen
 from xml.etree import ElementTree
+import httpx
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
@@ -1189,22 +1191,42 @@ def create_voice_session():
     if not os.getenv("OPENAI_API_KEY"):
         return jsonify({"error": "Voice AI is not configured"}), 503
 
+    if request.mimetype != "application/sdp":
+        return jsonify(error="Expected a WebRTC offer."), 415
+    max_offer_bytes = 65536
+    offer = request.stream.read(max_offer_bytes + 1)
+    if len(offer) > max_offer_bytes:
+        return jsonify(error="WebRTC offer is too large."), 413
+    if not offer.startswith(b"v=0"):
+        return jsonify(error="Invalid WebRTC offer."), 400
+
+    session_config = {
+        "type": "realtime",
+        "model": "gpt-realtime",
+        "instructions": SYSTEM_PROMPT,
+        "audio": {"output": {"voice": "marin"}},
+    }
     try:
-            client = OpenAI()
-            session = client.realtime.client_secrets.create(
-            session={
-                "type": "realtime",
-                "model": "gpt-realtime",
-                "instructions": SYSTEM_PROMPT,
-                "audio": {
-                    "output": {"voice": "marin"}
-                }
-            }
+        response = httpx.post(
+            "https://api.openai.com/v1/realtime/calls",
+            headers={"Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}"},
+            files={
+                "sdp": (None, offer, "application/sdp"),
+                "session": (None, json.dumps(session_config), "application/json"),
+            },
+            timeout=httpx.Timeout(25, connect=5),
         )
-            return jsonify({"client_secret": session.value})
-    except Exception:
-            app.logger.exception("Voice session error")
-            return jsonify({"error": "Unable to start voice session"}), 502
+    except httpx.RequestError as error:
+        app.logger.warning("Nova voice connection request failed: %s", type(error).__name__)
+        return jsonify(error="Unable to connect to the voice assistant."), 502
+    if not response.is_success:
+        app.logger.warning(
+            "Nova voice connection rejected: status=%s request_id=%s",
+            response.status_code, response.headers.get("x-request-id", "-"),
+        )
+        return jsonify(error="Unable to connect to the voice assistant."), 502
+    return app.response_class(response.content, mimetype="application/sdp",
+                              headers={"Cache-Control": "no-store"})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
