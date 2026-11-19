@@ -15,6 +15,8 @@ membership = Blueprint("membership", __name__, url_prefix="/api/membership")
 ACTIVE = {"trialing", "active"}
 PACK_PRICE_CENTS = 499
 PACK_USAGE_CENTS = 200
+PREMIUM_PRICE_CENTS = 1999
+PREMIUM_LOOKUP_KEY = "nova_premium_monthly_sandbox_v1"
 
 
 def install_membership(app):
@@ -167,6 +169,24 @@ def auth_call(path, data):
     }, timeout=10)
 
 
+def is_premium_price(price):
+    recurring = getattr(price, "recurring", None)
+    return (
+        getattr(price, "lookup_key", None) == PREMIUM_LOOKUP_KEY
+        and getattr(price, "livemode", None) is False
+        and getattr(price, "unit_amount", None) == PREMIUM_PRICE_CENTS
+        and getattr(price, "currency", None) == "usd"
+        and getattr(recurring, "interval", None) == "month"
+        and getattr(recurring, "interval_count", None) == 1
+    )
+
+
+def nova_subscription_item(subscription):
+    allow_premium = current_app.config["NOVA_STRIPE_MODE"] == "test"
+    return next((item for item in subscription["items"].data
+                 if item.price.id == price_id() or (allow_premium and is_premium_price(item.price))), None)
+
+
 def subscription_state(customer, *, include_invoice=False):
     if not customer:
         return None, False, False
@@ -175,7 +195,7 @@ def subscription_state(customer, *, include_invoice=False):
     options = {"expand": ["data.latest_invoice"]} if include_invoice else {}
     subscriptions = stripe.Subscription.list(customer=customer, status="all", limit=100, **options)
     for subscription in subscriptions.auto_paging_iter():
-        if not any(item.price.id == price_id() for item in subscription["items"].data):
+        if nova_subscription_item(subscription) is None:
             continue
         had_membership = True
         if subscription.status in ACTIVE:
@@ -285,7 +305,11 @@ def status():
         return jsonify(enabled=True, signedIn=False)
     customer = membership_customer(account_id())
     active, previous, payment_pending = subscription_state(customer)
+    item = nova_subscription_item(active) if active else None
+    premium = item is not None and is_premium_price(item.price)
     return jsonify(enabled=True, signedIn=True, active=bool(active), trialEligible=not previous,
+                   premium=premium, showPremium=current_app.config["NOVA_STRIPE_MODE"] == "test",
+                   canUpgrade=bool(active and active.status == "active" and not premium),
                    canManage=bool(customer), paymentPending=payment_pending, email=session["membership_email"],
                    usagePacks=bool(active) and current_app.config["NOVA_STRIPE_MODE"] == "test")
 
@@ -459,6 +483,75 @@ def usage_pack_checkout():
         db.execute("UPDATE nova_private.usage_packs SET stripe_session = %s WHERE id = %s",
                    (payment.id, order[0]))
     return jsonify(url=payment.url)
+
+
+def premium_price(base_price):
+    matches = stripe.Price.list(lookup_keys=[PREMIUM_LOOKUP_KEY], limit=1).data
+    if matches:
+        return matches[0]
+    return stripe.Price.create(
+        currency="usd", unit_amount=PREMIUM_PRICE_CENTS,
+        recurring={"interval": "month"}, product_data={"name": "Nova Premium (sandbox)"},
+        lookup_key=PREMIUM_LOOKUP_KEY,
+        tax_behavior=getattr(base_price, "tax_behavior", None) or "unspecified",
+        idempotency_key=PREMIUM_LOOKUP_KEY,
+    )
+
+
+def premium_portal_configuration(price):
+    marker = f"nova-premium-upgrade-v1-{price.id}"
+    configs = stripe.billing_portal.Configuration.list(active=True, limit=100)
+    for config in configs.auto_paging_iter():
+        if getattr(config.metadata, "nova_flow", None) == marker:
+            return config
+    return stripe.billing_portal.Configuration.create(
+        features={"subscription_update": {
+            "enabled": True, "default_allowed_updates": ["price"],
+            "proration_behavior": "always_invoice",
+            "products": [{"product": price.product, "prices": [price.id]}],
+        }},
+        metadata={"nova_flow": marker},
+        idempotency_key=marker,
+    )
+
+
+@membership.post("/premium")
+def upgrade_membership():
+    if current_app.config["NOVA_STRIPE_MODE"] != "test":
+        return jsonify(error="Premium upgrades are available in Nova Test only."), 404
+    if not account_id():
+        return jsonify(error="Sign in first."), 401
+    customer = membership_customer(account_id())
+    subscription, _, _ = subscription_state(customer, include_invoice=True)
+    if not subscription or subscription.status != "active":
+        return jsonify(error="Premium upgrades are available once the paid membership starts."), 409
+    item = nova_subscription_item(subscription)
+    if is_premium_price(item.price):
+        return jsonify(error="Your account already has Premium."), 409
+    if (len(subscription["items"].data) != 1 or subscription["items"].has_more
+            or getattr(subscription.latest_invoice, "status", None) != "paid"
+            or getattr(subscription, "cancel_at_period_end", False)
+            or getattr(subscription, "cancel_at", None)
+            or getattr(subscription, "schedule", None)
+            or getattr(subscription, "pending_update", None)):
+        return jsonify(error="Resolve any pending billing changes in Manage Subscription first."), 409
+
+    price = premium_price(item.price)
+    if not is_premium_price(price) or not price.active:
+        return jsonify(error="Premium pricing is temporarily unavailable."), 503
+    config = premium_portal_configuration(price)
+    return_url = site_url() + "/?membership=premium"
+    portal_session = stripe.billing_portal.Session.create(
+        customer=customer, configuration=config.id, return_url=return_url,
+        flow_data={
+            "type": "subscription_update_confirm",
+            "subscription_update_confirm": {
+                "subscription": subscription.id, "items": [{"id": item.id, "price": price.id}],
+            },
+            "after_completion": {"type": "redirect", "redirect": {"return_url": return_url}},
+        },
+    )
+    return jsonify(url=portal_session.url)
 
 
 @membership.post("/portal")

@@ -5636,6 +5636,10 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
         <p id="nova-membership-email"></p>
         <button type="button" id="nova-membership-checkout" class="primary">Start 3-Day Free Trial</button>
         <button type="button" id="nova-membership-manage">Manage Subscription</button>
+        <div id="nova-premium" hidden>
+          <p id="nova-premium-detail"></p>
+          <button type="button" id="nova-premium-upgrade">Upgrade to Premium · $19.99/month</button>
+        </div>
         <div id="nova-usage-pack" hidden>
           <p id="nova-usage-pack-detail"></p>
           <button type="button" id="nova-usage-pack-buy">Add AI Credits · $4.99</button>
@@ -5654,6 +5658,9 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
     const checkout = dialog.querySelector('#nova-membership-checkout');
     const manage = dialog.querySelector('#nova-membership-manage');
     const signout = dialog.querySelector('#nova-membership-signout');
+    const premium = dialog.querySelector('#nova-premium');
+    const premiumDetail = dialog.querySelector('#nova-premium-detail');
+    const upgrade = dialog.querySelector('#nova-premium-upgrade');
     const pack = dialog.querySelector('#nova-usage-pack');
     const packDetail = dialog.querySelector('#nova-usage-pack-detail');
     const packBuy = dialog.querySelector('#nova-usage-pack-buy');
@@ -5683,6 +5690,14 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
       checkout.hidden = !!state.active || !!state.paymentPending;
       manage.hidden = !state.canManage;
       pack.hidden = true;
+      premium.hidden = !state.showPremium || !state.active;
+      upgrade.hidden = !state.canUpgrade;
+      premiumDetail.textContent = state.premium
+        ? 'Nova Premium · $19.99/month. Includes up to $9 of AI usage each full billing month.'
+        : 'Premium includes $9 of AI usage per full billing month. '
+          + (state.canUpgrade
+            ? 'Stripe will show any prorated charge before you confirm. Extra usage in your current month is prorated.'
+            : 'You can upgrade once your paid membership starts.');
       checkout.textContent = state.trialEligible ? 'Start 3-Day Free Trial' : 'Subscribe for $9.99/month';
       button.textContent = state.signedIn ? 'Membership' : 'Start Free Trial';
     };
@@ -5691,12 +5706,12 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
       if (busy) return;
       busy = true;
       message.textContent = '';
-      for (const control of [submit, reset, checkout, manage, signout, packBuy]) control.disabled = true;
+      for (const control of [submit, reset, checkout, manage, signout, packBuy, upgrade]) control.disabled = true;
       try { await operation(); }
       catch (error) { message.textContent = error.message || 'Please try again.'; }
       finally {
         busy = false;
-        for (const control of [submit, reset, checkout, manage, signout, packBuy]) control.disabled = false;
+        for (const control of [submit, reset, checkout, manage, signout, packBuy, upgrade]) control.disabled = false;
       }
     };
 
@@ -5751,6 +5766,7 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
       window.location.assign(result.url);
     });
     manage.onclick = () => run(async () => window.location.assign((await api('portal', {})).url));
+    upgrade.onclick = () => run(async () => window.location.assign((await api('premium', {})).url));
     packBuy.onclick = () => run(async () => window.location.assign((await api('usage-packs', {})).url));
     button.onclick = open;
     const initial = await api('status');

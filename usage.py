@@ -8,7 +8,7 @@ from uuid import uuid4
 import psycopg
 from openai import APIStatusError
 
-from membership import connect, price_id
+from membership import connect, is_premium_price, nova_subscription_item
 
 logger = logging.getLogger(__name__)
 CENT = 10_000_000  # Store costs in billionths of a US dollar.
@@ -40,12 +40,20 @@ def billing_window(subscription):
         invoice = getattr(subscription, "latest_invoice", None)
         if getattr(invoice, "status", None) != "paid":
             raise UsageUnavailable()
-        item = next((i for i in subscription["items"].data if i.price.id == price_id()), None)
+        item = nova_subscription_item(subscription)
         if item is None:
             raise UsageUnavailable()
         start = getattr(item, "current_period_start", None) or getattr(subscription, "current_period_start", None)
         end = getattr(item, "current_period_end", None) or getattr(subscription, "current_period_end", None)
         budget, text_reserve = 400, 50
+        if is_premium_price(item.price):
+            budget = 900
+            if getattr(invoice, "billing_reason", None) == "subscription_update":
+                paid_at = getattr(getattr(invoice, "status_transitions", None), "paid_at", None)
+                if not all(isinstance(value, int) for value in (start, end, paid_at)) or end <= start:
+                    raise UsageUnavailable()
+                remaining = max(0, end - max(start, paid_at))
+                budget = 400 + 500 * remaining // (end - start)
     if not isinstance(start, int) or not isinstance(end, int) or not start <= datetime.now(timezone.utc).timestamp() < end:
         raise UsageUnavailable()
     return BillingWindow(datetime.fromtimestamp(start, timezone.utc),
