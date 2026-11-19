@@ -947,8 +947,9 @@ function addToGarage(vehicle) {
   }
 }
 function getVehicleHologram(vehicle) {
-  const make = (vehicle.make || '').toLowerCase();
-  const model = (vehicle.model || '').toLowerCase();
+  const make = String(vehicle?.make ?? '').trim().toLowerCase();
+  const model = String(vehicle?.model ?? '').trim().toLowerCase();
+  if (!make || !model) return null;
 
   // Dedicated Tesla Model 3 hologram
   if (make === 'tesla' &&
@@ -1279,7 +1280,6 @@ if (
     return 'mitsubishi-outlander-hologram.png';
   }
 
-  // Other vehicles will use automatic image lookup later.
 // Ford F-150 hologram
 if (make === 'ford' &&
     (model.includes('f150') || model.includes('f-150'))) {
@@ -1366,7 +1366,21 @@ const sportsCarModels = [
 if (sportsCarModels.some(name => model.includes(name))) {
   return 'F084B039-9ADD-4259-B2FB-02100B23F54F.png';
 }
-  return null;
+  // Choose a shared silhouette when the catalog name identifies a body style.
+  if (/\b(?:pickup|pick-up|pickup truck|truck)\b/.test(model)
+      || /^(?:ford f[ -]?(?:250|350|450|550|600)|ram (?:2500|3500|4500|5500)|(?:chevrolet silverado|gmc sierra) (?:2500|3500))(?:\b|hd)/.test(vehicleLabel)) {
+    return 'generic-heavy-duty-pickup-hologram.png';
+  }
+  if (/\b(?:cargo van|van)\b/.test(model) || /^ford (?:e[ -]?series|e[ -]?(?:150|250|350))\b/.test(vehicleLabel)) {
+    return 'generic-traditional-full-size-van-hologram.png';
+  }
+  if (/\b(?:wagon|estate)\b/.test(model)) return 'generic-station-wagon-hologram.png';
+  if (/\bhatchback\b/.test(model)) return 'generic-hatchback-hologram.png';
+  if (/\b(?:suv|crossover)\b/.test(model)) return '76BD6A66-D1D3-412C-B133-38673666312C.png';
+  if (/\b(?:coupe|convertible|roadster)\b/.test(model)) return 'F084B039-9ADD-4259-B2FB-02100B23F54F.png';
+
+  // Unknown body styles still get a vehicle hologram.
+  return 'F825ECCA-C6EF-4055-A7B6-E90BB67B2FA0.png';
 }
 function showMyGarage() {
   let garage = [];
@@ -1713,10 +1727,9 @@ document.body.prepend(novaSection);
 // NOVA - Vehicle hologram overlay
 const novaHologram = document.createElement('img');
 novaHologram.id = 'novaVehicleHologram';
-const novaGarage = JSON.parse(localStorage.getItem('pgGarage') || '[]');
-const savedNovaVehicle = JSON.parse(localStorage.getItem('pgVehicle') || 'null');
-const activeNovaVehicle = novaGarage.find(v => JSON.stringify(v) === JSON.stringify(savedNovaVehicle)) || null;
-const activeNovaImage = activeNovaVehicle ? getVehicleHologram(activeNovaVehicle) : null;
+let savedNovaVehicle;
+try { savedNovaVehicle = JSON.parse(localStorage.getItem('pgVehicle') || 'null'); } catch {}
+const activeNovaImage = getVehicleHologram(savedNovaVehicle);
 if (activeNovaImage) {
   novaHologram.src = activeNovaImage;
 } else {
