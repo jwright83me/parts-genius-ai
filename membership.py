@@ -163,7 +163,22 @@ def send_code():
         if result.status_code == 429:
             return jsonify(error="Please wait before requesting another code."), 429
         result.raise_for_status()
-    except httpx.HTTPError:
+    except httpx.HTTPStatusError as error:
+        response = error.response
+        provider_code = ""
+        try:
+            payload = response.json()
+            if isinstance(payload, dict):
+                provider_code = payload.get("error_code") or payload.get("code")
+        except ValueError:
+            pass
+        if not isinstance(provider_code, str) or not re.fullmatch(r"[a-z0-9_]{1,60}", provider_code):
+            provider_code = "unknown"
+        current_app.logger.warning("Nova email code failed: auth_status=%s auth_code=%s",
+                                   response.status_code, provider_code)
+        return jsonify(error="Could not send a code. Try again shortly."), 502
+    except httpx.RequestError as error:
+        current_app.logger.warning("Nova email code could not reach auth: %s", type(error).__name__)
         return jsonify(error="Could not send a code. Try again shortly."), 502
     return jsonify(ok=True)
 
