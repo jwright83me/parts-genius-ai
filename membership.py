@@ -8,7 +8,7 @@ from functools import wraps
 import httpx
 import psycopg
 import stripe
-from flask import Blueprint, current_app, jsonify, request, session
+from flask import Blueprint, current_app, g, jsonify, request, session
 
 membership = Blueprint("membership", __name__, url_prefix="/api/membership")
 ACTIVE = {"trialing", "active"}
@@ -69,6 +69,21 @@ def install_membership(app):
                     CREATE INDEX IF NOT EXISTS nova_ai_usage_user_time
                         ON nova_private.ai_usage (user_id, recorded_at)
                 """)
+                db.execute("""
+                    ALTER TABLE nova_private.ai_usage ADD COLUMN IF NOT EXISTS cycle_start timestamptz
+                """)
+                db.execute("""
+                    CREATE TABLE IF NOT EXISTS nova_private.ai_reservations (
+                        id uuid PRIMARY KEY,
+                        user_id uuid NOT NULL,
+                        cycle_start timestamptz NOT NULL,
+                        amount_nano bigint NOT NULL CHECK (amount_nano > 0)
+                    )
+                """)
+                db.execute("""
+                    CREATE INDEX IF NOT EXISTS nova_ai_reservations_user_cycle
+                        ON nova_private.ai_reservations (user_id, cycle_start)
+                """)
         except psycopg.Error as error:
             detail = str(error).lower()
             if error.sqlstate == "28P01" or "password authentication failed" in detail:
@@ -122,21 +137,22 @@ def auth_call(path, data):
     }, timeout=10)
 
 
-def subscription_state(customer):
+def subscription_state(customer, *, include_invoice=False):
     if not customer:
-        return False, False, False
+        return None, False, False
     had_membership = False
     payment_pending = False
-    subscriptions = stripe.Subscription.list(customer=customer, status="all", limit=100)
+    options = {"expand": ["data.latest_invoice"]} if include_invoice else {}
+    subscriptions = stripe.Subscription.list(customer=customer, status="all", limit=100, **options)
     for subscription in subscriptions.auto_paging_iter():
         if not any(item.price.id == price_id() for item in subscription["items"].data):
             continue
         had_membership = True
         if subscription.status in ACTIVE:
-            return True, True, False
+            return subscription, True, False
         if subscription.status in {"past_due", "unpaid", "incomplete", "paused"}:
             payment_pending = True
-    return False, had_membership, payment_pending
+    return None, had_membership, payment_pending
 
 
 def membership_customer(user_id):
@@ -239,7 +255,7 @@ def status():
         return jsonify(enabled=True, signedIn=False)
     customer = membership_customer(account_id())
     active, previous, payment_pending = subscription_state(customer)
-    return jsonify(enabled=True, signedIn=True, active=active, trialEligible=not previous,
+    return jsonify(enabled=True, signedIn=True, active=bool(active), trialEligible=not previous,
                    canManage=bool(customer), paymentPending=payment_pending, email=session["membership_email"])
 
 
@@ -328,10 +344,14 @@ def membership_required(view):
             if not account_id():
                 return jsonify(error="Sign in and start a Nova membership to continue.", code="membership_required"), 401
             try:
-                active, _, _ = subscription_state(membership_customer(account_id()))
+                active, _, _ = subscription_state(
+                    membership_customer(account_id()),
+                    include_invoice=request.endpoint in {"diagnose", "find_verified_parts"},
+                )
             except (stripe.StripeError, psycopg.Error) as error:
                 return billing_error(error)
             if not active:
                 return jsonify(error="Start or renew your Nova membership to continue.", code="membership_required"), 402
+            g.nova_subscription = active
         return view(*args, **kwargs)
     return gated

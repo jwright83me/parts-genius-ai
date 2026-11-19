@@ -421,6 +421,10 @@ async function sendChat(retryMessage){
       body:JSON.stringify({message,history:chatHistory,vehicle:localStorage.getItem('pgVehicle')})
     });
     const data=await response.json();
+    if (data.code === 'nova_allowance_reached' || data.code === 'nova_allowance_unavailable') {
+      pending.textContent = data.error;
+      return;
+    }
     if(!response.ok||!data.reply)throw new Error('No reply');
     pending.remove();
     const answer=addBubble(data.reply,'bot');
