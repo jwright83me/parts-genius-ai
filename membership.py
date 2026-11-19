@@ -505,7 +505,7 @@ def premium_portal_configuration(price):
         if getattr(config.metadata, "nova_flow", None) == marker:
             return config
     return stripe.billing_portal.Configuration.create(
-        features={"subscription_update": {
+        features={"payment_method_update": {"enabled": True}, "subscription_update": {
             "enabled": True, "default_allowed_updates": ["price"],
             "proration_behavior": "always_invoice",
             "products": [{"product": price.product, "prices": [price.id]}],
