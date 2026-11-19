@@ -348,6 +348,13 @@ def checkout():
                 or not price.recurring or price.recurring.interval != "month"
                 or price.recurring.interval_count != 1):
             return jsonify(error="Membership pricing is unavailable."), 503
+        checkout_options = {}
+        if current_app.config["NOVA_STRIPE_MODE"] == "live":
+            checkout_options = {
+                "automatic_tax": {"enabled": True},
+                "billing_address_collection": "required",
+                "customer_update": {"address": "auto"},
+            }
         # The v2 payload omits the legacy payment_method_types field.
         checkout_session = stripe.checkout.Session.create(
             customer=customer, mode="subscription", payment_method_collection="always",
@@ -356,6 +363,7 @@ def checkout():
             success_url=site_url() + "/?membership=complete",
             cancel_url=site_url() + "/?membership=return",
             idempotency_key=f"nova-checkout-v2-{customer}-{pending or 'first'}",
+            **checkout_options,
         )
         db.execute("UPDATE nova_membership SET checkout_session = %s WHERE user_id = %s",
                    (checkout_session.id, user_id))
