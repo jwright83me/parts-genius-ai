@@ -66,6 +66,12 @@ class UsageMeter:
         try:
             with connect() as db:
                 db.execute("SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))", (self.user_id,))
+                pack_cents = db.execute("""
+                    SELECT coalesce(sum(grant_cents), 0)
+                    FROM nova_private.usage_packs
+                    WHERE user_id = %s AND cycle_start = %s AND state = 'granted'
+                    """, (self.user_id, window.start)).fetchone()[0]
+                limit += pack_cents * CENT
                 spent, held, voice_active = db.execute(
                     """
                     SELECT

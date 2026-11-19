@@ -5636,6 +5636,10 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
         <p id="nova-membership-email"></p>
         <button type="button" id="nova-membership-checkout" class="primary">Start 3-Day Free Trial</button>
         <button type="button" id="nova-membership-manage">Manage Subscription</button>
+        <div id="nova-usage-pack" hidden>
+          <p id="nova-usage-pack-detail"></p>
+          <button type="button" id="nova-usage-pack-buy">Add AI Credits · $4.99</button>
+        </div>
         <button type="button" id="nova-membership-signout">Sign Out</button>
       </div>
       <p id="nova-membership-message" role="status" aria-live="polite"></p>
@@ -5650,6 +5654,9 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
     const checkout = dialog.querySelector('#nova-membership-checkout');
     const manage = dialog.querySelector('#nova-membership-manage');
     const signout = dialog.querySelector('#nova-membership-signout');
+    const pack = dialog.querySelector('#nova-usage-pack');
+    const packDetail = dialog.querySelector('#nova-usage-pack-detail');
+    const packBuy = dialog.querySelector('#nova-usage-pack-buy');
     const message = dialog.querySelector('#nova-membership-message');
     const button = document.createElement('button');
     button.id = 'nova-membership-open';
@@ -5675,6 +5682,7 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
       dialog.querySelector('#nova-membership-email').textContent = state.email || '';
       checkout.hidden = !!state.active || !!state.paymentPending;
       manage.hidden = !state.canManage;
+      pack.hidden = true;
       checkout.textContent = state.trialEligible ? 'Start 3-Day Free Trial' : 'Subscribe for $9.99/month';
       button.textContent = state.signedIn ? 'Membership' : 'Start Free Trial';
     };
@@ -5683,13 +5691,26 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
       if (busy) return;
       busy = true;
       message.textContent = '';
-      for (const control of [submit, reset, checkout, manage, signout]) control.disabled = true;
+      for (const control of [submit, reset, checkout, manage, signout, packBuy]) control.disabled = true;
       try { await operation(); }
       catch (error) { message.textContent = error.message || 'Please try again.'; }
       finally {
         busy = false;
-        for (const control of [submit, reset, checkout, manage, signout]) control.disabled = false;
+        for (const control of [submit, reset, checkout, manage, signout, packBuy]) control.disabled = false;
       }
+    };
+
+    const showUsagePack = async () => {
+      if (!state.usagePacks) return;
+      const result = await api('usage-packs');
+      if (!result.enabled) return;
+      const end = new Date(result.end).toLocaleString(undefined, {dateStyle: 'medium', timeStyle: 'short'});
+      packDetail.textContent = result.pending
+        ? 'Your credit payment is pending.'
+        : 'One-time test purchase. Adds $2.00 of AI usage to your active period when payment is confirmed. This period ends ' + end + '. Unused credits expire at the end of the period.'
+          + (result.grantedCents ? ' Added this period: $' + (result.grantedCents / 100).toFixed(2) + '.' : '');
+      packBuy.hidden = result.pending || !result.canBuy;
+      pack.hidden = false;
     };
 
     const open = () => {
@@ -5698,6 +5719,7 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
         render(await api('status'));
         if (state.active) message.textContent = 'Your Nova access is active.';
         if (state.paymentPending) message.textContent = 'Open Manage Subscription to review your payment.';
+        await showUsagePack();
       });
     };
 
@@ -5708,6 +5730,7 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
           await api('verify', {email: email.value, code: code.value});
           setCodeStep(false);
           render(await api('status'));
+          await showUsagePack();
         } else {
           await api('code', {email: email.value});
           setCodeStep(true);
@@ -5728,6 +5751,7 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
       window.location.assign(result.url);
     });
     manage.onclick = () => run(async () => window.location.assign((await api('portal', {})).url));
+    packBuy.onclick = () => run(async () => window.location.assign((await api('usage-packs', {})).url));
     button.onclick = open;
     const initial = await api('status');
     if (!initial.enabled) return;

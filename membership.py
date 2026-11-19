@@ -2,8 +2,9 @@
 import hmac
 import os
 import re
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from functools import wraps
+from uuid import uuid4
 
 import httpx
 import psycopg
@@ -12,6 +13,8 @@ from flask import Blueprint, current_app, g, jsonify, request, session
 
 membership = Blueprint("membership", __name__, url_prefix="/api/membership")
 ACTIVE = {"trialing", "active"}
+PACK_PRICE_CENTS = 499
+PACK_USAGE_CENTS = 200
 
 
 def install_membership(app):
@@ -89,6 +92,23 @@ def install_membership(app):
                     ADD COLUMN IF NOT EXISTS closing boolean NOT NULL DEFAULT false,
                     ADD COLUMN IF NOT EXISTS ended boolean NOT NULL DEFAULT false,
                     ADD COLUMN IF NOT EXISTS released_at timestamptz
+                """)
+                db.execute("""
+                    CREATE TABLE IF NOT EXISTS nova_private.usage_packs (
+                        id uuid PRIMARY KEY,
+                        user_id uuid NOT NULL,
+                        stripe_session text UNIQUE,
+                        price_cents integer NOT NULL CHECK (price_cents > 0),
+                        grant_cents integer NOT NULL CHECK (grant_cents > 0),
+                        created_at timestamptz NOT NULL DEFAULT now(),
+                        cycle_start timestamptz,
+                        state text NOT NULL DEFAULT 'pending'
+                            CHECK (state IN ('pending', 'expired', 'granted'))
+                    )
+                """)
+                db.execute("""
+                    CREATE UNIQUE INDEX IF NOT EXISTS nova_pending_usage_pack
+                    ON nova_private.usage_packs (user_id) WHERE state = 'pending'
                 """)
                 db.execute("""
                     CREATE INDEX IF NOT EXISTS nova_ai_reservations_user_cycle
@@ -266,7 +286,8 @@ def status():
     customer = membership_customer(account_id())
     active, previous, payment_pending = subscription_state(customer)
     return jsonify(enabled=True, signedIn=True, active=bool(active), trialEligible=not previous,
-                   canManage=bool(customer), paymentPending=payment_pending, email=session["membership_email"])
+                   canManage=bool(customer), paymentPending=payment_pending, email=session["membership_email"],
+                   usagePacks=bool(active) and current_app.config["NOVA_STRIPE_MODE"] == "test")
 
 
 @membership.post("/checkout")
@@ -315,6 +336,129 @@ def checkout():
         db.execute("UPDATE nova_membership SET checkout_session = %s WHERE user_id = %s",
                    (checkout_session.id, user_id))
     return jsonify(url=checkout_session.url)
+
+
+def pack_window():
+    # Imported here because usage shares the membership database connection.
+    from usage import UsageUnavailable, billing_window
+    if current_app.config["NOVA_STRIPE_MODE"] != "test" or not account_id():
+        return None, None
+    customer = membership_customer(account_id())
+    subscription, _, _ = subscription_state(customer, include_invoice=True)
+    try:
+        return customer, billing_window(subscription)
+    except UsageUnavailable:
+        return customer, None
+
+
+def reconcile_usage_pack(db, user_id, customer, window):
+    order = db.execute("""
+        SELECT id, stripe_session, price_cents, grant_cents
+        FROM nova_private.usage_packs
+        WHERE user_id = %s AND state = 'pending' FOR UPDATE
+        """, (user_id,)).fetchone()
+    if order is None or order[1] is None:
+        return order, None
+    payment = stripe.checkout.Session.retrieve(order[1])
+    if payment.status == "expired":
+        db.execute("UPDATE nova_private.usage_packs SET state = 'expired' WHERE id = %s", (order[0],))
+        return None, None
+    if payment.status != "complete" or payment.payment_status != "paid":
+        return order, payment
+
+    metadata = payment.metadata
+    if (payment.livemode or payment.mode != "payment" or payment.customer != customer
+            or payment.currency != "usd" or payment.amount_total != order[2]
+            or getattr(metadata, "nova_usage_pack", None) != str(order[0])):
+        raise ValueError("Stripe usage pack payment did not match its recorded order.")
+
+    db.execute("""
+        UPDATE nova_private.usage_packs SET state = 'granted', cycle_start = %s
+        WHERE id = %s AND state = 'pending'
+        """, (window.start, order[0]))
+    return None, None
+
+
+@membership.get("/usage-packs")
+def usage_packs_status():
+    customer, window = pack_window()
+    if window is None:
+        return jsonify(enabled=False)
+    try:
+        with connect() as db:
+            _, payment = reconcile_usage_pack(db, account_id(), customer, window)
+            granted = db.execute("""
+                SELECT coalesce(sum(grant_cents), 0)
+                FROM nova_private.usage_packs
+                WHERE user_id = %s AND cycle_start = %s AND state = 'granted'
+                """, (account_id(), window.start)).fetchone()[0]
+    except ValueError:
+        current_app.logger.warning("Nova could not verify a Stripe usage pack payment")
+        return jsonify(error="Nova could not verify the credit purchase."), 503
+    return jsonify(enabled=True, grantedCents=granted, end=window.end.isoformat(),
+                   canBuy=window.end - datetime.now(timezone.utc) >= timedelta(minutes=35),
+                   pending=payment is not None and payment.status == "complete")
+
+
+@membership.post("/usage-packs")
+def usage_pack_checkout():
+    customer, window = pack_window()
+    if window is None:
+        return jsonify(error="An active Nova Test membership is required."), 403
+    now = datetime.now(timezone.utc)
+    if window.end - now < timedelta(minutes=35):
+        return jsonify(error="You can add credits once your next membership period begins."), 409
+
+    user_id = account_id()
+    try:
+        with connect() as db:
+            db.execute("SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))", (user_id,))
+            order, payment = reconcile_usage_pack(db, user_id, customer, window)
+            if payment is not None:
+                if payment.status == "open":
+                    return jsonify(url=payment.url)
+                return jsonify(error="Your previous credit payment is still pending."), 409
+            if order is None:
+                order = db.execute("""
+                    INSERT INTO nova_private.usage_packs (id, user_id, price_cents, grant_cents)
+                    VALUES (%s, %s, %s, %s) RETURNING id, stripe_session, price_cents, grant_cents
+                    """, (uuid4(), user_id, PACK_PRICE_CENTS, PACK_USAGE_CENTS)).fetchone()
+    except ValueError:
+        current_app.logger.warning("Nova could not verify a Stripe usage pack payment")
+        return jsonify(error="Nova could not verify the previous credit purchase."), 503
+
+    # Keep the order ID committed before sending it to Stripe, so a timeout or
+    # interrupted database write can retry with the same Checkout Session key.
+    with connect() as db:
+        row = db.execute("""
+            SELECT stripe_session, created_at FROM nova_private.usage_packs
+            WHERE id = %s AND state = 'pending' FOR UPDATE
+            """, (order[0],)).fetchone()
+        if row is None:
+            return jsonify(error="Open Membership to check your credit purchase."), 409
+        if row[0]:
+            existing = stripe.checkout.Session.retrieve(row[0])
+            if existing.status == "open":
+                return jsonify(url=existing.url)
+            return jsonify(error="Open Membership to check your credit purchase."), 409
+        # Use stable request parameters for retries within the Stripe idempotency window.
+        if now - row[1] > timedelta(hours=23):
+            db.execute("UPDATE nova_private.usage_packs SET state = 'expired' WHERE id = %s", (order[0],))
+            return jsonify(error="The unfinished checkout expired. Please try again."), 409
+        payment = stripe.checkout.Session.create(
+            customer=customer, mode="payment",
+            line_items=[{"price_data": {
+                "currency": "usd", "unit_amount": order[2],
+                "product_data": {"name": "Nova extra AI usage (test)"},
+            }, "quantity": 1}],
+            metadata={"nova_usage_pack": str(order[0])},
+            success_url=site_url() + "/?membership=credits",
+            cancel_url=site_url() + "/?membership=return",
+            idempotency_key=f"nova-usage-pack-v1-{order[0]}",
+        )
+        db.execute("UPDATE nova_private.usage_packs SET stripe_session = %s WHERE id = %s",
+                   (payment.id, order[0]))
+    return jsonify(url=payment.url)
 
 
 @membership.post("/portal")
