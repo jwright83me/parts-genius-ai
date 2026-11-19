@@ -2,7 +2,7 @@
 import json
 import os
 from concurrent.futures import ThreadPoolExecutor
-from datetime import date
+from datetime import date, datetime, timezone
 from functools import lru_cache
 from urllib.error import URLError
 from urllib.parse import urlencode
@@ -13,7 +13,8 @@ from flask import Flask, g, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
 from membership import account_id, install_membership, membership_required
-from usage import MeteredResponses, UsageUnavailable, UsageLimit, billing_window
+from usage import CENT, MeteredResponses, UsageLimit, UsageMeter, UsageUnavailable, billing_window
+from voice_meter import REALTIME_URL, start_meter
 
 app = Flask(__name__)
 install_membership(app)
@@ -1225,16 +1226,28 @@ def create_voice_session():
     if not offer.startswith(b"v=0"):
         return jsonify(error="Invalid WebRTC offer."), 400
 
+    window = billing_window(g.get("nova_subscription"))
+    if window is None:
+        raise UsageUnavailable()
+    trial = g.nova_subscription.status == "trialing"
+    seconds = min(60 if trial else 120, (window.end - datetime.now(timezone.utc)).total_seconds())
+    if seconds <= 0:
+        raise UsageUnavailable()
+    budget = (15 if trial else 30) * CENT
+    meter = UsageMeter(account_id(), "voice", window)
+    reservation = meter.reserve(budget)
+    headers = {"Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}"}
     session_config = {
         "type": "realtime",
         "model": "gpt-realtime",
         "instructions": SYSTEM_PROMPT,
+        "max_output_tokens": 500,
         "audio": {"output": {"voice": "marin"}},
     }
     try:
         response = httpx.post(
-            "https://api.openai.com/v1/realtime/calls",
-            headers={"Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}"},
+            REALTIME_URL,
+            headers=headers,
             files={
                 "sdp": (None, offer, "application/sdp"),
                 "session": (None, json.dumps(session_config), "application/json"),
@@ -1242,9 +1255,13 @@ def create_voice_session():
             timeout=httpx.Timeout(25, connect=5),
         )
     except httpx.RequestError as error:
+        if isinstance(error, (httpx.ConnectError, httpx.ConnectTimeout, httpx.PoolTimeout)):
+            meter.release(reservation)
         app.logger.warning("Nova voice connection request failed: %s", type(error).__name__)
         return jsonify(error="Unable to connect to the voice assistant."), 502
     if not response.is_success:
+        if response.status_code in {400, 401, 403, 404, 422, 429}:
+            meter.release(reservation)
         try:
             error_code = response.json()["error"]["code"]
         except (ValueError, KeyError, TypeError):
@@ -1258,6 +1275,13 @@ def create_voice_session():
         if response.status_code == 429:
             return jsonify(error="Nova voice is temporarily unavailable. You can still type a question."), 503
         return jsonify(error="Unable to connect to the voice assistant."), 502
+    location = response.headers.get("location", "")
+    call_id = location.rstrip("/").rsplit("/", 1)[-1]
+    if not re.fullmatch(r"rtc_[A-Za-z0-9_-]{1,128}", call_id):
+        app.logger.warning("Nova voice call did not include a valid call ID")
+        return jsonify(error="Unable to start a metered voice call."), 502
+    if not start_meter(call_id, headers, meter, reservation, budget, seconds):
+        return jsonify(error="Unable to start a metered voice call."), 502
     return app.response_class(response.content, mimetype="application/sdp",
                               headers={"Cache-Control": "no-store"})
 

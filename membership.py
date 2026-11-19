@@ -70,7 +70,8 @@ def install_membership(app):
                         ON nova_private.ai_usage (user_id, recorded_at)
                 """)
                 db.execute("""
-                    ALTER TABLE nova_private.ai_usage ADD COLUMN IF NOT EXISTS cycle_start timestamptz
+                    ALTER TABLE nova_private.ai_usage ADD COLUMN IF NOT EXISTS cycle_start timestamptz,
+                        ADD COLUMN IF NOT EXISTS cost_nano bigint
                 """)
                 db.execute("""
                     CREATE TABLE IF NOT EXISTS nova_private.ai_reservations (
@@ -79,6 +80,11 @@ def install_membership(app):
                         cycle_start timestamptz NOT NULL,
                         amount_nano bigint NOT NULL CHECK (amount_nano > 0)
                     )
+                """)
+                db.execute("""
+                    ALTER TABLE nova_private.ai_reservations
+                    ADD COLUMN IF NOT EXISTS feature text NOT NULL DEFAULT 'diagnose',
+                    ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now()
                 """)
                 db.execute("""
                     CREATE INDEX IF NOT EXISTS nova_ai_reservations_user_cycle
@@ -346,7 +352,7 @@ def membership_required(view):
             try:
                 active, _, _ = subscription_state(
                     membership_customer(account_id()),
-                    include_invoice=request.endpoint in {"diagnose", "find_verified_parts"},
+                    include_invoice=request.endpoint in {"diagnose", "find_verified_parts", "create_voice_session"},
                 )
             except (stripe.StripeError, psycopg.Error) as error:
                 return billing_error(error)

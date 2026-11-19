@@ -374,7 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     talkButton.disabled = true;
     try {
-      await startVoice();
+      await startVoice(talkButton);
       if (voiceConnection) talkButton.textContent = '🔴 End Conversation';
     } catch {
       stopVoice();
@@ -814,8 +814,14 @@ function stopVoice() {
   voiceStream = null;
   voiceAudio = null;
 }
-async function startVoice() {
+async function startVoice(talkButton) {
   voiceConnection = new RTCPeerConnection();
+  const connection = voiceConnection;
+  connection.onconnectionstatechange = () => {
+    if (voiceConnection !== connection || !['failed', 'disconnected'].includes(connection.connectionState)) return;
+    stopVoice();
+    talkButton.textContent = '🎙 Talk to Nova';
+  };
 
 
 
