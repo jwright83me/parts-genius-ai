@@ -40,7 +40,7 @@ def install_membership(app):
         if not stripe.api_key.startswith((f"sk_{mode}_", f"rk_{mode}_")):
             raise RuntimeError("Stripe credentials must match NOVA_STRIPE_MODE")
         app.config["NOVA_STRIPE_MODE"] = mode
-        stripe.default_http_client = stripe.HTTPXClient(timeout=(5, 15))
+        stripe.default_http_client = stripe.HTTPXClient(timeout=15, allow_sync_methods=True)
         try:
             with connect() as db:
                 db.execute("SELECT pg_advisory_xact_lock(38204912)")
