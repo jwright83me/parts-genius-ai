@@ -274,8 +274,8 @@ def send_code():
 @membership.post("/verify")
 def verify_code():
     email, token = email_address(), str(data().get("code", "")).strip()
-    if not email or not re.fullmatch(r"[0-9]{6}", token):
-        return jsonify(error="Enter the six-digit code from your email."), 400
+    if not email or not re.fullmatch(r"(?:[0-9]{6}|[0-9]{8})", token):
+        return jsonify(error="Enter the code from your email."), 400
     try:
         response = auth_call("verify", {"email": email, "token": token, "type": "email"})
         if response.status_code in (400, 401, 403, 422):
