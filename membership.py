@@ -48,74 +48,81 @@ def install_membership(app):
         stripe.default_http_client = stripe.HTTPXClient(timeout=15, allow_sync_methods=True)
         try:
             with connect() as db:
-                db.execute("SELECT pg_advisory_xact_lock(38204912)")
-                db.execute("""
-                    CREATE TABLE IF NOT EXISTS nova_membership (
-                        user_id uuid PRIMARY KEY,
-                        stripe_customer text UNIQUE,
-                        checkout_session text
-                    )
-                """)
-                db.execute("CREATE SCHEMA IF NOT EXISTS nova_private")
-                db.execute("""
-                    CREATE TABLE IF NOT EXISTS nova_private.ai_usage (
-                        response_id text PRIMARY KEY,
-                        user_id uuid NOT NULL,
-                        recorded_at timestamptz NOT NULL DEFAULT now(),
-                        feature text NOT NULL,
-                        model text NOT NULL,
-                        input_tokens bigint NOT NULL CHECK (input_tokens >= 0),
-                        cached_input_tokens bigint NOT NULL CHECK (cached_input_tokens >= 0),
-                        output_tokens bigint NOT NULL CHECK (output_tokens >= 0),
-                        web_search_calls integer NOT NULL CHECK (web_search_calls >= 0)
-                    )
-                """)
-                db.execute("""
-                    CREATE INDEX IF NOT EXISTS nova_ai_usage_user_time
-                        ON nova_private.ai_usage (user_id, recorded_at)
-                """)
-                db.execute("""
-                    ALTER TABLE nova_private.ai_usage ADD COLUMN IF NOT EXISTS cycle_start timestamptz,
-                        ADD COLUMN IF NOT EXISTS cost_nano bigint
-                """)
-                db.execute("""
-                    CREATE TABLE IF NOT EXISTS nova_private.ai_reservations (
-                        id uuid PRIMARY KEY,
-                        user_id uuid NOT NULL,
-                        cycle_start timestamptz NOT NULL,
-                        amount_nano bigint NOT NULL CHECK (amount_nano > 0)
-                    )
-                """)
-                db.execute("""
-                    ALTER TABLE nova_private.ai_reservations
-                    ADD COLUMN IF NOT EXISTS feature text NOT NULL DEFAULT 'diagnose',
-                    ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now(),
-                    ADD COLUMN IF NOT EXISTS call_id text,
-                    ADD COLUMN IF NOT EXISTS closing boolean NOT NULL DEFAULT false,
-                    ADD COLUMN IF NOT EXISTS ended boolean NOT NULL DEFAULT false,
-                    ADD COLUMN IF NOT EXISTS released_at timestamptz
-                """)
-                db.execute("""
-                    CREATE TABLE IF NOT EXISTS nova_private.usage_packs (
-                        id uuid PRIMARY KEY,
-                        user_id uuid NOT NULL,
-                        stripe_session text UNIQUE,
-                        price_cents integer NOT NULL CHECK (price_cents > 0),
-                        grant_cents integer NOT NULL CHECK (grant_cents > 0),
-                        created_at timestamptz NOT NULL DEFAULT now(),
-                        cycle_start timestamptz,
-                        state text NOT NULL DEFAULT 'pending'
-                            CHECK (state IN ('pending', 'expired', 'granted'))
-                    )
-                """)
-                db.execute("""
-                    CREATE UNIQUE INDEX IF NOT EXISTS nova_pending_usage_pack
-                    ON nova_private.usage_packs (user_id) WHERE state = 'pending'
-                """)
-                db.execute("""
-                    CREATE INDEX IF NOT EXISTS nova_ai_reservations_user_cycle
-                        ON nova_private.ai_reservations (user_id, cycle_start)
-                """)
+                if mode == "live":
+                    # Production tables are migrated separately from application startup.
+                    db.execute("SELECT user_id, stripe_customer, checkout_session FROM public.nova_membership LIMIT 0")
+                    db.execute("SELECT response_id, cycle_start, cost_nano FROM nova_private.ai_usage LIMIT 0")
+                    db.execute("SELECT id, call_id, released_at FROM nova_private.ai_reservations LIMIT 0")
+                    db.execute("SELECT id, cycle_start, state FROM nova_private.usage_packs LIMIT 0")
+                else:
+                    db.execute("SELECT pg_advisory_xact_lock(38204912)")
+                    db.execute("""
+                        CREATE TABLE IF NOT EXISTS nova_membership (
+                            user_id uuid PRIMARY KEY,
+                            stripe_customer text UNIQUE,
+                            checkout_session text
+                        )
+                    """)
+                    db.execute("CREATE SCHEMA IF NOT EXISTS nova_private")
+                    db.execute("""
+                        CREATE TABLE IF NOT EXISTS nova_private.ai_usage (
+                            response_id text PRIMARY KEY,
+                            user_id uuid NOT NULL,
+                            recorded_at timestamptz NOT NULL DEFAULT now(),
+                            feature text NOT NULL,
+                            model text NOT NULL,
+                            input_tokens bigint NOT NULL CHECK (input_tokens >= 0),
+                            cached_input_tokens bigint NOT NULL CHECK (cached_input_tokens >= 0),
+                            output_tokens bigint NOT NULL CHECK (output_tokens >= 0),
+                            web_search_calls integer NOT NULL CHECK (web_search_calls >= 0)
+                        )
+                    """)
+                    db.execute("""
+                        CREATE INDEX IF NOT EXISTS nova_ai_usage_user_time
+                            ON nova_private.ai_usage (user_id, recorded_at)
+                    """)
+                    db.execute("""
+                        ALTER TABLE nova_private.ai_usage ADD COLUMN IF NOT EXISTS cycle_start timestamptz,
+                            ADD COLUMN IF NOT EXISTS cost_nano bigint
+                    """)
+                    db.execute("""
+                        CREATE TABLE IF NOT EXISTS nova_private.ai_reservations (
+                            id uuid PRIMARY KEY,
+                            user_id uuid NOT NULL,
+                            cycle_start timestamptz NOT NULL,
+                            amount_nano bigint NOT NULL CHECK (amount_nano > 0)
+                        )
+                    """)
+                    db.execute("""
+                        ALTER TABLE nova_private.ai_reservations
+                        ADD COLUMN IF NOT EXISTS feature text NOT NULL DEFAULT 'diagnose',
+                        ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now(),
+                        ADD COLUMN IF NOT EXISTS call_id text,
+                        ADD COLUMN IF NOT EXISTS closing boolean NOT NULL DEFAULT false,
+                        ADD COLUMN IF NOT EXISTS ended boolean NOT NULL DEFAULT false,
+                        ADD COLUMN IF NOT EXISTS released_at timestamptz
+                    """)
+                    db.execute("""
+                        CREATE TABLE IF NOT EXISTS nova_private.usage_packs (
+                            id uuid PRIMARY KEY,
+                            user_id uuid NOT NULL,
+                            stripe_session text UNIQUE,
+                            price_cents integer NOT NULL CHECK (price_cents > 0),
+                            grant_cents integer NOT NULL CHECK (grant_cents > 0),
+                            created_at timestamptz NOT NULL DEFAULT now(),
+                            cycle_start timestamptz,
+                            state text NOT NULL DEFAULT 'pending'
+                                CHECK (state IN ('pending', 'expired', 'granted'))
+                        )
+                    """)
+                    db.execute("""
+                        CREATE UNIQUE INDEX IF NOT EXISTS nova_pending_usage_pack
+                        ON nova_private.usage_packs (user_id) WHERE state = 'pending'
+                    """)
+                    db.execute("""
+                        CREATE INDEX IF NOT EXISTS nova_ai_reservations_user_cycle
+                            ON nova_private.ai_reservations (user_id, cycle_start)
+                    """)
         except psycopg.Error as error:
             detail = str(error).lower()
             if error.sqlstate == "28P01" or "password authentication failed" in detail:
