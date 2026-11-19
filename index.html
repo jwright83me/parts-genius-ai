@@ -821,7 +821,11 @@ async function startVoice(password) {
 });
   const data = await response.json();
   if (!response.ok) {
-    alert(data.error || 'Unable to start voice');
+    if (data.code === 'membership_required' && window.openNovaMembership) {
+      window.openNovaMembership();
+    } else {
+      alert(data.error || 'Unable to start voice');
+    }
     return;
   }
   voiceConnection = new RTCPeerConnection();
@@ -5589,7 +5593,9 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 #nova-membership label { display: block; margin: 12px 0; }
 #nova-membership input { display: block; width: 100%; margin-top: 6px; }
 #nova-membership [hidden] { display: none; }
-#nova-membership-open { margin-left: auto; }
+#nova-membership-bar { display: flex; justify-content: center; padding: 8px 12px; background: #091522; }
+#nova-membership-open { min-height: 44px; padding: 8px 20px; }
+#nova-membership input { font-size: 16px; }
 </style>
 <script>
 (() => {
@@ -5719,7 +5725,12 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
     render(initial);
     document.documentElement.dataset.novaMembership = 'enabled';
     document.body.appendChild(dialog);
-    document.querySelector('.top')?.appendChild(button);
+    const membershipBar = document.createElement('div');
+    membershipBar.id = 'nova-membership-bar';
+    button.classList.add('primary');
+    membershipBar.appendChild(button);
+    document.body.prepend(membershipBar);
+    window.openNovaMembership = open;
     if (window.show) {
       const show = window.show;
       window.show = function(section, ...args) {
