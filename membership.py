@@ -17,6 +17,20 @@ PACK_PRICE_CENTS = 499
 PACK_USAGE_CENTS = 200
 PREMIUM_PRICE_CENTS = 1999
 PREMIUM_LOOKUP_KEY = "nova_premium_monthly_sandbox_v1"
+STRIPE_MEMBERSHIP_EVENTS = {
+    "checkout.session.completed",
+    "checkout.session.async_payment_succeeded",
+    "customer.subscription.created",
+    "customer.subscription.updated",
+    "customer.subscription.deleted",
+    "customer.subscription.paused",
+    "customer.subscription.resumed",
+    "invoice.paid",
+    "invoice.payment_failed",
+    "charge.dispute.created",
+    "charge.refunded",
+    "radar.early_fraud_warning.created",
+}
 
 
 def install_membership(app):
@@ -44,6 +58,8 @@ def install_membership(app):
             raise RuntimeError("NOVA_STRIPE_MODE must be test or live")
         if not stripe.api_key.startswith((f"sk_{mode}_", f"rk_{mode}_")):
             raise RuntimeError("Stripe credentials must match NOVA_STRIPE_MODE")
+        if mode == "live" and not os.getenv("STRIPE_WEBHOOK_SECRET", "").startswith("whsec_"):
+            raise RuntimeError("Missing live Stripe webhook signing secret")
         app.config["NOVA_STRIPE_MODE"] = mode
         stripe.default_http_client = stripe.HTTPXClient(timeout=15, allow_sync_methods=True)
         try:
@@ -54,6 +70,7 @@ def install_membership(app):
                     db.execute("SELECT response_id, cycle_start, cost_nano FROM nova_private.ai_usage LIMIT 0")
                     db.execute("SELECT id, call_id, released_at FROM nova_private.ai_reservations LIMIT 0")
                     db.execute("SELECT id, cycle_start, state FROM nova_private.usage_packs LIMIT 0")
+                    db.execute("SELECT event_id FROM nova_private.stripe_membership_events LIMIT 0")
                 else:
                     db.execute("SELECT pg_advisory_xact_lock(38204912)")
                     db.execute("""
@@ -226,7 +243,7 @@ def validate_request():
         if request.endpoint == "membership.status":
             return jsonify(enabled=False)
         return jsonify(error="Membership is unavailable."), 404
-    if request.method == "POST":
+    if request.method == "POST" and request.endpoint != "membership.stripe_webhook":
         if not hmac.compare_digest(request.headers.get("Origin", ""), site_url()):
             return jsonify(error="Open membership from the Nova website."), 403
         if not request.is_json:
@@ -298,6 +315,51 @@ def verify_code():
     session["membership_user"] = user["id"]
     session["membership_email"] = user["email"]
     return jsonify(ok=True)
+
+
+@membership.post("/stripe-webhook")
+def stripe_webhook():
+    if current_app.config["NOVA_STRIPE_MODE"] != "live":
+        return "", 404
+    request.max_content_length = 1024 * 1024
+    try:
+        event = stripe.Webhook.construct_event(
+            request.get_data(), request.headers.get("Stripe-Signature", ""),
+            os.environ["STRIPE_WEBHOOK_SECRET"],
+        )
+    except (ValueError, stripe.SignatureVerificationError):
+        return "", 400
+    if event.livemode is not True:
+        return "", 400
+    if event.type not in STRIPE_MEMBERSHIP_EVENTS:
+        return "", 204
+
+    subject = event.data.object
+    customer = getattr(subject, "customer", None)
+    if event.type in {"charge.dispute.created", "radar.early_fraud_warning.created"}:
+        charge_id = getattr(subject, "charge", None)
+        if charge_id:
+            customer = stripe.Charge.retrieve(charge_id).customer
+    if not customer:
+        return "", 204
+
+    # Authorization always checks current Stripe state. Preserve event receipts
+    # for billing reconciliation so duplicate or out-of-order events cannot change access.
+    with connect() as db:
+        recorded = db.execute("""
+            INSERT INTO nova_private.stripe_membership_events
+                (event_id, user_id, event_type, stripe_created_at)
+            SELECT %s, user_id, %s, to_timestamp(%s)
+            FROM public.nova_membership WHERE stripe_customer = %s
+            ON CONFLICT (event_id) DO NOTHING
+            RETURNING event_id
+        """, (event.id, event.type, event.created, customer)).fetchone()
+    if recorded and event.type in {
+        "invoice.payment_failed", "charge.dispute.created", "charge.refunded",
+        "radar.early_fraud_warning.created",
+    }:
+        current_app.logger.warning("Nova billing event %s: %s", event.type, event.id)
+    return "", 204
 
 
 @membership.post("/signout")
