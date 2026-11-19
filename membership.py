@@ -51,6 +51,24 @@ def install_membership(app):
                         checkout_session text
                     )
                 """)
+                db.execute("CREATE SCHEMA IF NOT EXISTS nova_private")
+                db.execute("""
+                    CREATE TABLE IF NOT EXISTS nova_private.ai_usage (
+                        response_id text PRIMARY KEY,
+                        user_id uuid NOT NULL,
+                        recorded_at timestamptz NOT NULL DEFAULT now(),
+                        feature text NOT NULL,
+                        model text NOT NULL,
+                        input_tokens bigint NOT NULL CHECK (input_tokens >= 0),
+                        cached_input_tokens bigint NOT NULL CHECK (cached_input_tokens >= 0),
+                        output_tokens bigint NOT NULL CHECK (output_tokens >= 0),
+                        web_search_calls integer NOT NULL CHECK (web_search_calls >= 0)
+                    )
+                """)
+                db.execute("""
+                    CREATE INDEX IF NOT EXISTS nova_ai_usage_user_time
+                        ON nova_private.ai_usage (user_id, recorded_at)
+                """)
         except psycopg.Error as error:
             detail = str(error).lower()
             if error.sqlstate == "28P01" or "password authentication failed" in detail:

@@ -12,7 +12,8 @@ import httpx
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
-from membership import install_membership, membership_required
+from membership import account_id, install_membership, membership_required
+from usage import MeteredResponses
 
 app = Flask(__name__)
 install_membership(app)
@@ -700,14 +701,14 @@ def active_retailer_queries(message, vehicle):
             for brand in ("Ultima", "Ultima Select")]
 
 
-def research_parts(client, message, history, vehicle):
+def research_parts(responses, message, history, vehicle):
     context = {'active_vehicle': vehicle, 'history': history[-12:], 'request': message}
     evidence, sources, result = [], {}, None
     discovery_queries = active_retailer_queries(message, vehicle)
     amperage = None
     if discovery_queries and re.search(r"alternators?", message, re.I):
         try:
-            specification = client.responses.create(
+            specification = responses.create(
                 model='gpt-4.1',
                 instructions=(
                     'Look up the factory alternator amperage for the exact active vehicle and engine. '
@@ -743,7 +744,7 @@ def research_parts(client, message, history, vehicle):
         search_queries = discovery_queries if attempt == 0 else []
         if attempt == 1:
             try:
-                planner = client.responses.create(
+                planner = responses.create(
                     model='gpt-4.1-mini',
                     instructions=(
                         'Plan up to four genuinely different web searches for an automotive part lookup. '
@@ -773,7 +774,7 @@ def research_parts(client, message, history, vehicle):
                 app.logger.exception('Search planning unavailable; using broader fallback strategy')
         try:
             def run_research(search_query):
-                return client.responses.create(
+                return responses.create(
                     model='gpt-4.1',
                     instructions=(
                         'Research automotive parts; do not write the customer answer. Use the active vehicle '
@@ -827,7 +828,7 @@ def research_parts(client, message, history, vehicle):
                         app.logger.exception('One parts research query failed')
                 if not successful_searches:
                     raise RuntimeError('Parts research is temporarily unavailable')
-            review = client.responses.create(
+            review = responses.create(
                 model='gpt-4.1-mini',
                 instructions=(
                     'You are Nova checking parts research before answering. Use only cited evidence, '
@@ -918,8 +919,8 @@ def find_verified_parts():
     vehicle_str = json.dumps({k: str(vehicle.get(k) or "")[:80]
                               for k in ("year", "make", "model", "engine", "trim")})
     try:
-        client = OpenAI(timeout=30.0, max_retries=1)
-        result = research_parts(client,
+        responses = MeteredResponses(OpenAI(timeout=30.0, max_retries=1).responses, account_id(), "parts")
+        result = research_parts(responses,
             "Find O'Reilly Auto Parts " + part + " part numbers for my active vehicle. "
             "Include brands and manufacturer part numbers with source links. "
             "Only state a price if a current source explicitly verifies it; otherwise "
@@ -1054,11 +1055,12 @@ def diagnose():
         return jsonify({"error": "AI is not configured."}), 503
 
     try:
-        client = OpenAI(timeout=30.0, max_retries=1)
         if is_parts_lookup(message, history):
-            return jsonify(research_parts(client, message, history, vehicle))
+            responses = MeteredResponses(OpenAI(timeout=30.0, max_retries=1).responses, account_id(), "parts")
+            return jsonify(research_parts(responses, message, history, vehicle))
 
-        response = client.responses.create(
+        responses = MeteredResponses(OpenAI(timeout=30.0, max_retries=1).responses, account_id(), "diagnose")
+        response = responses.create(
             model="gpt-4.1-mini",
             instructions=(
                 SYSTEM_PROMPT
