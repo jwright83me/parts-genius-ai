@@ -286,7 +286,19 @@ def portal():
 @membership.errorhandler(stripe.StripeError)
 @membership.errorhandler(psycopg.Error)
 def billing_error(error):
-    current_app.logger.warning("Membership provider error: %s", type(error).__name__)
+    if isinstance(error, stripe.StripeError):
+        fields = (error.code, getattr(error, "param", None), error.request_id)
+        safe_fields = [
+            value if isinstance(value, str) and re.fullmatch(r"[A-Za-z0-9_\[\].-]{1,100}", value)
+            else "-"
+            for value in fields
+        ]
+        current_app.logger.warning(
+            "Membership Stripe error: endpoint=%s type=%s status=%s code=%s param=%s request_id=%s",
+            request.endpoint, type(error).__name__, error.http_status, *safe_fields,
+        )
+    else:
+        current_app.logger.warning("Membership database error: %s", type(error).__name__)
     return jsonify(error="Membership is temporarily unavailable. Try again shortly."), 503
 
 
