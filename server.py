@@ -1220,10 +1220,18 @@ def create_voice_session():
         app.logger.warning("Nova voice connection request failed: %s", type(error).__name__)
         return jsonify(error="Unable to connect to the voice assistant."), 502
     if not response.is_success:
+        try:
+            error_code = response.json()["error"]["code"]
+        except (ValueError, KeyError, TypeError):
+            error_code = None
+        if not isinstance(error_code, str) or not re.fullmatch(r"[a-z0-9_]{1,64}", error_code):
+            error_code = "-"
         app.logger.warning(
-            "Nova voice connection rejected: status=%s request_id=%s",
-            response.status_code, response.headers.get("x-request-id", "-"),
+            "Nova voice connection rejected: status=%s code=%s request_id=%s",
+            response.status_code, error_code, response.headers.get("x-request-id", "-"),
         )
+        if response.status_code == 429:
+            return jsonify(error="Nova voice is temporarily unavailable. You can still type a question."), 503
         return jsonify(error="Unable to connect to the voice assistant."), 502
     return app.response_class(response.content, mimetype="application/sdp",
                               headers={"Cache-Control": "no-store"})
