@@ -224,18 +224,39 @@
   yearSelect.value = selectedYear;
   const makeSelect = document.getElementById('make');
 
-const makes = [
-  'Acura', 'Audi', 'BMW', 'Buick', 'Cadillac',
-  'Chevrolet', 'Chrysler', 'Dodge', 'Ford', 'GMC',
-  'Honda', 'Hyundai', 'Infiniti', 'Jeep', 'Kia',
-  'Lexus', 'Lincoln', 'Mazda', 'Mercedes-Benz',
-  'Mitsubishi', 'Nissan', 'Ram', 'Subaru',
-  'Tesla', 'Toyota', 'Volkswagen', 'Volvo'
-];
+const makeIds = {
+  "Acura": 475,
+  "Audi": 582,
+  "BMW": 452,
+  "Buick": 468,
+  "Cadillac": 469,
+  "Chevrolet": 467,
+  "Chrysler": 477,
+  "Dodge": 476,
+  "Ford": 460,
+  "GMC": 472,
+  "Honda": 474,
+  "Hyundai": 498,
+  "Infiniti": 480,
+  "Jeep": 483,
+  "Kia": 499,
+  "Lexus": 515,
+  "Lincoln": 464,
+  "Mazda": 473,
+  "Mercedes-Benz": 449,
+  "Mitsubishi": 481,
+  "Nissan": 478,
+  "Ram": 496,
+  "Subaru": 523,
+  "Tesla": 441,
+  "Toyota": 448,
+  "Volkswagen": 482,
+  "Volvo": 485,
+};
 
 makeSelect.add(new Option('Select Make', ''));
 
-makes.forEach(make => {
+Object.keys(makeIds).forEach(make => {
   makeSelect.add(new Option(make, make));
 });
 
@@ -304,26 +325,28 @@ async function loadEngines(previousEngine = '') {
 async function loadModels(preferredVehicle) {
   const requestId = ++modelRequest;
   const year = yearSelect.value;
-  const make = makeSelect.value;
+  const makeId = makeIds[makeSelect.value];
 
   modelSelect.replaceChildren(new Option('Loading models...', ''));
   loadEngines();
 
-  if (!year || !make) { modelSelect.replaceChildren(new Option('Select Make first','')); return; }
+  if (!year || !makeId) { modelSelect.replaceChildren(new Option('Select Make first','')); return; }
 
   try {
-    const url = `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${encodeURIComponent(make)}/modelyear/${year}?format=json`;
+    const url = `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeIdYear/makeId/${makeId}/modelyear/${year}?format=json`;
     const response = await fetch(url);
     if (!response.ok) throw new Error('Model lookup failed');
 
     const data = await response.json();
     if (requestId !== modelRequest) return;
-    modelSelect.replaceChildren(new Option('Select Model', ''));
-
     const models = [...new Set(
-      (data.Results || []).map(item => item.Model_Name).filter(Boolean)
+      (data.Results || [])
+        .filter(item => Number(item.Make_ID) === makeId)
+        .map(item => item.Model_Name)
+        .filter(Boolean)
     )].sort();
 
+    modelSelect.replaceChildren(new Option(models.length ? 'Select Model' : 'No models listed for this year and make', ''));
     models.forEach(model => modelSelect.add(new Option(model, model)));
 
   } catch {
