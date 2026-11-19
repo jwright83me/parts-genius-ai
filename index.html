@@ -367,19 +367,22 @@ document.addEventListener('DOMContentLoaded', () => {
   talkButton.type = 'button';
   talkButton.textContent = '🎙 Talk to Nova';
   talkButton.onclick = async () => {
-  if (voiceConnection) {
-  stopVoice();
-  talkButton.textContent = '🎙 Talk to Nova';
-  return;
-}
-  const memberVoice = document.documentElement.dataset.novaMembership === 'enabled';
-  const password = memberVoice ? '' : prompt('Enter your private voice test password:');
-  if (!memberVoice && !password) return;
-  await startVoice(password);
-  if (voiceConnection) {
-  talkButton.textContent = '🔴 End Conversation';
-}
-};
+    if (voiceConnection) {
+      stopVoice();
+      talkButton.textContent = '🎙 Talk to Nova';
+      return;
+    }
+    talkButton.disabled = true;
+    try {
+      await startVoice();
+      if (voiceConnection) talkButton.textContent = '🔴 End Conversation';
+    } catch {
+      stopVoice();
+      alert('Unable to start voice. Please try again.');
+    } finally {
+      talkButton.disabled = false;
+    }
+  };
   talkButton.disabled = false;
   talkButton.title = 'Talk to your AI mechanic';
 
@@ -789,7 +792,6 @@ let novaVehicle = {
   model: null,
   engine: null
 };
-const VOICE_ENABLED = true;
 let voiceConnection = null;
 let voiceStream = null;
 let voiceAudio = null;
@@ -808,17 +810,8 @@ function stopVoice() {
   voiceStream = null;
   voiceAudio = null;
 }
-async function startVoice(password) {
-  if (!VOICE_ENABLED) {
-    alert("Live voice is not enabled yet.");
-    return;
-  }
-  const response = await fetch('/api/voice/session', {
-  method: 'POST',
-  headers: {
-    'X-Voice-Test-Password': password
-  }
-});
+async function startVoice() {
+  const response = await fetch('/api/voice/session', {method: 'POST'});
   const data = await response.json();
   if (!response.ok) {
     if (data.code === 'membership_required' && window.openNovaMembership) {
@@ -5723,7 +5716,6 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
     const initial = await api('status');
     if (!initial.enabled) return;
     render(initial);
-    document.documentElement.dataset.novaMembership = 'enabled';
     document.body.appendChild(dialog);
     const membershipBar = document.createElement('div');
     membershipBar.id = 'nova-membership-bar';

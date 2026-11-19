@@ -1179,31 +1179,11 @@ def check_voice_setup():
             "voice_library_ready": False,
             "voice_enabled": False
         })
-@app.post("/api/voice/security-test")
-def test_voice_security():
-    import hmac
-    from flask import request
-
-    expected = os.getenv("VOICE_TEST_TOKEN")
-    provided = request.headers.get("X-Voice-Test-Password", "")
-
-    if not expected or not hmac.compare_digest(provided, expected):
-        return jsonify({"error": "Unauthorized"}), 401
-
-    return jsonify({"security": "passed"})
 @app.post("/api/voice/session")
 @membership_required
 def create_voice_session():
-    import hmac
-    from flask import request
-
-    expected = os.getenv("VOICE_TEST_TOKEN")
-    provided = request.headers.get("X-Voice-Test-Password", "")
-
-    if not app.config["NOVA_MEMBERSHIP_ENABLED"] and (
-        not expected or not hmac.compare_digest(provided, expected)
-    ):
-        return jsonify({"error": "Unauthorized"}), 401
+    if not app.config["NOVA_MEMBERSHIP_ENABLED"]:
+        return jsonify({"error": "Nova voice is temporarily unavailable."}), 503
     if os.getenv("VOICE_ENABLED") != "true":
         return jsonify({"error": "Voice is not enabled yet"}), 403
     if not os.getenv("OPENAI_API_KEY"):

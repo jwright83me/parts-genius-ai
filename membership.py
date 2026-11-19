@@ -34,8 +34,12 @@ def install_membership(app):
             SESSION_REFRESH_EACH_REQUEST=False,
         )
         stripe.api_key = os.environ["STRIPE_SECRET_KEY"]
-        if not stripe.api_key.startswith(("sk_test_", "rk_test_")):
-            raise RuntimeError("This membership rollout requires Stripe test credentials")
+        mode = os.getenv("NOVA_STRIPE_MODE", "test")
+        if mode not in {"test", "live"}:
+            raise RuntimeError("NOVA_STRIPE_MODE must be test or live")
+        if not stripe.api_key.startswith((f"sk_{mode}_", f"rk_{mode}_")):
+            raise RuntimeError("Stripe credentials must match NOVA_STRIPE_MODE")
+        app.config["NOVA_STRIPE_MODE"] = mode
         stripe.default_http_client = stripe.HTTPXClient(timeout=(5, 15))
         try:
             with connect() as db:
@@ -250,7 +254,8 @@ def checkout():
             if existing.status == "open":
                 return jsonify(url=existing.url)
         price = stripe.Price.retrieve(price_id())
-        if (not price.active or price.currency != "usd" or price.unit_amount != 999
+        if (price.livemode != (current_app.config["NOVA_STRIPE_MODE"] == "live")
+                or not price.active or price.currency != "usd" or price.unit_amount != 999
                 or not price.recurring or price.recurring.interval != "month"
                 or price.recurring.interval_count != 1):
             return jsonify(error="Membership pricing is unavailable."), 503
