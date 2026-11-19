@@ -5602,7 +5602,6 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 #nova-membership label { display: block; margin: 12px 0; }
 #nova-membership input { display: block; width: 100%; margin-top: 6px; }
 #nova-membership [hidden] { display: none; }
-#nova-membership-bar { display: flex; justify-content: center; padding: 8px 12px; background: #091522; }
 #nova-membership-open { min-height: 44px; padding: 8px 20px; }
 #nova-membership input { font-size: 16px; }
 </style>
@@ -5668,6 +5667,7 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
     const button = document.createElement('button');
     button.id = 'nova-membership-open';
     button.type = 'button';
+    button.textContent = 'Membership';
     let state = {};
     let awaitingCode = false;
     let busy = false;
@@ -5699,7 +5699,6 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
             ? 'Stripe will show any prorated charge before you confirm. Extra usage in your current month is prorated.'
             : 'You can upgrade once your paid membership starts.');
       checkout.textContent = state.trialEligible ? 'Start 3-Day Free Trial' : 'Subscribe for $9.99/month';
-      button.textContent = state.signedIn ? 'Membership' : 'Start Free Trial';
     };
 
     const run = async (operation) => {
@@ -5773,11 +5772,8 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
     if (!initial.enabled) return;
     render(initial);
     document.body.appendChild(dialog);
-    const membershipBar = document.createElement('div');
-    membershipBar.id = 'nova-membership-bar';
     button.classList.add('primary');
-    membershipBar.appendChild(button);
-    document.body.prepend(membershipBar);
+    document.querySelector('#novaMore h2').after(button);
     window.openNovaMembership = open;
     if (window.show) {
       const show = window.show;
@@ -5796,7 +5792,12 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
       open();
     }
   };
-  bootstrap().catch(() => {});
+  const start = () => bootstrap().catch(() => {});
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, {once: true});
+  } else {
+    start();
+  }
 })();
 </script>
 
