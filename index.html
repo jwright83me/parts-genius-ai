@@ -224,18 +224,39 @@
   yearSelect.value = selectedYear;
   const makeSelect = document.getElementById('make');
 
-const makes = [
-  'Acura', 'Audi', 'BMW', 'Buick', 'Cadillac',
-  'Chevrolet', 'Chrysler', 'Dodge', 'Ford', 'GMC',
-  'Honda', 'Hyundai', 'Infiniti', 'Jeep', 'Kia',
-  'Lexus', 'Lincoln', 'Mazda', 'Mercedes-Benz',
-  'Mitsubishi', 'Nissan', 'Ram', 'Subaru',
-  'Tesla', 'Toyota', 'Volkswagen', 'Volvo'
-];
+const makeIds = {
+  "Acura": 475,
+  "Audi": 582,
+  "BMW": 452,
+  "Buick": 468,
+  "Cadillac": 469,
+  "Chevrolet": 467,
+  "Chrysler": 477,
+  "Dodge": 476,
+  "Ford": 460,
+  "GMC": 472,
+  "Honda": 474,
+  "Hyundai": 498,
+  "Infiniti": 480,
+  "Jeep": 483,
+  "Kia": 499,
+  "Lexus": 515,
+  "Lincoln": 464,
+  "Mazda": 473,
+  "Mercedes-Benz": 449,
+  "Mitsubishi": 481,
+  "Nissan": 478,
+  "Ram": 496,
+  "Subaru": 523,
+  "Tesla": 441,
+  "Toyota": 448,
+  "Volkswagen": 482,
+  "Volvo": 485,
+};
 
 makeSelect.add(new Option('Select Make', ''));
 
-makes.forEach(make => {
+Object.keys(makeIds).forEach(make => {
   makeSelect.add(new Option(make, make));
 });
 
@@ -304,26 +325,28 @@ async function loadEngines(previousEngine = '') {
 async function loadModels(preferredVehicle) {
   const requestId = ++modelRequest;
   const year = yearSelect.value;
-  const make = makeSelect.value;
+  const makeId = makeIds[makeSelect.value];
 
   modelSelect.replaceChildren(new Option('Loading models...', ''));
   loadEngines();
 
-  if (!year || !make) { modelSelect.replaceChildren(new Option('Select Make first','')); return; }
+  if (!year || !makeId) { modelSelect.replaceChildren(new Option('Select Make first','')); return; }
 
   try {
-    const url = `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${encodeURIComponent(make)}/modelyear/${year}?format=json`;
+    const url = `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeIdYear/makeId/${makeId}/modelyear/${year}?format=json`;
     const response = await fetch(url);
     if (!response.ok) throw new Error('Model lookup failed');
 
     const data = await response.json();
     if (requestId !== modelRequest) return;
-    modelSelect.replaceChildren(new Option('Select Model', ''));
-
     const models = [...new Set(
-      (data.Results || []).map(item => item.Model_Name).filter(Boolean)
+      (data.Results || [])
+        .filter(item => Number(item.Make_ID) === makeId)
+        .map(item => item.Model_Name)
+        .filter(Boolean)
     )].sort();
 
+    modelSelect.replaceChildren(new Option(models.length ? 'Select Model' : 'No models listed for this year and make', ''));
     models.forEach(model => modelSelect.add(new Option(model, model)));
 
   } catch {
@@ -367,18 +390,36 @@ document.addEventListener('DOMContentLoaded', () => {
   talkButton.type = 'button';
   talkButton.textContent = '🎙 Talk to Nova';
   talkButton.onclick = async () => {
-  if (voiceConnection) {
-  stopVoice();
-  talkButton.textContent = '🎙 Talk to Nova';
-  return;
-}
-  const password = prompt('Enter your private voice test password:');
-  if (!password) return;
-  await startVoice(password);
-  if (voiceConnection) {
-  talkButton.textContent = '🔴 End Conversation';
-}
-};
+    if (voiceConnection) {
+      talkButton.disabled = true;
+      try {
+        if (voiceSession) {
+          voiceStream?.getAudioTracks().forEach(track => { track.enabled = false; });
+          await fetch('/api/voice/session/' + voiceSession + '/end', {
+            method: 'POST',
+            signal: AbortSignal.timeout(9000)
+          });
+        }
+      } catch {
+        // Local cleanup still ends the user's microphone session.
+      } finally {
+        stopVoice();
+        talkButton.textContent = '🎙 Talk to Nova';
+        talkButton.disabled = false;
+      }
+      return;
+    }
+    talkButton.disabled = true;
+    try {
+      await startVoice(talkButton);
+      if (voiceConnection) talkButton.textContent = '🔴 End Conversation';
+    } catch {
+      stopVoice();
+      alert('Unable to start voice. Please try again.');
+    } finally {
+      talkButton.disabled = false;
+    }
+  };
   talkButton.disabled = false;
   talkButton.title = 'Talk to your AI mechanic';
 
@@ -417,6 +458,10 @@ async function sendChat(retryMessage){
       body:JSON.stringify({message,history:chatHistory,vehicle:localStorage.getItem('pgVehicle')})
     });
     const data=await response.json();
+    if (data.code === 'nova_allowance_reached' || data.code === 'nova_allowance_unavailable') {
+      pending.textContent = data.error;
+      return;
+    }
     if(!response.ok||!data.reply)throw new Error('No reply');
     pending.remove();
     const answer=addBubble(data.reply,'bot');
@@ -788,11 +833,11 @@ let novaVehicle = {
   model: null,
   engine: null
 };
-const VOICE_ENABLED = true;
 let voiceConnection = null;
 let voiceStream = null;
 let voiceAudio = null;
 let voiceChannel = null;
+let voiceSession = null;
 function stopVoice() {
   if (voiceChannel) voiceChannel.close();
   if (voiceConnection) voiceConnection.close();
@@ -803,27 +848,19 @@ function stopVoice() {
     voiceAudio.srcObject = null;
   }
   voiceChannel = null;
+  voiceSession = null;
   voiceConnection = null;
   voiceStream = null;
   voiceAudio = null;
 }
-async function startVoice(password) {
-  if (!VOICE_ENABLED) {
-    alert("Live voice is not enabled yet.");
-    return;
-  }
-  const response = await fetch('/api/voice/session', {
-  method: 'POST',
-  headers: {
-    'X-Voice-Test-Password': password
-  }
-});
-  const data = await response.json();
-  if (!response.ok) {
-    alert(data.error || 'Unable to start voice');
-    return;
-  }
+async function startVoice(talkButton) {
   voiceConnection = new RTCPeerConnection();
+  const connection = voiceConnection;
+  connection.onconnectionstatechange = () => {
+    if (voiceConnection !== connection || !['failed', 'disconnected'].includes(connection.connectionState)) return;
+    stopVoice();
+    talkButton.textContent = '🎙 Talk to Nova';
+  };
 
 
 
@@ -867,23 +904,23 @@ if (data.type === 'response.audio.delta' ||
 };
   const offer = await voiceConnection.createOffer();
   await voiceConnection.setLocalDescription(offer);
-  const sdpResponse = await fetch(
-    'https://api.openai.com/v1/realtime/calls',
-    {
-      method: 'POST',
-      body: offer.sdp,
-      headers: {
-        'Authorization': 'Bearer ' + data.client_secret,
-        'Content-Type': 'application/sdp'
-      }
-    }
-  );
+  const sdpResponse = await fetch('/api/voice/session', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/sdp'},
+    body: voiceConnection.localDescription.sdp
+  });
   if (!sdpResponse.ok) {
-    alert("Unable to connect to the voice assistant.");
     stopVoice();
+    const data = await sdpResponse.json().catch(() => ({}));
+    if (data.code === 'membership_required' && window.openNovaMembership) {
+      window.openNovaMembership();
+    } else {
+      alert(data.error || 'Unable to connect to the voice assistant.');
+    }
     return;
   }
 
+  voiceSession = sdpResponse.headers.get('X-Nova-Voice-Session');
   const answer = await sdpResponse.text();
   await voiceConnection.setRemoteDescription({
     type: 'answer',
@@ -933,8 +970,9 @@ function addToGarage(vehicle) {
   }
 }
 function getVehicleHologram(vehicle) {
-  const make = (vehicle.make || '').toLowerCase();
-  const model = (vehicle.model || '').toLowerCase();
+  const make = String(vehicle?.make ?? '').trim().toLowerCase();
+  const model = String(vehicle?.model ?? '').trim().toLowerCase();
+  if (!make || !model) return null;
 
   // Dedicated Tesla Model 3 hologram
   if (make === 'tesla' &&
@@ -1265,7 +1303,6 @@ if (
     return 'mitsubishi-outlander-hologram.png';
   }
 
-  // Other vehicles will use automatic image lookup later.
 // Ford F-150 hologram
 if (make === 'ford' &&
     (model.includes('f150') || model.includes('f-150'))) {
@@ -1352,7 +1389,21 @@ const sportsCarModels = [
 if (sportsCarModels.some(name => model.includes(name))) {
   return 'F084B039-9ADD-4259-B2FB-02100B23F54F.png';
 }
-  return null;
+  // Choose a shared silhouette when the catalog name identifies a body style.
+  if (/\b(?:pickup|pick-up|pickup truck|truck)\b/.test(model)
+      || /^(?:ford f[ -]?(?:250|350|450|550|600)|ram (?:2500|3500|4500|5500)|(?:chevrolet silverado|gmc sierra) (?:2500|3500))(?:\b|hd)/.test(vehicleLabel)) {
+    return 'generic-heavy-duty-pickup-hologram.png';
+  }
+  if (/\b(?:cargo van|van)\b/.test(model) || /^ford (?:e[ -]?series|e[ -]?(?:150|250|350))\b/.test(vehicleLabel)) {
+    return 'generic-traditional-full-size-van-hologram.png';
+  }
+  if (/\b(?:wagon|estate)\b/.test(model)) return 'generic-station-wagon-hologram.png';
+  if (/\bhatchback\b/.test(model)) return 'generic-hatchback-hologram.png';
+  if (/\b(?:suv|crossover)\b/.test(model)) return '76BD6A66-D1D3-412C-B133-38673666312C.png';
+  if (/\b(?:coupe|convertible|roadster)\b/.test(model)) return 'F084B039-9ADD-4259-B2FB-02100B23F54F.png';
+
+  // Unknown body styles still get a vehicle hologram.
+  return 'F825ECCA-C6EF-4055-A7B6-E90BB67B2FA0.png';
 }
 function showMyGarage() {
   let garage = [];
@@ -1699,10 +1750,9 @@ document.body.prepend(novaSection);
 // NOVA - Vehicle hologram overlay
 const novaHologram = document.createElement('img');
 novaHologram.id = 'novaVehicleHologram';
-const novaGarage = JSON.parse(localStorage.getItem('pgGarage') || '[]');
-const savedNovaVehicle = JSON.parse(localStorage.getItem('pgVehicle') || 'null');
-const activeNovaVehicle = novaGarage.find(v => JSON.stringify(v) === JSON.stringify(savedNovaVehicle)) || null;
-const activeNovaImage = activeNovaVehicle ? getVehicleHologram(activeNovaVehicle) : null;
+let savedNovaVehicle;
+try { savedNovaVehicle = JSON.parse(localStorage.getItem('pgVehicle') || 'null'); } catch {}
+const activeNovaImage = getVehicleHologram(savedNovaVehicle);
 if (activeNovaImage) {
   novaHologram.src = activeNovaImage;
 } else {
@@ -5581,6 +5631,211 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 })();
 </script>
 <!-- END EXPLORE PARTS CATEGORY ROUTING V16 -->
+
+<style>
+#nova-membership { max-width: 420px; padding: 24px; border: 1px solid #2a6589; border-radius: 16px; background: #091522; color: #e8f4ff; }
+#nova-membership::backdrop { background: #000a; }
+#nova-membership label { display: block; margin: 12px 0; }
+#nova-membership input { display: block; width: 100%; margin-top: 6px; }
+#nova-membership [hidden] { display: none; }
+#nova-membership-open { min-height: 44px; padding: 8px 20px; }
+#nova-membership input { font-size: 16px; }
+</style>
+<script>
+(() => {
+  const bootstrap = async () => {
+    const api = async (path, body) => {
+      const response = await fetch('/api/membership/' + path, body === undefined ? {} : {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Membership is temporarily unavailable.');
+      return result;
+    };
+
+    const dialog = document.createElement('dialog');
+    dialog.id = 'nova-membership';
+    dialog.setAttribute('aria-labelledby', 'nova-membership-title');
+    dialog.innerHTML = `
+      <h2 id="nova-membership-title">Nova Membership</h2>
+      <p>Get full access for 3 days free. A card is required. Then $9.99 USD per month until you cancel. Cancel online before your trial ends to avoid the first charge.</p>
+      <form id="nova-membership-login">
+        <label>Email <input type="email" name="email" autocomplete="email" required maxlength="254"></label>
+        <label id="nova-membership-code" hidden>Code from your email
+          <input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="(?:[0-9]{6}|[0-9]{8})" maxlength="8" disabled>
+        </label>
+        <button type="submit" class="primary">Email me a code</button>
+        <button type="button" id="nova-membership-reset" hidden>Use another email</button>
+      </form>
+      <div id="nova-membership-account" hidden>
+        <p id="nova-membership-email"></p>
+        <button type="button" id="nova-membership-checkout" class="primary">Start 3-Day Free Trial</button>
+        <button type="button" id="nova-membership-manage">Manage Subscription</button>
+        <div id="nova-premium" hidden>
+          <p id="nova-premium-detail"></p>
+          <button type="button" id="nova-premium-upgrade">Upgrade to Premium · $19.99/month</button>
+        </div>
+        <div id="nova-usage-pack" hidden>
+          <p id="nova-usage-pack-detail"></p>
+          <button type="button" id="nova-usage-pack-buy">Add AI Credits · $4.99</button>
+        </div>
+        <button type="button" id="nova-membership-signout">Sign Out</button>
+      </div>
+      <p id="nova-membership-message" role="status" aria-live="polite"></p>
+      <form method="dialog"><button>Close</button></form>`;
+    const login = dialog.querySelector('#nova-membership-login');
+    const codeRow = dialog.querySelector('#nova-membership-code');
+    const email = login.elements.namedItem('email');
+    const code = login.elements.namedItem('code');
+    const submit = login.querySelector('[type=submit]');
+    const reset = dialog.querySelector('#nova-membership-reset');
+    const account = dialog.querySelector('#nova-membership-account');
+    const checkout = dialog.querySelector('#nova-membership-checkout');
+    const manage = dialog.querySelector('#nova-membership-manage');
+    const signout = dialog.querySelector('#nova-membership-signout');
+    const premium = dialog.querySelector('#nova-premium');
+    const premiumDetail = dialog.querySelector('#nova-premium-detail');
+    const upgrade = dialog.querySelector('#nova-premium-upgrade');
+    const pack = dialog.querySelector('#nova-usage-pack');
+    const packDetail = dialog.querySelector('#nova-usage-pack-detail');
+    const packBuy = dialog.querySelector('#nova-usage-pack-buy');
+    const message = dialog.querySelector('#nova-membership-message');
+    const button = document.createElement('button');
+    button.id = 'nova-membership-open';
+    button.type = 'button';
+    button.textContent = 'Membership';
+    let state = {};
+    let awaitingCode = false;
+    let busy = false;
+
+    const setCodeStep = (next) => {
+      awaitingCode = next;
+      codeRow.hidden = reset.hidden = !next;
+      email.readOnly = next;
+      code.disabled = !next;
+      code.required = next;
+      code.value = '';
+      submit.textContent = next ? 'Verify Code' : 'Email me a code';
+    };
+
+    const render = (next) => {
+      state = next;
+      login.hidden = !!state.signedIn;
+      account.hidden = !state.signedIn;
+      dialog.querySelector('#nova-membership-email').textContent = state.email || '';
+      checkout.hidden = !!state.active || !!state.paymentPending;
+      manage.hidden = !state.canManage;
+      pack.hidden = true;
+      premium.hidden = !state.showPremium || !state.active;
+      upgrade.hidden = !state.canUpgrade;
+      premiumDetail.textContent = state.premium
+        ? 'Nova Premium · $19.99/month. Includes up to $9 of AI usage each full billing month.'
+        : 'Premium includes $9 of AI usage per full billing month. '
+          + (state.canUpgrade
+            ? 'Stripe will show any prorated charge before you confirm. Extra usage in your current month is prorated.'
+            : 'You can upgrade once your paid membership starts.');
+      checkout.textContent = state.trialEligible ? 'Start 3-Day Free Trial' : 'Subscribe for $9.99/month';
+    };
+
+    const run = async (operation) => {
+      if (busy) return;
+      busy = true;
+      message.textContent = '';
+      for (const control of [submit, reset, checkout, manage, signout, packBuy, upgrade]) control.disabled = true;
+      try { await operation(); }
+      catch (error) { message.textContent = error.message || 'Please try again.'; }
+      finally {
+        busy = false;
+        for (const control of [submit, reset, checkout, manage, signout, packBuy, upgrade]) control.disabled = false;
+      }
+    };
+
+    const showUsagePack = async () => {
+      if (!state.usagePacks) return;
+      const result = await api('usage-packs');
+      if (!result.enabled) return;
+      const end = new Date(result.end).toLocaleString(undefined, {dateStyle: 'medium', timeStyle: 'short'});
+      packDetail.textContent = result.pending
+        ? 'Your credit payment is pending.'
+        : 'One-time test purchase. Adds $2.00 of AI usage to your active period when payment is confirmed. This period ends ' + end + '. Unused credits expire at the end of the period.'
+          + (result.grantedCents ? ' Added this period: $' + (result.grantedCents / 100).toFixed(2) + '.' : '');
+      packBuy.hidden = result.pending || !result.canBuy;
+      pack.hidden = false;
+    };
+
+    const open = () => {
+      if (!dialog.open) dialog.showModal();
+      run(async () => {
+        render(await api('status'));
+        if (state.active) message.textContent = 'Your Nova access is active.';
+        if (state.paymentPending) message.textContent = 'Open Manage Subscription to review your payment.';
+        await showUsagePack();
+      });
+    };
+
+    login.addEventListener('submit', (event) => {
+      event.preventDefault();
+      run(async () => {
+        if (awaitingCode) {
+          await api('verify', {email: email.value, code: code.value});
+          setCodeStep(false);
+          render(await api('status'));
+          await showUsagePack();
+        } else {
+          await api('code', {email: email.value});
+          setCodeStep(true);
+          message.textContent = 'Check your email for your sign-in code.';
+          code.focus();
+        }
+      });
+    });
+    reset.onclick = () => { setCodeStep(false); message.textContent = ''; email.focus(); };
+    signout.onclick = () => run(async () => {
+      await api('signout', {});
+      login.reset();
+      setCodeStep(false);
+      render(await api('status'));
+    });
+    checkout.onclick = () => run(async () => {
+      const result = await api('checkout', {acceptMonthlyCharge: !state.trialEligible});
+      window.location.assign(result.url);
+    });
+    manage.onclick = () => run(async () => window.location.assign((await api('portal', {})).url));
+    upgrade.onclick = () => run(async () => window.location.assign((await api('premium', {})).url));
+    packBuy.onclick = () => run(async () => window.location.assign((await api('usage-packs', {})).url));
+    button.onclick = open;
+    const initial = await api('status');
+    if (!initial.enabled) return;
+    render(initial);
+    document.body.appendChild(dialog);
+    button.classList.add('primary');
+    document.querySelector('#novaMore h2').after(button);
+    window.openNovaMembership = open;
+    if (window.show) {
+      const show = window.show;
+      window.show = function(section, ...args) {
+        if (['diagnose', 'parts'].includes(section) && !state.active) {
+          open();
+          return;
+        }
+        return show.call(this, section, ...args);
+      };
+    }
+    const url = new URL(window.location.href);
+    if (url.searchParams.has('membership')) {
+      url.searchParams.delete('membership');
+      history.replaceState(history.state, '', url);
+      open();
+    }
+  };
+  const start = () => bootstrap().catch(() => {});
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, {once: true});
+  } else {
+    start();
+  }
+})();
+</script>
 
 </body>
 </html>
