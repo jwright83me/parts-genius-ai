@@ -261,7 +261,7 @@ def checkout():
             return jsonify(error="Membership pricing is unavailable."), 503
         checkout_session = stripe.checkout.Session.create(
             customer=customer, mode="subscription", payment_method_collection="always",
-            payment_method_types=["card"], line_items=[{"price": price_id(), "quantity": 1}],
+            line_items=[{"price": price_id(), "quantity": 1}],
             subscription_data={} if previous else {"trial_period_days": 3},
             success_url=site_url() + "/?membership=complete",
             cancel_url=site_url() + "/?membership=return",
