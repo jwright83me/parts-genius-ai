@@ -405,12 +405,30 @@ def checkout():
             return jsonify(error="Your membership already has access."), 409
         if payment_pending:
             return jsonify(error="Open Manage Subscription to review your payment."), 409
-        if previous and data().get("acceptMonthlyCharge") is not True:
-            return jsonify(error="Confirm the monthly price before restarting your membership."), 409
+        selection = data()
+        signup = selection.get("signup", "paid" if previous else "trial")
+        if signup not in ("trial", "paid"):
+            return jsonify(error="Choose a free trial or paid membership."), 400
+        if signup == "trial" and previous:
+            return jsonify(error="This account has already had a membership. Choose Subscribe Now."), 409
+        if signup == "paid" and selection.get("acceptMonthlyCharge") is not True:
+            return jsonify(error="Confirm the monthly price to continue."), 400
         if pending:
             existing = stripe.checkout.Session.retrieve(pending)
             if existing.status == "open":
-                return jsonify(url=existing.url)
+                # Older sessions had no selection metadata. The old flow based it on membership history.
+                existing_signup = (existing.metadata or {}).get("nova_signup", "paid" if previous else "trial")
+                if existing_signup == signup:
+                    return jsonify(url=existing.url)
+                try:
+                    stripe.checkout.Session.expire(pending)
+                except stripe.InvalidRequestError:
+                    return jsonify(error="Your previous checkout changed. Refresh your membership and try again."), 409
+            elif existing.status == "complete":
+                # Checkout may have finished after the initial subscription lookup.
+                active, previous, payment_pending = subscription_state(customer)
+                if active or payment_pending or (signup == "trial" and previous):
+                    return jsonify(error="Your previous checkout completed. Refresh your membership to continue."), 409
         price = stripe.Price.retrieve(price_id())
         if (price.livemode != (current_app.config["NOVA_STRIPE_MODE"] == "live")
                 or not price.active or price.currency != "usd" or price.unit_amount != 999
@@ -428,10 +446,11 @@ def checkout():
         checkout_session = stripe.checkout.Session.create(
             customer=customer, mode="subscription", payment_method_collection="always",
             line_items=[{"price": price_id(), "quantity": 1}],
-            subscription_data={} if previous else {"trial_period_days": 3},
+            subscription_data={"trial_period_days": 3} if signup == "trial" else {},
+            metadata={"nova_signup": signup},
             success_url=site_url() + "/?membership=complete",
             cancel_url=site_url() + "/?membership=return",
-            idempotency_key=f"nova-checkout-v2-{customer}-{pending or 'first'}",
+            idempotency_key=f"nova-checkout-v3-{customer}-{pending or 'first'}-{signup}",
             **checkout_options,
         )
         db.execute("UPDATE nova_membership SET checkout_session = %s WHERE user_id = %s",
