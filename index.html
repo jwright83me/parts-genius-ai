@@ -5711,6 +5711,12 @@ document.querySelector('#nova-trial-voice-limit button[autofocus]').addEventList
         <button type="button" id="nova-membership-checkout" class="primary">Start 3-Day Free Trial</button>
         <button type="button" id="nova-membership-pay-now" aria-describedby="nova-membership-pay-now-detail">Subscribe Now · $9.99/month</button>
         <p id="nova-membership-pay-now-detail" class="muted small">Paid access starts after payment is confirmed. Your first payment is due at checkout.</p>
+        <button type="button" id="nova-membership-start-paid" hidden>Start Paid Membership Now</button>
+        <div id="nova-membership-start-paid-confirmation" hidden>
+          <p>End your free trial now and charge your saved payment method $9.99 plus any applicable tax today. Your monthly billing starts today and renews until you cancel.</p>
+          <button type="button" id="nova-membership-confirm-paid" class="primary">Confirm and Start Paid Membership</button>
+          <button type="button" id="nova-membership-keep-trial">Keep My Free Trial</button>
+        </div>
         <button type="button" id="nova-membership-manage">Manage Subscription</button>
         <div id="nova-premium" hidden>
           <p id="nova-premium-detail"></p>
@@ -5734,6 +5740,10 @@ document.querySelector('#nova-trial-voice-limit button[autofocus]').addEventList
     const checkout = dialog.querySelector('#nova-membership-checkout');
     const payNow = dialog.querySelector('#nova-membership-pay-now');
     const payNowDetail = dialog.querySelector('#nova-membership-pay-now-detail');
+    const startPaid = dialog.querySelector('#nova-membership-start-paid');
+    const paidConfirmation = dialog.querySelector('#nova-membership-start-paid-confirmation');
+    const confirmPaid = dialog.querySelector('#nova-membership-confirm-paid');
+    const keepTrial = dialog.querySelector('#nova-membership-keep-trial');
     const manage = dialog.querySelector('#nova-membership-manage');
     const signout = dialog.querySelector('#nova-membership-signout');
     const premium = dialog.querySelector('#nova-premium');
@@ -5768,6 +5778,8 @@ document.querySelector('#nova-trial-voice-limit button[autofocus]').addEventList
       dialog.querySelector('#nova-membership-email').textContent = state.email || '';
       payNow.hidden = payNowDetail.hidden = !!state.active || !!state.paymentPending;
       checkout.hidden = payNow.hidden || !state.trialEligible;
+      startPaid.hidden = !state.canStartPaid;
+      paidConfirmation.hidden = true;
       manage.hidden = !state.canManage;
       pack.hidden = true;
       premium.hidden = !state.showPremium || !state.active;
@@ -5784,12 +5796,12 @@ document.querySelector('#nova-trial-voice-limit button[autofocus]').addEventList
       if (busy) return;
       busy = true;
       message.textContent = '';
-      for (const control of [submit, reset, checkout, payNow, manage, signout, packBuy, upgrade]) control.disabled = true;
+      for (const control of [submit, reset, checkout, payNow, startPaid, confirmPaid, keepTrial, manage, signout, packBuy, upgrade]) control.disabled = true;
       try { await operation(); }
       catch (error) { message.textContent = error.message || 'Please try again.'; }
       finally {
         busy = false;
-        for (const control of [submit, reset, checkout, payNow, manage, signout, packBuy, upgrade]) control.disabled = false;
+        for (const control of [submit, reset, checkout, payNow, startPaid, confirmPaid, keepTrial, manage, signout, packBuy, upgrade]) control.disabled = false;
       }
     };
 
@@ -5845,6 +5857,23 @@ document.querySelector('#nova-trial-voice-limit button[autofocus]').addEventList
     });
     checkout.onclick = () => startCheckout('trial');
     payNow.onclick = () => startCheckout('paid');
+    startPaid.onclick = () => {
+      paidConfirmation.hidden = false;
+      keepTrial.focus();
+    };
+    keepTrial.onclick = () => {
+      paidConfirmation.hidden = true;
+      startPaid.focus();
+    };
+    confirmPaid.onclick = () => run(async () => {
+      if (paidConfirmation.hidden) return;
+      paidConfirmation.hidden = true;
+      const result = await api('start-paid', {acceptImmediateCharge: true});
+      render(await api('status'));
+      message.textContent = result.paid
+        ? 'Payment confirmed. Your paid Nova membership is active.'
+        : 'Payment is awaiting confirmation. Check Membership again shortly.';
+    });
     manage.onclick = () => run(async () => window.location.assign((await api('portal', {})).url));
     upgrade.onclick = () => run(async () => window.location.assign((await api('premium', {})).url));
     packBuy.onclick = () => run(async () => window.location.assign((await api('usage-packs', {})).url));
