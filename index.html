@@ -914,6 +914,9 @@ if (data.type === 'response.audio.delta' ||
     const data = await sdpResponse.json().catch(() => ({}));
     if (data.code === 'membership_required' && window.openNovaMembership) {
       window.openNovaMembership();
+    } else if (data.code === 'nova_trial_voice_allowance_reached') {
+      const dialog = document.getElementById('nova-trial-voice-limit');
+      if (!dialog.open) dialog.showModal();
     } else {
       alert(data.error || 'Unable to connect to the voice assistant.');
     }
@@ -5632,9 +5635,31 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 </script>
 <!-- END EXPLORE PARTS CATEGORY ROUTING V16 -->
 
+<dialog id="nova-trial-voice-limit" aria-labelledby="nova-trial-voice-title"
+        aria-describedby="nova-trial-voice-description">
+  <h2 id="nova-trial-voice-title">Trial voice limit reached</h2>
+  <p id="nova-trial-voice-description">Your three-day trial includes limited voice chat. You can keep asking Nova questions in text chat while you have usage left. Your paid membership includes a larger AI allowance when it starts.</p>
+  <form method="dialog">
+    <button type="button" autofocus>Open text chat</button>
+    <button type="submit" value="close">Close</button>
+  </form>
+</dialog>
+<script>
+document.querySelector('#nova-trial-voice-limit button[autofocus]').addEventListener('click', () => {
+  document.getElementById('nova-trial-voice-limit').close();
+  show('diagnose');
+  document.getElementById('chatInput').focus();
+});
+</script>
 <style>
-#nova-membership { max-width: 420px; padding: 24px; border: 1px solid #2a6589; border-radius: 16px; background: #091522; color: #e8f4ff; }
-#nova-membership::backdrop { background: #000a; }
+#nova-trial-voice-limit {
+  box-sizing: border-box;
+  width: min(420px, calc(100% - 32px));
+}
+#nova-trial-voice-limit form { display: flex; flex-wrap: wrap; gap: 10px; }
+#nova-trial-voice-limit button { min-height: 44px; }
+#nova-trial-voice-limit, #nova-membership { max-width: 420px; padding: 24px; border: 1px solid #2a6589; border-radius: 16px; background: #091522; color: #e8f4ff; }
+#nova-trial-voice-limit::backdrop, #nova-membership::backdrop { background: #000a; }
 #nova-membership label { display: block; margin: 12px 0; }
 #nova-membership input { display: block; width: 100%; margin-top: 6px; }
 #nova-membership [hidden] { display: none; }
