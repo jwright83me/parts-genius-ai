@@ -913,6 +913,9 @@ def research_parts(responses, message, history, vehicle):
 
 @app.errorhandler(UsageLimit)
 def ai_allowance_exhausted(error):
+    subscription = g.get("nova_subscription")
+    if error.voice_budget_exhausted and getattr(subscription, "status", None) == "trialing":
+        return jsonify(error=str(error), code="nova_trial_voice_allowance_reached"), 429
     return jsonify(error=str(error), code="nova_allowance_reached"), 429
 
 
