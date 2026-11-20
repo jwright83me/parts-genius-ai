@@ -15,7 +15,9 @@ CENT = 10_000_000  # Store costs in billionths of a US dollar.
 
 
 class UsageLimit(Exception):
-    pass
+    def __init__(self, message, *, voice_budget_exhausted=False):
+        super().__init__(message)
+        self.voice_budget_exhausted = voice_budget_exhausted
 
 
 class UsageUnavailable(Exception):
@@ -116,7 +118,7 @@ class UsageMeter:
                         message = "Live parts research has reached its allowance. You can still ask a typed question if you have usage left. " + message
                     else:
                         message = "Your account has reached its AI allowance. " + message
-                    raise UsageLimit(message)
+                    raise UsageLimit(message, voice_budget_exhausted=self.feature == "voice")
                 db.execute(
                     "INSERT INTO nova_private.ai_reservations (id, user_id, cycle_start, amount_nano, feature) "
                     "VALUES (%s, %s, %s, %s, %s)",
