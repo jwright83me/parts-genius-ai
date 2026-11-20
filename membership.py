@@ -368,6 +368,18 @@ def signout():
     return jsonify(ok=True)
 
 
+def can_start_paid_trial(subscription):
+    if subscription is None or subscription.status != "trialing":
+        return False
+    if any(getattr(subscription, field, None) for field in
+           ("cancel_at", "cancel_at_period_end", "schedule", "pending_update")):
+        return False
+    items = subscription["items"]
+    return (len(items.data) == 1 and not items.has_more
+            and items.data[0].price.id == price_id()
+            and items.data[0].quantity == 1)
+
+
 @membership.get("/status")
 def status():
     if not account_id():
@@ -377,10 +389,40 @@ def status():
     item = nova_subscription_item(active) if active else None
     premium = item is not None and is_premium_price(item.price)
     return jsonify(enabled=True, signedIn=True, active=bool(active), trialEligible=not previous,
+                   canStartPaid=can_start_paid_trial(active),
                    premium=premium, showPremium=current_app.config["NOVA_STRIPE_MODE"] == "test",
                    canUpgrade=bool(active and active.status == "active" and not premium),
                    canManage=bool(customer), paymentPending=payment_pending, email=session["membership_email"],
                    usagePacks=bool(active) and current_app.config["NOVA_STRIPE_MODE"] == "test")
+
+
+@membership.post("/start-paid")
+def start_paid_membership():
+    user_id = account_id()
+    if not user_id:
+        return jsonify(error="Sign in first."), 401
+    if data().get("acceptImmediateCharge") is not True:
+        return jsonify(error="Confirm the immediate monthly charge to continue."), 400
+    with connect() as db:
+        row = db.execute(
+            "SELECT stripe_customer FROM nova_membership WHERE user_id = %s FOR UPDATE",
+            (user_id,),
+        ).fetchone()
+        subscription, _, _ = subscription_state(row[0] if row else None, include_invoice=True)
+        if not can_start_paid_trial(subscription):
+            return jsonify(error="This membership is no longer eligible to start paid access early. Check Membership for its current status."), 409
+        try:
+            updated = stripe.Subscription.modify(
+                subscription.id, trial_end="now", payment_behavior="error_if_incomplete",
+                proration_behavior="none", expand=["latest_invoice"],
+                idempotency_key=f"nova-start-paid-{subscription.id}-{uuid4()}",
+            )
+        except stripe.CardError:
+            return jsonify(error="Stripe could not complete the payment. Open Manage Subscription to review your payment method."), 402
+    invoice = getattr(updated, "latest_invoice", None)
+    paid = (updated.status == "active" and getattr(invoice, "status", None) == "paid"
+            and getattr(invoice, "id", None) != getattr(subscription.latest_invoice, "id", None))
+    return jsonify(paid=paid)
 
 
 @membership.post("/checkout")
