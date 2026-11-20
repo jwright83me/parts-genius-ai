@@ -425,6 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   speakButton.insertAdjacentElement('afterend', talkButton);
 });
+let trialVoiceGreetingSeen = '';
 let chatStep=0;
 function addBubble(message,who){const b=document.createElement('div');b.className='bubble '+who;b.textContent=message;$('chatLog').appendChild(b);$('chatLog').scrollTop=$('chatLog').scrollHeight;return b;}
 /*function sendChat(){const input=$('chatInput');const raw=input.value.trim();if(!raw)return;input.value='';addBubble(raw,'user');const t=raw.toLowerCase();let reply='';if(/overheat|steam|smoke|burning smell/.test(t)){reply='This could be unsafe. Pull over safely, shut off the engine and allow it to cool. Do not open a hot coolant cap. Do you see leaking coolant or a temperature warning? Avoid driving until it is checked.';}else if(/brake failure|no brakes|brake pedal to floor/.test(t)){reply='Do not drive the vehicle with compromised brakes. Arrange a tow or professional inspection. Is the pedal soft, or is there a warning light?';}else if(/won.t start|not start|no start|click|crank|starter/.test(t)){reply='Let’s narrow down the starting issue. When you turn the key or press Start, do you hear rapid clicks, one click, normal cranking, or nothing at all?';chatStep=1;}else if(chatStep===1){reply=/rapid|multiple|dim|weak/.test(t)?'A weak 12V battery or poor terminal connection is possible. Check battery voltage and cable condition before replacing anything. Do the headlights dim when you try to start?':/one click|single click/.test(t)?'A single click can indicate a starting-circuit issue, but battery voltage and connections should be tested first. Do the dash lights dim?':/crank|turns over/.test(t)?'If the engine cranks normally but does not start, we should check for fault codes and whether fuel and ignition systems are operating. Is the check-engine light on?':'Thanks. Are there warning lights or any clicking noises when you try again?';chatStep=2;}else if(/check engine|p0[0-9]{3}|p1[0-9]{3}/.test(t)){reply='Please share the exact diagnostic code and vehicle year, make, model and engine. A trouble code points to a system to test, not necessarily a part to replace.';}else if(/oil|filter|battery|alternator/.test(t)){reply='I can help you research that part. First, confirm the year, make, model and engine, and whether you need a diagnosis or a replacement. Retailer prices and fitment are not live in this demo.';}else{reply='Thanks. What year, make, model and engine is the vehicle? Also, when does the issue happen, and are there any warning lights, noises or trouble codes?';}addBubble(reply,'bot');}*/
@@ -914,6 +915,9 @@ if (data.type === 'response.audio.delta' ||
     const data = await sdpResponse.json().catch(() => ({}));
     if (data.code === 'membership_required' && window.openNovaMembership) {
       window.openNovaMembership();
+    } else if (data.code === 'nova_trial_voice_allowance_reached') {
+      const dialog = document.getElementById('nova-trial-voice-limit');
+      if (!dialog.open) dialog.showModal();
     } else {
       alert(data.error || 'Unable to connect to the voice assistant.');
     }
@@ -921,6 +925,7 @@ if (data.type === 'response.audio.delta' ||
   }
 
   voiceSession = sdpResponse.headers.get('X-Nova-Voice-Session');
+  const trialEnd = sdpResponse.headers.get('X-Nova-Trial-End');
   const answer = await sdpResponse.text();
   await voiceConnection.setRemoteDescription({
     type: 'answer',
@@ -935,12 +940,24 @@ try {
 const vehicleGreeting = savedVehicle && savedVehicle.year && savedVehicle.make && savedVehicle.model
   ? `The customer's saved vehicle is a ${savedVehicle.year} ${savedVehicle.make} ${savedVehicle.model}${savedVehicle.engine ? ' with a ' + savedVehicle.engine + ' engine' : ''}. Welcome them back, mention their vehicle, and ask how you can help.`
   : "Greet the customer as a first-time visitor and ask what vehicle they need help with.";
+  let seenTrialGreeting = trialVoiceGreetingSeen === trialEnd;
+  try {
+    seenTrialGreeting ||= localStorage.getItem('novaTrialVoiceGreetingEnd') === trialEnd;
+  } catch {}
+  const introduceTrial = Boolean(trialEnd) && !seenTrialGreeting;
+  const greeting = introduceTrial
+    ? 'Say this first: Hi, I’m Nova, your personal automotive assistant. Live voice is limited during your three-day free trial. You’ll have a larger voice allowance when your paid membership starts. You can also type your questions in text chat. What can I help you with today?'
+    : vehicleGreeting;
   voiceChannel.send(JSON.stringify({
     type: 'response.create',
     response: {
-      instructions: "You are Nova, a warm, friendly, knowledgeable AI mechanic. " + vehicleGreeting
+      instructions: "You are Nova, a warm, friendly, knowledgeable AI mechanic. " + greeting
     }
   }));
+  if (introduceTrial) {
+    trialVoiceGreetingSeen = trialEnd;
+    try { localStorage.setItem('novaTrialVoiceGreetingEnd', trialEnd); } catch {}
+  }
 }, { once: true });
 }
 function addToGarage(vehicle) {
@@ -5632,9 +5649,31 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 </script>
 <!-- END EXPLORE PARTS CATEGORY ROUTING V16 -->
 
+<dialog id="nova-trial-voice-limit" aria-labelledby="nova-trial-voice-title"
+        aria-describedby="nova-trial-voice-description">
+  <h2 id="nova-trial-voice-title">Trial voice limit reached</h2>
+  <p id="nova-trial-voice-description">Your three-day trial includes limited voice chat. You can keep asking Nova questions in text chat while you have usage left. Your paid membership includes a larger AI allowance when it starts.</p>
+  <form method="dialog">
+    <button type="button" autofocus>Open text chat</button>
+    <button type="submit" value="close">Close</button>
+  </form>
+</dialog>
+<script>
+document.querySelector('#nova-trial-voice-limit button[autofocus]').addEventListener('click', () => {
+  document.getElementById('nova-trial-voice-limit').close();
+  show('diagnose');
+  document.getElementById('chatInput').focus();
+});
+</script>
 <style>
-#nova-membership { max-width: 420px; padding: 24px; border: 1px solid #2a6589; border-radius: 16px; background: #091522; color: #e8f4ff; }
-#nova-membership::backdrop { background: #000a; }
+#nova-trial-voice-limit {
+  box-sizing: border-box;
+  width: min(420px, calc(100% - 32px));
+}
+#nova-trial-voice-limit form { display: flex; flex-wrap: wrap; gap: 10px; }
+#nova-trial-voice-limit button { min-height: 44px; }
+#nova-trial-voice-limit, #nova-membership { max-width: 420px; padding: 24px; border: 1px solid #2a6589; border-radius: 16px; background: #091522; color: #e8f4ff; }
+#nova-trial-voice-limit::backdrop, #nova-membership::backdrop { background: #000a; }
 #nova-membership label { display: block; margin: 12px 0; }
 #nova-membership input { display: block; width: 100%; margin-top: 6px; }
 #nova-membership [hidden] { display: none; }
@@ -5658,7 +5697,7 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
     dialog.setAttribute('aria-labelledby', 'nova-membership-title');
     dialog.innerHTML = `
       <h2 id="nova-membership-title">Nova Membership</h2>
-      <p>Get full access for 3 days free. A card is required. Then $9.99 USD per month until you cancel. Cancel online before your trial ends to avoid the first charge.</p>
+      <p>Try Nova free for 3 days. Live voice has a trial usage limit. A card is required. Then $9.99 USD per month until you cancel. Cancel online before your trial ends to avoid the first charge.</p>
       <form id="nova-membership-login">
         <label>Email <input type="email" name="email" autocomplete="email" required maxlength="254"></label>
         <label id="nova-membership-code" hidden>Code from your email

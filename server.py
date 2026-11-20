@@ -913,6 +913,9 @@ def research_parts(responses, message, history, vehicle):
 
 @app.errorhandler(UsageLimit)
 def ai_allowance_exhausted(error):
+    subscription = g.get("nova_subscription")
+    if error.voice_budget_exhausted and getattr(subscription, "status", None) == "trialing":
+        return jsonify(error=str(error), code="nova_trial_voice_allowance_reached"), 429
     return jsonify(error=str(error), code="nova_allowance_reached"), 429
 
 
@@ -1290,8 +1293,10 @@ def create_voice_session():
         raise UsageUnavailable() from None
     if not start_meter(call_id, headers, meter, reservation, budget, seconds):
         return jsonify(error="Unable to start a metered voice call."), 502
-    return app.response_class(response.content, mimetype="application/sdp",
-                              headers={"Cache-Control": "no-store", "X-Nova-Voice-Session": str(reservation)})
+    response_headers = {"Cache-Control": "no-store", "X-Nova-Voice-Session": str(reservation)}
+    if trial:
+        response_headers["X-Nova-Trial-End"] = str(int(window.end.timestamp()))
+    return app.response_class(response.content, mimetype="application/sdp", headers=response_headers)
 
 
 @app.post("/api/voice/session/<uuid:reservation>/end")
