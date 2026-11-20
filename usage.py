@@ -37,7 +37,7 @@ def billing_window(subscription):
         return None
     if subscription.status == "trialing":
         start, end = getattr(subscription, "trial_start", None), getattr(subscription, "trial_end", None)
-        budget, text_reserve = 75, 10
+        budget, text_reserve = 100, 10
     else:
         invoice = getattr(subscription, "latest_invoice", None)
         if getattr(invoice, "status", None) != "paid":
