@@ -1244,7 +1244,14 @@ def create_voice_session():
     session_config = {
         "type": "realtime",
         "model": "gpt-realtime",
-        "instructions": SYSTEM_PROMPT,
+        "instructions": (
+            SYSTEM_PROMPT
+            + "\nFor live voice, greet the customer in English. Continue in the current "
+              "conversation language unless the customer clearly asks you to switch. "
+              "A quoted phrase, vehicle or part name, or background speech in another "
+              "language is not a request to switch. After an explicit request, continue "
+              "in the requested language until the customer asks to switch again."
+        ),
         "max_output_tokens": 500,
         "audio": {"output": {"voice": "marin"}},
     }
