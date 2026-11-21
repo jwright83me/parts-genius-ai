@@ -400,6 +400,12 @@ document.addEventListener('DOMContentLoaded', () => {
     novaVoiceStatus.textContent = state === 'idle' ? '' : active ? 'Nova voice is connected.' : talkButton.textContent;
   };
   setVoiceControls('idle');
+  window.addEventListener('pagehide', () => {
+    if (!voiceSession) return;
+    endVoiceSession();
+    stopVoice();
+    setVoiceControls('idle');
+  });
   talkButton.onclick = async () => {
     if (talkButton.disabled) return;
     if (voiceConnection) {
@@ -847,6 +853,7 @@ async function endVoiceSession() {
   try {
     await fetch('/api/voice/session/' + voiceSession + '/end', {
       method: 'POST',
+      keepalive: true,
       signal: AbortSignal.timeout(9000)
     });
   } catch {
@@ -874,6 +881,7 @@ async function startVoice(onDisconnect) {
   let voiceReady = false;
   connection.onconnectionstatechange = () => {
     if (!voiceReady || voiceConnection !== connection || !['failed', 'disconnected'].includes(connection.connectionState)) return;
+    endVoiceSession();
     stopVoice();
     onDisconnect();
   };

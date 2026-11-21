@@ -112,6 +112,8 @@ def monitor(events, call_id, headers, meter, reservation, budget, seconds):
     finally:
         explicitly_ended = wait_for_close_confirmation(meter, reservation)
         ended = explicitly_ended or hang_up(call_id, headers)
+        if ended and not explicitly_ended:
+            meter.mark_voice_ended(reservation)
         events.close()
         if ended and not uncertain and not in_progress and (not socket_lost or explicitly_ended):
             meter.release(reservation)
