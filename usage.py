@@ -103,7 +103,7 @@ class UsageMeter:
                            AND released_at IS NULL),
                         EXISTS (SELECT 1 FROM nova_private.ai_reservations
                                 WHERE user_id = %s AND cycle_start = %s AND feature = 'voice' AND released_at IS NULL
-                                  AND created_at > now() - interval '5 minutes')
+                                  AND NOT ended AND created_at > now() - interval '5 minutes')
                     """,
                     (limit, self.user_id, window.start, window.end, self.user_id, window.start,
                      self.user_id, window.start),
@@ -140,6 +140,16 @@ class UsageMeter:
                 SELECT closing, ended
                 FROM nova_private.ai_reservations WHERE id = %s
                 """, (reservation,)).fetchone() or (False, False)
+
+    def mark_voice_ended(self, reservation):
+        try:
+            with connect() as db:
+                db.execute("""
+                    UPDATE nova_private.ai_reservations SET ended = true
+                    WHERE id = %s
+                    """, (reservation,))
+        except psycopg.Error:
+            logger.warning("Nova could not record confirmed voice hangup")
 
     def release(self, reservation):
         try:
