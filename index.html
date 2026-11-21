@@ -388,39 +388,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const talkButton = document.createElement('button');
   talkButton.type = 'button';
-  talkButton.textContent = '🎙 Talk to Nova';
+  const setVoiceControls = (state) => {
+    const connecting = state === 'connecting';
+    const active = state === 'active';
+    const ending = state === 'ending';
+    talkButton.disabled = novaTalkButton.disabled = connecting || ending;
+    talkButton.textContent = connecting ? 'Connecting to Nova…' : ending ? 'Ending conversation…' : active ? '🔴 End Conversation' : '🎙 Talk to Nova';
+    novaTalkButton.dataset.voiceState = state;
+    novaTalkButton.textContent = state === 'idle' ? '' : talkButton.textContent;
+    novaTalkButton.setAttribute('aria-label', state === 'idle' ? 'Talk to Nova' : talkButton.textContent);
+    novaVoiceStatus.textContent = state === 'idle' ? '' : active ? 'Nova voice is connected.' : talkButton.textContent;
+  };
+  setVoiceControls('idle');
   talkButton.onclick = async () => {
+    if (talkButton.disabled) return;
     if (voiceConnection) {
-      talkButton.disabled = true;
+      setVoiceControls('ending');
       try {
-        if (voiceSession) {
-          voiceStream?.getAudioTracks().forEach(track => { track.enabled = false; });
-          await fetch('/api/voice/session/' + voiceSession + '/end', {
-            method: 'POST',
-            signal: AbortSignal.timeout(9000)
-          });
-        }
-      } catch {
-        // Local cleanup still ends the user's microphone session.
+        await endVoiceSession();
       } finally {
         stopVoice();
-        talkButton.textContent = '🎙 Talk to Nova';
-        talkButton.disabled = false;
+        setVoiceControls('idle');
       }
       return;
     }
-    talkButton.disabled = true;
+    setVoiceControls('connecting');
     try {
-      await startVoice(talkButton);
-      if (voiceConnection) talkButton.textContent = '🔴 End Conversation';
-    } catch {
+      await startVoice(() => setVoiceControls('idle'));
+    } catch (error) {
+      await endVoiceSession();
       stopVoice();
-      alert('Unable to start voice. Please try again.');
+      alert(error.name === 'TimeoutError' ? 'Nova took too long to connect. Please try again.' : error.message || 'Unable to start voice. Please try again.');
     } finally {
-      talkButton.disabled = false;
+      setVoiceControls(voiceConnection ? 'active' : 'idle');
     }
   };
-  talkButton.disabled = false;
   talkButton.title = 'Talk to your AI mechanic';
 
   speakButton.insertAdjacentElement('afterend', talkButton);
@@ -839,6 +841,18 @@ let voiceStream = null;
 let voiceAudio = null;
 let voiceChannel = null;
 let voiceSession = null;
+async function endVoiceSession() {
+  if (!voiceSession) return;
+  voiceStream?.getAudioTracks().forEach(track => { track.enabled = false; });
+  try {
+    await fetch('/api/voice/session/' + voiceSession + '/end', {
+      method: 'POST',
+      signal: AbortSignal.timeout(9000)
+    });
+  } catch {
+    // Local cleanup still ends the microphone session.
+  }
+}
 function stopVoice() {
   if (voiceChannel) voiceChannel.close();
   if (voiceConnection) voiceConnection.close();
@@ -854,13 +868,14 @@ function stopVoice() {
   voiceStream = null;
   voiceAudio = null;
 }
-async function startVoice(talkButton) {
+async function startVoice(onDisconnect) {
   voiceConnection = new RTCPeerConnection();
   const connection = voiceConnection;
+  let voiceReady = false;
   connection.onconnectionstatechange = () => {
-    if (voiceConnection !== connection || !['failed', 'disconnected'].includes(connection.connectionState)) return;
+    if (!voiceReady || voiceConnection !== connection || !['failed', 'disconnected'].includes(connection.connectionState)) return;
     stopVoice();
-    talkButton.textContent = '🎙 Talk to Nova';
+    onDisconnect();
   };
 
 
@@ -887,11 +902,8 @@ voiceAudio.volume = 1;
     voiceConnection.addTrack(track, voiceStream);
   });
   voiceChannel = voiceConnection.createDataChannel('oai-events');
-  voiceChannel.addEventListener('open', () => {
-  const button = document.querySelector('#novaHome button');
-  if (button) button.style.animation = 'none';
-});
-  voiceChannel.onmessage = (event) => {
+  const channel = voiceChannel;
+  channel.onmessage = (event) => {
   const data = JSON.parse(event.data);
   
 
@@ -899,7 +911,7 @@ if (data.type === 'response.audio.delta' ||
     data.type === 'response.output_audio.delta') {
   console.log('Nova audio received');
 }
-  if (data.type === 'error') {
+  if (data.type === 'error' && voiceReady) {
     alert('Nova error: ' + JSON.stringify(data.error));
   }
 };
@@ -908,7 +920,8 @@ if (data.type === 'response.audio.delta' ||
   const sdpResponse = await fetch('/api/voice/session', {
     method: 'POST',
     headers: {'Content-Type': 'application/sdp'},
-    body: voiceConnection.localDescription.sdp
+    body: connection.localDescription.sdp,
+    signal: AbortSignal.timeout(30000)
   });
   if (!sdpResponse.ok) {
     stopVoice();
@@ -927,11 +940,25 @@ if (data.type === 'response.audio.delta' ||
   voiceSession = sdpResponse.headers.get('X-Nova-Voice-Session');
   const trialEnd = sdpResponse.headers.get('X-Nova-Trial-End');
   const answer = await sdpResponse.text();
-  await voiceConnection.setRemoteDescription({
-    type: 'answer',
-    sdp: answer
+  const startup = new AbortController();
+  const greetingStarted = new Promise((resolve, reject) => {
+    const options = { signal: startup.signal };
+    channel.addEventListener('message', (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === 'output_audio_buffer.started') resolve();
+      if (data.type === 'error') reject(new Error('Nova could not start speaking. Please try again.'));
+    }, options);
+    channel.addEventListener('close', () => {
+      reject(new Error('Nova voice disconnected. Please try again.'));
+    }, options);
   });
-voiceChannel.addEventListener('open', () => {
+  const timeout = setTimeout(() => startup.abort(), 15000);
+  const greetingTimeout = new Promise((_, reject) => {
+    startup.signal.addEventListener('abort', () => {
+      reject(new Error('Nova took too long to start speaking. Please try again.'));
+    }, { once: true });
+  });
+channel.addEventListener('open', () => {
   let savedVehicle = null;
 try {
   savedVehicle = JSON.parse(localStorage.getItem('pgVehicle'));
@@ -948,7 +975,7 @@ const vehicleGreeting = savedVehicle && savedVehicle.year && savedVehicle.make &
   const greeting = introduceTrial
     ? 'Say this first: Hi, I’m Nova, your personal automotive assistant. Live voice is limited during your three-day free trial. You’ll have a larger voice allowance when your paid membership starts. You can also type your questions in text chat. What can I help you with today?'
     : vehicleGreeting;
-  voiceChannel.send(JSON.stringify({
+  channel.send(JSON.stringify({
     type: 'response.create',
     response: {
       instructions: "You are Nova, a warm, friendly, knowledgeable AI mechanic. " + greeting
@@ -958,7 +985,20 @@ const vehicleGreeting = savedVehicle && savedVehicle.year && savedVehicle.make &
     trialVoiceGreetingSeen = trialEnd;
     try { localStorage.setItem('novaTrialVoiceGreetingEnd', trialEnd); } catch {}
   }
-}, { once: true });
+}, { once: true, signal: startup.signal });
+  try {
+    await Promise.race([
+      Promise.all([
+        connection.setRemoteDescription({ type: 'answer', sdp: answer }),
+        greetingStarted
+      ]),
+      greetingTimeout
+    ]);
+    voiceReady = true;
+  } finally {
+    clearTimeout(timeout);
+    startup.abort();
+  }
 }
 function addToGarage(vehicle) {
   let garage = [];
@@ -1830,6 +1870,7 @@ novaSection.style.position = 'relative';
 
 const novaTalkButton = document.createElement('button');
 novaTalkButton.type = 'button';
+novaTalkButton.className = 'nova-voice-button';
 novaTalkButton.setAttribute('aria-label', 'Talk to Nova');
 
 novaTalkButton.style.cssText = `
@@ -1838,16 +1879,39 @@ left:24%;
 top:87.5%;
 width:54%;
 height:7.8%;
-background:transparent;
 border:2px solid rgba(0,180,255,0.8);
 border-radius:999px;
 box-shadow:0 0 6px #00bfff,0 0 10px rgba(0,180,255,0.35);
-animation:none;
 cursor:pointer;
 z-index:10;
 `;
+const novaVoiceStatus = document.createElement('span');
+novaVoiceStatus.className = 'nova-voice-status';
+novaVoiceStatus.setAttribute('role', 'status');
+novaSection.appendChild(novaVoiceStatus);
+
 const novaPulseStyle = document.createElement('style');
 novaPulseStyle.textContent = `
+.nova-voice-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+#novaHome > .nova-voice-button { background: transparent; }
+#novaHome > .nova-voice-button:not([data-voice-state="idle"]) {
+  background: #062843;
+  color: #fff;
+  font-size: clamp(12px, 3.5vw, 22px);
+  padding: 0 6px;
+}
+#novaHome > .nova-voice-button:disabled { cursor: wait; }
+#novaHome > .nova-voice-button[data-voice-state="connecting"] {
+  animation: novaPulse 1.2s ease-in-out infinite alternate;
+}
+
 @keyframes novaPulse {
   from {
     box-shadow: 0 0 8px #00bfff;
@@ -1861,7 +1925,7 @@ novaPulseStyle.textContent = `
 `;
 document.head.appendChild(novaPulseStyle);
 novaTalkButton.onclick = () => {
-  novaTalkButton.style.animation = 'novaPulse 1.2s ease-in-out infinite alternate';
+  if (novaTalkButton.disabled) return;
   const speakButton = document.querySelector('button[title="Talk to your AI mechanic"]');
   if (speakButton) {
     speakButton.click();
@@ -5474,7 +5538,7 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 #novaHome>img:first-child{transform:none!important}
 .nova-hero-action{position:absolute;left:69.2%;width:28.7%;height:4.85%;z-index:11;border:1px solid #51d9ff;border-radius:14px;color:white;background:linear-gradient(110deg,#03233b,#06486c);box-shadow:0 0 9px #00bfff;font-size:clamp(9px,1.5vw,17px);font-weight:750;padding:2px;cursor:pointer}
 .nova-hero-action:focus-visible,button:focus-visible{outline:3px solid #fff;outline-offset:3px}
-#novaHome>button[aria-label="Talk to Nova"]{left:23.4%!important;top:78.4%!important;width:55%!important;height:8.3%!important}
+#novaHome>.nova-voice-button{left:23.4%!important;top:78.4%!important;width:55%!important;height:8.3%!important}
 #savedVehiclesSection,.pg3-search-panel{display:none!important}
 #pg12-finder{scroll-margin-top:18px}
 #pg3-results-location{scroll-margin-top:18px;width:100%}
