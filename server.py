@@ -1327,7 +1327,7 @@ def end_voice_session(reservation):
         ended = hang_up(row[0], headers)
         with connect() as db:
             db.execute("""
-                UPDATE nova_private.ai_reservations SET ended = %s, closing = false
+                UPDATE nova_private.ai_reservations SET ended = ended OR %s, closing = false
                 WHERE id = %s AND user_id = %s
                 """, (ended, reservation, user_id))
     except psycopg.Error:
