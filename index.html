@@ -5593,12 +5593,13 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
    home.hidden=id!=='home';
    const preview=document.getElementById('nova-guest-preview');
    if(preview)preview.hidden=id!=='home'||!window.novaGuestPreviewEnabled;
+   if(id!=='home')window.pauseNovaGuestPreview?.();
    document.querySelector('.actions').hidden=id!=='home';
    const garage=document.getElementById('myGarageList');
    if(garage)garage.hidden=!['home','vehicle'].includes(id);
    if(id==='home'||id==='more'){
     ['vehicle','diagnose','parts'].forEach(key=>document.getElementById(key).classList.add('hidden'));
-    (id==='home'?(window.novaGuestPreviewEnabled && preview ? preview : home):more).scrollIntoView({block:'start'});
+    (id==='home'?home:more).scrollIntoView({block:'start'});
    }else showBase(id);
    document.querySelectorAll('nav button').forEach(button=>{
     const isCurrent=button.getAttribute('onclick')===`show('${id}')`;
@@ -5902,6 +5903,7 @@ document.querySelector('#nova-trial-voice-limit button[autofocus]').addEventList
     };
 
     const open = () => {
+      window.pauseNovaGuestPreview?.();
       if (!dialog.open) dialog.showModal();
       run(async () => {
         render(await api('status'));
@@ -5999,11 +6001,12 @@ document.querySelector('#nova-trial-voice-limit button[autofocus]').addEventList
 </html>
 
 <style>
-#nova-guest-preview { max-width: 720px; margin: 16px auto; width: calc(100% - 32px); }
+#nova-guest-preview { max-width: 560px; margin: 0 auto 16px; width: calc(100% - 32px); }
+#nova-guest-type { background: transparent; border: 0; color: #b6d9ee; text-decoration: underline; }
+.nova-guest-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 #nova-guest-preview [hidden], #nova-guest-preview[hidden] { display: none; }
 #nova-guest-preview button { min-height: 44px; margin: 4px 4px 4px 0; }
 #nova-guest-preview input { font-size: 16px; }
-#nova-guest-hologram { width: min(100%, 280px); max-height: 150px; object-fit: contain; display: block; margin: 0 auto; }
 #nova-guest-answer { white-space: pre-wrap; }
 #nova-guest-status:empty, #nova-guest-answer:empty { display: none; }
 </style>
