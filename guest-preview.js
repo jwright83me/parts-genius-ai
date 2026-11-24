@@ -36,6 +36,16 @@
   const offer = panel.querySelector('#nova-guest-offer');
   const replay = panel.querySelector('#nova-guest-replay');
   let answerAudio;
+  let answerContext;
+  let playingAnswer;
+  const unlockAnswerAudio = () => {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    try {
+      answerContext ||= new AudioContext();
+      answerContext.resume().catch(() => {});
+    } catch {}
+  };
   const heroTalk = home.querySelector('.nova-voice-button');
   const memberTalk = heroTalk.onclick;
   const welcomeSource = '/api/guest/welcome-audio';
@@ -136,7 +146,7 @@
     prompt.textContent = hasVehicle
       ? `Your ${vehicleName()} is in My Garage for this visit. What’s going on with it?`
       : 'Tell me what you drive. I’ll show you your vehicle and help you figure out what to check first.';
-    if (preview.completed) prompt.textContent = `Your ${vehicleName()} is in My Garage for this visit.`;
+    if (preview.completed && hasVehicle) prompt.textContent = `Your ${vehicleName()} is in My Garage for this visit.`;
     label.textContent = hasVehicle ? 'What’s going on with your vehicle?' : 'Year, make, model and engine (if known)';
     input.placeholder = hasVehicle ? 'Example: It clicks rapidly and won’t start' : 'Example: 2020 Dodge Challenger 6.4L';
     input.maxLength = hasVehicle ? 500 : 120;
@@ -145,7 +155,15 @@
     typeButton.hidden = typing || Boolean(preview.completed);
     offer.hidden = !preview.completed;
     replay.hidden = !preview.answer || (!answerAudio && !window.speechSynthesis);
-    reply.textContent = preview.answer || '';
+    reply.textContent = preview.answer || (preview.completed ? 'You’ve already used your free question in this browser.' : '');
+  };
+
+  const markComplete = () => {
+    preview.completed = true;
+    save();
+    render();
+    buttonState('ready', 'Ask another question');
+    status.textContent = '';
   };
 
   const showVehicle = () => {
@@ -231,6 +249,7 @@
           if (!isCurrent()) return;
           const result = await response.json();
           if (!isCurrent()) return;
+          if (response.status === 409) { markComplete(); return; }
           if (!response.ok || !result.text) throw new Error(result.error || 'Nova didn’t hear anything. Tap to try again.');
           buttonState('idle');
           await accept(result.text);
@@ -343,7 +362,7 @@
   const open = () => {
     if (!guest) return false;
     show('home');
-    if (stopRecording) { stopRecording(); return true; }
+    if (stopRecording) { unlockAnswerAudio(); stopRecording(); return true; }
     if (preview.completed) showSignup();
     else if (!busy) {
       typing = false;
@@ -351,6 +370,7 @@
       render();
       if (recognition) return true;
       if (needsMicTap) {
+        unlockAnswerAudio();
         if (canRecord) void record(++turn);
         else listen(++turn);
       }
@@ -416,12 +436,9 @@
       });
       const result = await response.json();
       if (!response.ok && !result.completed) throw new Error(result.error || 'Please try again.');
-      preview.completed = true;
-      preview.answer = result.answer || result.error;
-      save();
-      status.textContent = '';
-      if (result.audio) answerAudio = 'data:audio/mpeg;base64,' + result.audio;
-      render();
+      preview.answer = result.answer;
+      if (result.audio) answerAudio = result.audio;
+      markComplete();
       if (result.answer && guest && !home.hidden) playAnswer();
     } catch (error) {
       if (voice) buttonState('idle');
@@ -433,6 +450,7 @@
 
   form.onsubmit = (event) => {
     event.preventDefault();
+    unlockAnswerAudio();
     accept(input.value);
   };
 
@@ -448,16 +466,36 @@
       replay.disabled = false;
       status.textContent = played ? '' : 'Tap Play Nova’s answer to try the audio again.';
     };
-    if (answerAudio) {
-      playClip(answerAudio, played => {
+    const fallback = () => {
+      if (currentTurn !== turn) return;
+      if (answerAudio) {
+        playClip('data:audio/mpeg;base64,' + answerAudio, played => {
+          if (currentTurn !== turn) return;
+          if (played) finish(true);
+          else speak(preview.answer, finish);
+        });
+      } else speak(preview.answer, finish);
+    };
+    if (answerAudio && answerContext?.state === 'running') {
+      const bytes = Uint8Array.from(atob(answerAudio), char => char.charCodeAt(0));
+      answerContext.decodeAudioData(bytes.buffer).then(buffer => {
         if (currentTurn !== turn) return;
-        if (played) finish(true);
-        else speak(preview.answer, finish);
-      });
-    } else speak(preview.answer, finish);
+        if (answerContext.state !== 'running') { fallback(); return; }
+        const player = answerContext.createBufferSource();
+        player.buffer = buffer;
+        player.connect(answerContext.destination);
+        player.onended = () => {
+          if (playingAnswer === player) playingAnswer = undefined;
+          finish(true);
+        };
+        player.start();
+        playingAnswer = player;
+        buttonState('speaking', 'Nova is speaking…');
+      }).catch(fallback);
+    } else fallback();
   };
 
-  replay.onclick = playAnswer;
+  replay.onclick = () => { unlockAnswerAudio(); playAnswer(); };
   panel.querySelector('#nova-guest-continue').onclick = showSignup;
   window.openNovaGuestPreview = open;
   window.addEventListener('pagehide', () => { ++turn; cancelRecording(); });
@@ -469,6 +507,8 @@
     recognition = undefined;
     cancelWelcome();
     window.speechSynthesis?.cancel();
+    playingAnswer?.stop();
+    playingAnswer = undefined;
     replay.disabled = false;
     if (preview.completed) buttonState('ready', 'Ask another question');
     else buttonState('idle');
@@ -478,6 +518,7 @@
     panel.hidden = !guest || home.hidden;
     heroTalk.onclick = guest ? open : memberTalk;
     if (guest) {
+      if (detail.guestPreviewComplete && !preview.completed) markComplete();
       render();
       showVehicle();
       if (preview.completed && !heroTalk.disabled) buttonState('ready', 'Ask another question');
