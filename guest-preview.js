@@ -56,6 +56,9 @@
   let needsMicTap = false;
   let turn = 0;
   const welcome = 'Hi, I’m Nova. I can show you a hologram of your car and help you figure out what to check first. Tell me the year, make and model, and what it’s doing.';
+  const canRecord = Boolean(navigator.mediaDevices?.getUserMedia && window.MediaRecorder);
+  let stopRecording;
+  let cancelRecording = () => {};
   const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
   const vehicleName = () => [preview.vehicle.year, preview.vehicle.make,
@@ -155,7 +158,7 @@
   };
 
   const offerMicrophone = (message = 'Tap the microphone to speak.') => {
-    if (!Recognition) {
+    if (!canRecord && !Recognition) {
       buttonState('idle');
       status.textContent = 'This browser can’t listen directly. Tap Type instead and use your keyboard microphone.';
       return;
@@ -163,6 +166,87 @@
     needsMicTap = true;
     buttonState('ready', microphoneStarted ? '🎙 Tap to speak' : '🎙 Enable microphone');
     status.textContent = message;
+  };
+
+  const record = async (currentTurn) => {
+    let stream;
+    let recorder;
+    let timer;
+    const isCurrent = () => currentTurn === turn;
+    const cleanup = () => {
+      clearTimeout(timer);
+      stream?.getTracks().forEach(track => track.stop());
+      stopRecording = undefined;
+      cancelRecording = () => {};
+    };
+    cancelRecording = () => {
+      if (recorder?.state === 'recording') recorder.stop();
+      cleanup();
+    };
+    buttonState('connecting', 'Opening microphone…');
+    status.textContent = 'Allow microphone access if your browser asks.';
+    timer = setTimeout(() => {
+      if (!isCurrent()) return;
+      ++turn;
+      cleanup();
+      offerMicrophone('Microphone access didn’t open. Tap to try again, or type instead.');
+    }, 20000);
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({audio: true});
+      if (!isCurrent()) {
+        stream.getTracks().forEach(track => track.stop());
+        return;
+      }
+      clearTimeout(timer);
+      const formats = ['audio/mp4', 'audio/webm', 'audio/ogg'];
+      const mimeType = formats.find(type => MediaRecorder.isTypeSupported?.(type));
+      recorder = new MediaRecorder(stream, mimeType ? {mimeType, audioBitsPerSecond: 48000} : undefined);
+      const chunks = [];
+      recorder.ondataavailable = ({data}) => { if (data.size) chunks.push(data); };
+      recorder.onerror = () => {
+        if (!isCurrent()) return;
+        ++turn;
+        cancelRecording();
+        offerMicrophone('The recording stopped. Tap the microphone to try again.');
+      };
+      recorder.onstop = async () => {
+        if (!isCurrent()) return;
+        cleanup();
+        buttonState('connecting', 'Nova is processing…');
+        status.textContent = 'Nova is transcribing your voice message.';
+        try {
+          const audio = new Blob(chunks, {type: recorder.mimeType || chunks[0]?.type});
+          if (!audio.size) throw new Error('Nova didn’t hear anything. Tap to try again.');
+          const response = await fetch('/api/guest/transcribe', {method: 'POST', body: audio});
+          if (!isCurrent()) return;
+          const result = await response.json();
+          if (!isCurrent()) return;
+          if (!response.ok || !result.text) throw new Error(result.error || 'Nova didn’t hear anything. Tap to try again.');
+          buttonState('idle');
+          await accept(result.text);
+        } catch (error) {
+          if (isCurrent()) offerMicrophone(error.message || 'Try the microphone again, or type instead.');
+        }
+      };
+      recorder.start();
+      microphoneStarted = true;
+      needsMicTap = false;
+      stopRecording = () => {
+        clearTimeout(timer);
+        stopRecording = undefined;
+        buttonState('connecting', 'Nova is processing…');
+        if (recorder.state === 'recording') recorder.stop();
+      };
+      buttonState('listening', '🎙 Done speaking');
+      status.textContent = 'Recording for transcription. Speak now, then tap Done speaking.';
+      timer = setTimeout(() => stopRecording?.(), 15000);
+    } catch (error) {
+      if (!isCurrent()) return;
+      cleanup();
+      offerMicrophone(error.name === 'NotAllowedError'
+        ? 'Microphone access is blocked. Allow access in your browser’s site settings or choose Type instead.'
+        : 'The microphone couldn’t open. If you opened Nova inside another app, try opening the site in Safari.');
+    }
   };
 
   const listen = (currentTurn) => {
@@ -232,8 +316,10 @@
         status.textContent = 'Tap Talk to Nova to hear her welcome.';
         return;
       }
-      if (microphoneStarted) listen(currentTurn);
-      else offerMicrophone('Tap Enable microphone and allow access to speak to Nova.');
+      if (microphoneStarted && !canRecord) listen(currentTurn);
+      else offerMicrophone(microphoneStarted
+        ? 'Tap the microphone to record your reply.'
+        : 'Tap Enable microphone and allow access to speak to Nova.');
     };
     if (text === welcome) {
       playWelcome(played => {
@@ -247,13 +333,17 @@
   const open = () => {
     if (!guest) return false;
     show('home');
+    if (stopRecording) { stopRecording(); return true; }
     if (preview.completed) showSignup();
     else if (!busy) {
       typing = false;
       voice = true;
       render();
       if (recognition) return true;
-      if (needsMicTap) listen(++turn);
+      if (needsMicTap) {
+        if (canRecord) void record(++turn);
+        else listen(++turn);
+      }
       else promptAndListen(preview.vehicle ? 'What’s going on with your vehicle?' : welcome);
     }
     return true;
@@ -261,6 +351,7 @@
 
   typeButton.onclick = () => {
     ++turn;
+    cancelRecording();
     recognition?.abort();
     recognition = undefined;
     cancelWelcome();
@@ -344,9 +435,11 @@
 
   offer.querySelector('button').onclick = () => window.openNovaMembership();
   window.openNovaGuestPreview = open;
+  window.addEventListener('pagehide', () => { ++turn; cancelRecording(); });
   window.pauseNovaGuestPreview = () => {
     if (!guest) return;
     ++turn;
+    cancelRecording();
     recognition?.abort();
     recognition = undefined;
     cancelWelcome();

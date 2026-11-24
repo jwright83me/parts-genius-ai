@@ -1117,6 +1117,45 @@ _preview_lock = Lock()
 _preview_requests = deque()
 
 
+_guest_transcriptions = deque()
+_GUEST_AUDIO_FORMATS = {
+    "audio/mp4": "m4a", "video/mp4": "mp4",
+    "audio/webm": "webm", "audio/ogg": "ogg",
+}
+
+
+@app.post("/api/guest/transcribe")
+def guest_transcribe():
+    if not app.config["NOVA_MEMBERSHIP_ENABLED"] or not os.getenv("OPENAI_API_KEY"):
+        return jsonify(error="Guest voice is temporarily unavailable."), 503
+    if request.headers.get("Sec-Fetch-Site") == "cross-site":
+        return jsonify(error="Open the Nova site to use guest voice."), 403
+    if session.get("nova_preview_answered"):
+        return jsonify(error="Your free preview is complete."), 409
+    extension = _GUEST_AUDIO_FORMATS.get(request.mimetype)
+    if not extension or not request.content_length or request.content_length > 512_000:
+        return jsonify(error="Record a short voice message and try again."), 400
+    audio = request.get_data(cache=False)
+
+    with _preview_lock:
+        now = monotonic()
+        while _guest_transcriptions and now - _guest_transcriptions[0] >= 3600:
+            _guest_transcriptions.popleft()
+        if len(_guest_transcriptions) >= 100:
+            return jsonify(error="Guest voice is busy. You can still type your question."), 429
+        _guest_transcriptions.append(now)
+
+    try:
+        result = OpenAI(timeout=15, max_retries=0).audio.transcriptions.create(
+            model="gpt-4o-mini-transcribe", file=(f"guest.{extension}", audio, request.mimetype),
+            language="en", prompt="US vehicle year, make, model, engine size, and automotive symptoms.",
+        )
+    except Exception as error:
+        app.logger.warning("Guest transcription failed: %s", type(error).__name__)
+        return jsonify(error="Nova couldn’t transcribe that recording. Try again or type instead."), 503
+    return jsonify(text=result.text.strip()[:500])
+
+
 @app.post("/api/guest/diagnose")
 def guest_diagnose():
     if not app.config["NOVA_MEMBERSHIP_ENABLED"]:
