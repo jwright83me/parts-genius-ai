@@ -383,7 +383,7 @@ def can_start_paid_trial(subscription):
 @membership.get("/status")
 def status():
     if not account_id():
-        return jsonify(enabled=True, signedIn=False)
+        return jsonify(enabled=True, signedIn=False, guestPreviewComplete=bool(session.get("nova_preview_answered")))
     customer = membership_customer(account_id())
     active, previous, payment_pending = subscription_state(customer)
     item = nova_subscription_item(active) if active else None
