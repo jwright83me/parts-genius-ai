@@ -1541,6 +1541,7 @@ cards.style.cssText = `
 `;
 
 
+  const guestVehicle = window.novaGuestVehicle;
   const activeVehicle = localStorage.getItem('pgVehicle');
 
   garage.sort((a, b) => {
@@ -1549,7 +1550,9 @@ cards.style.cssText = `
   return Number(bActive) - Number(aActive);
 });
 
+if (guestVehicle) garage.unshift(guestVehicle);
 garage.forEach(vehicle => {
+    const isGuest = vehicle === guestVehicle;
     const isActive =
       activeVehicle === JSON.stringify(vehicle);
 
@@ -1590,7 +1593,7 @@ grid-column:${isActive ? '1 / -1' : 'auto'};
       font-size:48px;
     `;
 const showroomLabel = document.createElement('div');
-showroomLabel.textContent = isActive
+showroomLabel.textContent = isGuest ? 'THIS VISIT' : isActive
   ? '✦ ACTIVE SHOWROOM ✦'
   : 'VEHICLE COLLECTION';
 
@@ -1683,7 +1686,8 @@ removeButton.onclick = () => {
 });
 };
 
-    card.append(imageArea, vehicleName, engine, selectButton, removeButton);
+    card.append(imageArea, vehicleName, engine);
+    if (!isGuest) card.append(selectButton, removeButton);
     cards.appendChild(card);
   });
 
@@ -5161,10 +5165,12 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
     return {
       year: yearMatch[0],
       make: make === "Chevy" ? "Chevrolet" : make,
-      model: remaining,
+      model: remaining.replace(/\s+\d\.\d\s*(?:L|liter)?(?:\s*(?:turbo|V[468]))?$/i, ""),
       engine: engineMatch ? engineMatch[0] : ""
     };
   }
+
+  window.parseNovaVehicle = parseVehicle;
 
   function garageRequest(message) {
     return /\b(save|add)\b/i.test(message)
@@ -5364,6 +5370,8 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
 
     return v;
   }
+
+  window.activateNovaVehicle = activateVehicle;
 
   // Make typed garage saves activate the vehicle too.
   if (typeof window.sendChat === "function") {
@@ -5583,12 +5591,14 @@ function showNovaRemoveConfirmation(vehicle, onConfirm) {
   window.show=function(id){
    more.hidden=id!=='more';
    home.hidden=id!=='home';
+   const preview=document.getElementById('nova-guest-preview');
+   if(preview)preview.hidden=id!=='home'||!window.novaGuestPreviewEnabled;
    document.querySelector('.actions').hidden=id!=='home';
    const garage=document.getElementById('myGarageList');
    if(garage)garage.hidden=!['home','vehicle'].includes(id);
    if(id==='home'||id==='more'){
     ['vehicle','diagnose','parts'].forEach(key=>document.getElementById(key).classList.add('hidden'));
-    (id==='home'?home:more).scrollIntoView({block:'start'});
+    (id==='home'?(window.novaGuestPreviewEnabled && preview ? preview : home):more).scrollIntoView({block:'start'});
    }else showBase(id);
    document.querySelectorAll('nav button').forEach(button=>{
     const isCurrent=button.getAttribute('onclick')===`show('${id}')`;
@@ -5845,6 +5855,7 @@ document.querySelector('#nova-trial-voice-limit button[autofocus]').addEventList
 
     const render = (next) => {
       state = next;
+      window.dispatchEvent(new CustomEvent('nova-membership-state', {detail: state}));
       login.hidden = !!state.signedIn;
       account.hidden = !state.signedIn;
       dialog.querySelector('#nova-membership-email').textContent = state.email || '';
@@ -5961,6 +5972,7 @@ document.querySelector('#nova-trial-voice-limit button[autofocus]').addEventList
       const show = window.show;
       window.show = function(section, ...args) {
         if (['diagnose', 'parts'].includes(section) && !state.active) {
+          if (section === 'diagnose' && window.openNovaGuestPreview?.()) return;
           open();
           return;
         }
@@ -5985,3 +5997,14 @@ document.querySelector('#nova-trial-voice-limit button[autofocus]').addEventList
 
 </body>
 </html>
+
+<style>
+#nova-guest-preview { max-width: 720px; margin: 16px auto; width: calc(100% - 32px); }
+#nova-guest-preview [hidden], #nova-guest-preview[hidden] { display: none; }
+#nova-guest-preview button { min-height: 44px; margin: 4px 4px 4px 0; }
+#nova-guest-preview input { font-size: 16px; }
+#nova-guest-hologram { width: min(100%, 280px); max-height: 150px; object-fit: contain; display: block; margin: 0 auto; }
+#nova-guest-answer { white-space: pre-wrap; }
+#nova-guest-status:empty, #nova-guest-answer:empty { display: none; }
+</style>
+<script src="/guest-preview.js"></script>
