@@ -52,6 +52,7 @@
   let busy = false;
   let recognition;
   let triedWelcome = false;
+  let microphoneStarted = false;
   let needsMicTap = false;
   let turn = 0;
   const welcome = 'Hi, I’m Nova. I can show you a hologram of your car and help you figure out what to check first. Tell me the year, make and model, and what it’s doing.';
@@ -153,43 +154,68 @@
     }
   };
 
+  const offerMicrophone = (message = 'Tap the microphone to speak.') => {
+    if (!Recognition) {
+      buttonState('idle');
+      status.textContent = 'This browser can’t listen directly. Tap Type instead and use your keyboard microphone.';
+      return;
+    }
+    needsMicTap = true;
+    buttonState('ready', microphoneStarted ? '🎙 Tap to speak' : '🎙 Enable microphone');
+    status.textContent = message;
+  };
+
   const listen = (currentTurn) => {
     if (!guest || home.hidden || typing || preview.completed || currentTurn !== turn) return;
     if (!Recognition) {
-      buttonState('idle');
-      status.textContent = 'Voice is unavailable here. Tap Type instead to continue.';
+      offerMicrophone();
       return;
     }
     const mic = new Recognition();
     recognition = mic;
     mic.lang = 'en-US';
-    mic.onresult = (event) => {
-      if (currentTurn !== turn) return;
+    const isCurrent = () => currentTurn === turn && recognition === mic;
+    const retry = (message) => {
+      if (!isCurrent()) return;
+      clearTimeout(timer);
       recognition = undefined;
+      offerMicrophone(message);
+    };
+    const timer = setTimeout(() => {
+      if (!isCurrent()) return;
+      retry('The microphone didn’t start. Tap to try again or choose Type instead.');
+      mic.abort();
+    }, 15000);
+    mic.onstart = () => {
+      if (!isCurrent()) return;
+      clearTimeout(timer);
+      microphoneStarted = true;
       needsMicTap = false;
-      accept(event.results[0][0].transcript);
-    };
-    mic.onerror = () => {
-      if (currentTurn !== turn) return;
-      needsMicTap = true;
-      buttonState('idle');
-      status.textContent = 'Tap Talk to Nova to try the microphone again, or type instead.';
-    };
-    mic.onend = () => {
-      if (recognition !== mic) return;
-      recognition = undefined;
-      if (heroTalk.dataset.voiceState === 'listening') buttonState('idle');
-      if (status.textContent === 'Listening…') status.textContent = 'Tap Talk to Nova when you’re ready to speak.';
-    };
-    try {
-      mic.start();
       buttonState('listening', 'Nova is listening…');
       status.textContent = 'Listening…';
-    } catch {
+    };
+    mic.onresult = (event) => {
+      if (!isCurrent()) return;
+      clearTimeout(timer);
       recognition = undefined;
-      needsMicTap = true;
+      microphoneStarted = true;
+      needsMicTap = false;
       buttonState('idle');
-      status.textContent = 'Tap Talk to Nova to enable the microphone, or type instead.';
+      accept(event.results[0][0].transcript);
+    };
+    mic.onerror = (event) => {
+      retry(event.error === 'not-allowed' || event.error === 'service-not-allowed'
+        ? 'Allow microphone access when your browser asks. If access is blocked, check this site’s permissions or tap Type instead.'
+        : 'Nova couldn’t hear you. Tap the microphone to try again, or type instead.');
+    };
+    mic.onend = () => retry('Tap the microphone when you’re ready to speak.');
+    try {
+      buttonState('connecting', 'Opening microphone…');
+      status.textContent = 'Allow microphone access if your browser asks.';
+      // Keep start in the button’s click handler for Safari’s user gesture requirement.
+      mic.start();
+    } catch {
+      retry('The microphone didn’t start. Tap to try again or choose Type instead.');
     }
   };
 
@@ -202,8 +228,12 @@
     const finish = (played) => {
       if (currentTurn !== turn) return;
       buttonState('idle');
-      if (played || !requirePlayback) listen(currentTurn);
-      else status.textContent = 'Tap Talk to Nova to hear her welcome.';
+      if (!played && requirePlayback) {
+        status.textContent = 'Tap Talk to Nova to hear her welcome.';
+        return;
+      }
+      if (microphoneStarted) listen(currentTurn);
+      else offerMicrophone('Tap Enable microphone and allow access to speak to Nova.');
     };
     if (text === welcome) {
       playWelcome(played => {
@@ -222,10 +252,9 @@
       typing = false;
       voice = true;
       render();
-      if (needsMicTap) {
-        recognition?.abort();
-        listen(++turn);
-      } else promptAndListen(preview.vehicle ? 'What’s going on with your vehicle?' : welcome);
+      if (recognition) return true;
+      if (needsMicTap) listen(++turn);
+      else promptAndListen(preview.vehicle ? 'What’s going on with your vehicle?' : welcome);
     }
     return true;
   };
