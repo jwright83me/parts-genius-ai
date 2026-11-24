@@ -34,6 +34,15 @@
   const offer = panel.querySelector('#nova-guest-offer');
   const heroTalk = home.querySelector('.nova-voice-button');
   const memberTalk = heroTalk.onclick;
+  const welcomeAudio = new Audio('/api/guest/welcome-audio');
+  welcomeAudio.preload = 'none';
+  let cancelWelcome = () => {};
+  const buttonState = (state, label = '') => {
+    heroTalk.dataset.voiceState = state;
+    heroTalk.textContent = label;
+    heroTalk.setAttribute('aria-label', label || 'Talk to Nova');
+    heroTalk.disabled = state === 'connecting' || state === 'speaking';
+  };
   const storageKey = 'novaGuestPreview';
   let preview = {};
   try { preview = JSON.parse(sessionStorage.getItem(storageKey)) || {}; } catch {}
@@ -55,6 +64,30 @@
     try { sessionStorage.setItem(storageKey, JSON.stringify(preview)); } catch {}
   };
 
+  const playWelcome = (done) => {
+    let finished = false;
+    let timer = setTimeout(() => finish(false), 12000);
+    const finish = (played) => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(timer);
+      cancelWelcome = () => {};
+      welcomeAudio.onplaying = welcomeAudio.onended = welcomeAudio.onerror = null;
+      if (!played) welcomeAudio.pause();
+      done(played);
+    };
+    welcomeAudio.onplaying = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => finish(false), 30000);
+      buttonState('speaking', 'Nova is speaking…');
+    };
+    welcomeAudio.onended = () => finish(true);
+    welcomeAudio.onerror = () => finish(false);
+    cancelWelcome = () => finish(false);
+    try { welcomeAudio.currentTime = 0; welcomeAudio.play().catch(() => finish(false)); }
+    catch { finish(false); }
+  };
+
   const speak = (text, done) => {
     if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
       done(false);
@@ -73,6 +106,7 @@
     };
     words.onstart = () => {
       started = true;
+      buttonState('speaking', 'Nova is speaking…');
       clearTimeout(timer);
       timer = setTimeout(() => finish(true), 45000);
     };
@@ -122,6 +156,7 @@
   const listen = (currentTurn) => {
     if (!guest || home.hidden || typing || preview.completed || currentTurn !== turn) return;
     if (!Recognition) {
+      buttonState('idle');
       status.textContent = 'Voice is unavailable here. Tap Type instead to continue.';
       return;
     }
@@ -137,32 +172,46 @@
     mic.onerror = () => {
       if (currentTurn !== turn) return;
       needsMicTap = true;
+      buttonState('idle');
       status.textContent = 'Tap Talk to Nova to try the microphone again, or type instead.';
     };
     mic.onend = () => {
       if (recognition !== mic) return;
       recognition = undefined;
+      if (heroTalk.dataset.voiceState === 'listening') buttonState('idle');
       if (status.textContent === 'Listening…') status.textContent = 'Tap Talk to Nova when you’re ready to speak.';
     };
     try {
       mic.start();
+      buttonState('listening', 'Nova is listening…');
       status.textContent = 'Listening…';
     } catch {
       recognition = undefined;
       needsMicTap = true;
+      buttonState('idle');
       status.textContent = 'Tap Talk to Nova to enable the microphone, or type instead.';
     }
   };
 
   const promptAndListen = (text, requirePlayback = false) => {
     const currentTurn = ++turn;
+    cancelWelcome();
     recognition?.abort();
     recognition = undefined;
-    speak(text, (played) => {
+    if (!requirePlayback) buttonState('connecting', 'Nova is loading…');
+    const finish = (played) => {
       if (currentTurn !== turn) return;
+      buttonState('idle');
       if (played || !requirePlayback) listen(currentTurn);
       else status.textContent = 'Tap Talk to Nova to hear her welcome.';
-    });
+    };
+    if (text === welcome) {
+      playWelcome(played => {
+        if (currentTurn !== turn) return;
+        if (played || requirePlayback) finish(played);
+        else speak(text, finish);
+      });
+    } else speak(text, finish);
   };
 
   const open = () => {
@@ -185,7 +234,9 @@
     ++turn;
     recognition?.abort();
     recognition = undefined;
+    cancelWelcome();
     window.speechSynthesis?.cancel();
+    buttonState('idle');
     voice = false;
     typing = true;
     status.textContent = '';
@@ -226,6 +277,7 @@
 
     busy = submit.disabled = input.disabled = true;
     status.textContent = 'Nova is thinking…';
+    if (voice) buttonState('connecting', 'Nova is thinking…');
     try {
       const response = await fetch('/api/guest/diagnose', {
         method: 'POST',
@@ -242,12 +294,14 @@
       const currentTurn = ++turn;
       const invite = (played) => {
         if (currentTurn !== turn) return;
+        if (voice) buttonState('idle');
         if (played) showSignup();
         else setTimeout(() => { if (currentTurn === turn) showSignup(); }, 4500);
       };
       if (voice && guest && !home.hidden) speak(preview.answer, invite);
       else invite(false);
     } catch (error) {
+      if (voice) buttonState('idle');
       status.textContent = (error.message || 'Nova is temporarily unavailable.') + ' Tap Talk to Nova or type to try again.';
     } finally {
       busy = submit.disabled = input.disabled = false;
@@ -266,7 +320,9 @@
     ++turn;
     recognition?.abort();
     recognition = undefined;
+    cancelWelcome();
     window.speechSynthesis?.cancel();
+    buttonState('idle');
   };
   window.addEventListener('nova-membership-state', ({detail}) => {
     guest = window.novaGuestPreviewEnabled = !detail.signedIn;
