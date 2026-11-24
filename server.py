@@ -1,4 +1,5 @@
 
+from base64 import b64encode
 import json
 import os
 from concurrent.futures import ThreadPoolExecutor
@@ -1076,6 +1077,16 @@ _guest_welcome_lock = Lock()
 _guest_welcome_retry_at = 0
 
 
+def guest_speech(text):
+    return OpenAI(timeout=10, max_retries=0).audio.speech.create(
+        model="gpt-4o-mini-tts",
+        voice="coral",
+        instructions="Speak in a warm, natural Australian accent with a friendly, clear pace.",
+        input=text,
+        response_format="mp3",
+    ).content
+
+
 @app.get("/api/guest/welcome-audio")
 def guest_welcome_audio():
     global _guest_welcome_audio, _guest_welcome_retry_at
@@ -1087,17 +1098,11 @@ def guest_welcome_audio():
             if monotonic() < _guest_welcome_retry_at:
                 return jsonify(error="Welcome audio unavailable."), 503
             try:
-                _guest_welcome_audio = OpenAI(timeout=10, max_retries=0).audio.speech.create(
-                    model="gpt-4o-mini-tts",
-                    voice="coral",
-                    instructions="Speak in a warm, natural Australian accent with a friendly, clear pace.",
-                    input=(
-                        "Hi, I’m Nova. I can show you a hologram of your car and help you "
-                        "figure out what to check first. Tell me the year, make and model, "
-                        "and what it’s doing."
-                    ),
-                    response_format="mp3",
-                ).content
+                _guest_welcome_audio = guest_speech(
+                    "Hi, I’m Nova. I can show you a hologram of your car and help you "
+                    "figure out what to check first. Tell me the year, make and model, "
+                    "and what it’s doing."
+                )
                 if not _guest_welcome_audio:
                     _guest_welcome_audio = None
                     raise ValueError("Empty welcome audio")
@@ -1208,7 +1213,12 @@ def guest_diagnose():
         app.logger.warning("Guest preview failed: %s", type(error).__name__)
         return jsonify(error="Nova couldn’t answer just now. Please try again."), 503
     session["nova_preview_answered"] = True
-    return jsonify(answer=answer)
+    try:
+        audio = b64encode(guest_speech(answer)).decode("ascii")
+    except Exception as error:
+        app.logger.warning("Guest answer audio failed: %s", type(error).__name__)
+        audio = None
+    return jsonify(answer=answer, audio=audio)
 
 
 @app.post("/api/diagnose")
