@@ -17,7 +17,9 @@
     <p id="nova-guest-status" role="status"></p>
     <p id="nova-guest-answer" aria-live="polite"></p>
     <div id="nova-guest-offer" hidden>
-      <button class="primary" type="button">Start my 3-day free trial</button>
+      <button class="primary" type="button" id="nova-guest-continue">Ask another question</button>
+      <button type="button" id="nova-guest-replay" hidden>Play Nova’s answer</button>
+      <p class="small muted">Continue with a 3-day free trial.</p>
       <p class="small muted">$9.99/month after trial. Card required. Cancel before the trial ends to avoid being charged.</p>
     </div>`;
 
@@ -32,9 +34,12 @@
   const status = panel.querySelector('#nova-guest-status');
   const reply = panel.querySelector('#nova-guest-answer');
   const offer = panel.querySelector('#nova-guest-offer');
+  const replay = panel.querySelector('#nova-guest-replay');
+  let answerAudio;
   const heroTalk = home.querySelector('.nova-voice-button');
   const memberTalk = heroTalk.onclick;
-  const welcomeAudio = new Audio('/api/guest/welcome-audio');
+  const welcomeSource = '/api/guest/welcome-audio';
+  const welcomeAudio = new Audio(welcomeSource);
   welcomeAudio.preload = 'none';
   let cancelWelcome = () => {};
   const buttonState = (state, label = '') => {
@@ -68,7 +73,7 @@
     try { sessionStorage.setItem(storageKey, JSON.stringify(preview)); } catch {}
   };
 
-  const playWelcome = (done) => {
+  const playClip = (source, done) => {
     let finished = false;
     let timer = setTimeout(() => finish(false), 12000);
     const finish = (played) => {
@@ -88,7 +93,11 @@
     welcomeAudio.onended = () => finish(true);
     welcomeAudio.onerror = () => finish(false);
     cancelWelcome = () => finish(false);
-    try { welcomeAudio.currentTime = 0; welcomeAudio.play().catch(() => finish(false)); }
+    try {
+      if (welcomeAudio.getAttribute('src') !== source) welcomeAudio.src = source;
+      welcomeAudio.currentTime = 0;
+      welcomeAudio.play().catch(() => finish(false));
+    }
     catch { finish(false); }
   };
 
@@ -135,6 +144,7 @@
     form.hidden = prompt.hidden = !typing || Boolean(preview.completed);
     typeButton.hidden = typing || Boolean(preview.completed);
     offer.hidden = !preview.completed;
+    replay.hidden = !preview.answer || (!answerAudio && !window.speechSynthesis);
     reply.textContent = preview.answer || '';
   };
 
@@ -322,7 +332,7 @@
         : 'Tap Enable microphone and allow access to speak to Nova.');
     };
     if (text === welcome) {
-      playWelcome(played => {
+      playClip(welcomeSource, played => {
         if (currentTurn !== turn) return;
         if (played || requirePlayback) finish(played);
         else speak(text, finish);
@@ -410,16 +420,9 @@
       preview.answer = result.answer || result.error;
       save();
       status.textContent = '';
+      if (result.audio) answerAudio = 'data:audio/mpeg;base64,' + result.audio;
       render();
-      const currentTurn = ++turn;
-      const invite = (played) => {
-        if (currentTurn !== turn) return;
-        if (voice) buttonState('idle');
-        if (played) showSignup();
-        else setTimeout(() => { if (currentTurn === turn) showSignup(); }, 4500);
-      };
-      if (voice && guest && !home.hidden) speak(preview.answer, invite);
-      else invite(false);
+      if (result.answer && guest && !home.hidden) playAnswer();
     } catch (error) {
       if (voice) buttonState('idle');
       status.textContent = (error.message || 'Nova is temporarily unavailable.') + ' Tap Talk to Nova or type to try again.';
@@ -433,7 +436,29 @@
     accept(input.value);
   };
 
-  offer.querySelector('button').onclick = () => window.openNovaMembership();
+  const playAnswer = () => {
+    const currentTurn = ++turn;
+    cancelWelcome();
+    window.speechSynthesis?.cancel();
+    buttonState('connecting', 'Nova is loading…');
+    replay.disabled = true;
+    const finish = (played) => {
+      if (currentTurn !== turn) return;
+      buttonState('ready', 'Ask another question');
+      replay.disabled = false;
+      status.textContent = played ? '' : 'Tap Play Nova’s answer to try the audio again.';
+    };
+    if (answerAudio) {
+      playClip(answerAudio, played => {
+        if (currentTurn !== turn) return;
+        if (played) finish(true);
+        else speak(preview.answer, finish);
+      });
+    } else speak(preview.answer, finish);
+  };
+
+  replay.onclick = playAnswer;
+  panel.querySelector('#nova-guest-continue').onclick = showSignup;
   window.openNovaGuestPreview = open;
   window.addEventListener('pagehide', () => { ++turn; cancelRecording(); });
   window.pauseNovaGuestPreview = () => {
@@ -444,7 +469,9 @@
     recognition = undefined;
     cancelWelcome();
     window.speechSynthesis?.cancel();
-    buttonState('idle');
+    replay.disabled = false;
+    if (preview.completed) buttonState('ready', 'Ask another question');
+    else buttonState('idle');
   };
   window.addEventListener('nova-membership-state', ({detail}) => {
     guest = window.novaGuestPreviewEnabled = !detail.signedIn;
@@ -453,6 +480,7 @@
     if (guest) {
       render();
       showVehicle();
+      if (preview.completed && !heroTalk.disabled) buttonState('ready', 'Ask another question');
       if (!triedWelcome && !preview.completed && !home.hidden &&
           !new URLSearchParams(location.search).has('membership')) {
         triedWelcome = true;
