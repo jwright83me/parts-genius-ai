@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timezone
 from collections import deque
 from functools import lru_cache
+from io import BytesIO
 from threading import Lock
 from time import monotonic
 from urllib.error import URLError
@@ -1068,6 +1069,47 @@ def lookup_status():
 @app.get("/guest-preview.js")
 def guest_preview_script():
     return send_file("guest-preview.js", mimetype="application/javascript")
+
+
+_guest_welcome_audio = None
+_guest_welcome_lock = Lock()
+_guest_welcome_retry_at = 0
+
+
+@app.get("/api/guest/welcome-audio")
+def guest_welcome_audio():
+    global _guest_welcome_audio, _guest_welcome_retry_at
+    if not app.config["NOVA_MEMBERSHIP_ENABLED"] or not os.getenv("OPENAI_API_KEY"):
+        return jsonify(error="Welcome audio unavailable."), 503
+
+    with _guest_welcome_lock:
+        if _guest_welcome_audio is None:
+            if monotonic() < _guest_welcome_retry_at:
+                return jsonify(error="Welcome audio unavailable."), 503
+            try:
+                _guest_welcome_audio = OpenAI(timeout=10, max_retries=0).audio.speech.create(
+                    model="gpt-4o-mini-tts",
+                    voice="coral",
+                    instructions="Speak in a warm, natural Australian accent with a friendly, clear pace.",
+                    input=(
+                        "Hi, I’m Nova. I can show you a hologram of your car and help you "
+                        "figure out what to check first. Tell me the year, make and model, "
+                        "and what it’s doing."
+                    ),
+                    response_format="mp3",
+                ).content
+                if not _guest_welcome_audio:
+                    _guest_welcome_audio = None
+                    raise ValueError("Empty welcome audio")
+            except Exception as error:
+                _guest_welcome_retry_at = monotonic() + 60
+                app.logger.warning("Guest welcome audio failed: %s", type(error).__name__)
+                return jsonify(error="Welcome audio unavailable."), 503
+
+    return send_file(
+        BytesIO(_guest_welcome_audio), mimetype="audio/mpeg",
+        conditional=True, max_age=86400,
+    )
 
 
 # Keep anonymous previews inexpensive and independent of membership usage.
