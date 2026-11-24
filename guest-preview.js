@@ -1,21 +1,20 @@
 (() => {
   const panel = document.createElement('section');
   panel.id = 'nova-guest-preview';
-  panel.className = 'panel';
   panel.hidden = true;
   panel.setAttribute('aria-labelledby', 'nova-guest-title');
   panel.innerHTML = `
-    <h2 id="nova-guest-title">Hi, I’m Nova.</h2>
-    <p id="nova-guest-prompt"></p>
-    <form id="nova-guest-form">
+    <h2 id="nova-guest-title" class="nova-guest-sr-only">Talk to Nova</h2>
+    <p id="nova-guest-prompt" hidden></p>
+    <button type="button" id="nova-guest-type">Type instead</button>
+    <form id="nova-guest-form" hidden>
       <label class="field"><span id="nova-guest-label"></span>
         <input id="nova-guest-input" type="text" required autocomplete="off">
       </label>
       <button class="primary" type="submit"></button>
-      <button type="button" id="nova-guest-talk">Talk to Nova</button>
+
     </form>
     <p id="nova-guest-status" role="status"></p>
-    <img id="nova-guest-hologram" alt="" hidden>
     <p id="nova-guest-answer" aria-live="polite"></p>
     <div id="nova-guest-offer" hidden>
       <button class="primary" type="button">Start my 3-day free trial</button>
@@ -23,12 +22,11 @@
     </div>`;
 
   const home = document.getElementById('novaHome');
-  home.before(panel);
-  const previewImage = panel.querySelector('img');
+  home.after(panel);
   const form = panel.querySelector('form');
   const input = panel.querySelector('input');
   const submit = form.querySelector('[type=submit]');
-  const talk = panel.querySelector('#nova-guest-talk');
+  const typeButton = panel.querySelector('#nova-guest-type');
   const label = panel.querySelector('#nova-guest-label');
   const prompt = panel.querySelector('#nova-guest-prompt');
   const status = panel.querySelector('#nova-guest-status');
@@ -41,6 +39,14 @@
   try { preview = JSON.parse(sessionStorage.getItem(storageKey)) || {}; } catch {}
   let guest = false;
   let voice = false;
+  let typing = false;
+  let busy = false;
+  let recognition;
+  let triedWelcome = false;
+  let needsMicTap = false;
+  let turn = 0;
+  const welcome = 'Hi, I’m Nova. I can show you a hologram of your car and help you figure out what to check first. Tell me the year, make and model, and what it’s doing.';
+  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
   const vehicleName = () => [preview.vehicle.year, preview.vehicle.make,
     preview.vehicle.model, preview.vehicle.engine].filter(Boolean).join(' ');
@@ -49,16 +55,33 @@
     try { sessionStorage.setItem(storageKey, JSON.stringify(preview)); } catch {}
   };
 
-  const speak = (text, finished) => {
+  const speak = (text, done) => {
     if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
-      finished?.();
+      done(false);
       return;
     }
     const words = new SpeechSynthesisUtterance(text);
     words.lang = 'en-AU';
-    words.onend = words.onerror = () => finished?.();
+    let started = false;
+    let timer;
+    let finished = false;
+    const finish = (played) => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(timer);
+      done(played);
+    };
+    words.onstart = () => {
+      started = true;
+      clearTimeout(timer);
+      timer = setTimeout(() => finish(true), 45000);
+    };
+    words.onend = () => finish(started);
+    words.onerror = () => finish(false);
     window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(words);
+    timer = setTimeout(() => finish(false), 2200);
+    try { window.speechSynthesis.speak(words); }
+    catch { finish(false); }
   };
 
   const render = () => {
@@ -71,7 +94,8 @@
     input.placeholder = hasVehicle ? 'Example: It clicks rapidly and won’t start' : 'Example: 2020 Dodge Challenger 6.4L';
     input.maxLength = hasVehicle ? 500 : 120;
     submit.textContent = hasVehicle ? 'Ask Nova' : 'Show my vehicle';
-    form.hidden = Boolean(preview.completed);
+    form.hidden = prompt.hidden = !typing || Boolean(preview.completed);
+    typeButton.hidden = typing || Boolean(preview.completed);
     offer.hidden = !preview.completed;
     reply.textContent = preview.answer || '';
   };
@@ -82,66 +106,104 @@
     showMyGarage();
     const holo = document.getElementById('novaVehicleHologram');
     const image = getVehicleHologram(preview.vehicle);
-    previewImage.hidden = !image;
-    previewImage.alt = image?.includes('generic-') ? 'Illustrative vehicle hologram' : vehicleName() + ' hologram';
-    if (image) previewImage.src = holo.src = '/' + image;
+    if (image) holo.src = '/' + image;
     else holo.removeAttribute('src');
     holo.style.display = image ? 'block' : 'none';
     holo.alt = image?.includes('generic-') ? 'Illustrative vehicle hologram' : 'Vehicle hologram';
     status.textContent = !image ? 'This model doesn’t have a hologram yet.' : '';
   };
 
+  const showSignup = () => {
+    if (guest && !home.hidden && !document.querySelector('dialog[open]')) {
+      window.openNovaMembership?.();
+    }
+  };
+
+  const listen = (currentTurn) => {
+    if (!guest || home.hidden || typing || preview.completed || currentTurn !== turn) return;
+    if (!Recognition) {
+      status.textContent = 'Voice is unavailable here. Tap Type instead to continue.';
+      return;
+    }
+    const mic = new Recognition();
+    recognition = mic;
+    mic.lang = 'en-US';
+    mic.onresult = (event) => {
+      if (currentTurn !== turn) return;
+      recognition = undefined;
+      needsMicTap = false;
+      accept(event.results[0][0].transcript);
+    };
+    mic.onerror = () => {
+      if (currentTurn !== turn) return;
+      needsMicTap = true;
+      status.textContent = 'Tap Talk to Nova to try the microphone again, or type instead.';
+    };
+    mic.onend = () => {
+      if (recognition !== mic) return;
+      recognition = undefined;
+      if (status.textContent === 'Listening…') status.textContent = 'Tap Talk to Nova when you’re ready to speak.';
+    };
+    try {
+      mic.start();
+      status.textContent = 'Listening…';
+    } catch {
+      recognition = undefined;
+      needsMicTap = true;
+      status.textContent = 'Tap Talk to Nova to enable the microphone, or type instead.';
+    }
+  };
+
+  const promptAndListen = (text, requirePlayback = false) => {
+    const currentTurn = ++turn;
+    recognition?.abort();
+    recognition = undefined;
+    speak(text, (played) => {
+      if (currentTurn !== turn) return;
+      if (played || !requirePlayback) listen(currentTurn);
+      else status.textContent = 'Tap Talk to Nova to hear her welcome.';
+    });
+  };
+
   const open = () => {
     if (!guest) return false;
     show('home');
-    panel.scrollIntoView({block: 'center'});
-    (preview.completed ? offer.querySelector('button') : input).focus({preventScroll: true});
+    if (preview.completed) showSignup();
+    else if (!busy) {
+      typing = false;
+      voice = true;
+      render();
+      if (needsMicTap) {
+        recognition?.abort();
+        listen(++turn);
+      } else promptAndListen(preview.vehicle ? 'What’s going on with your vehicle?' : welcome);
+    }
     return true;
   };
 
-  const listen = () => {
-    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!Recognition) {
-      talk.disabled = false;
-      status.textContent = 'Use your keyboard microphone or type below.';
-      input.focus();
-      return;
-    }
-    const recognition = new Recognition();
-    recognition.lang = 'en-US';
-    recognition.onresult = (event) => {
-      input.value = event.results[0][0].transcript.slice(0, input.maxLength);
-      status.textContent = 'Check what I heard, then submit.';
-      input.focus();
-    };
-    recognition.onerror = () => { status.textContent = 'Microphone unavailable. You can still type.'; };
-    recognition.onend = () => {
-      talk.disabled = false;
-      if (status.textContent === 'Listening…') status.textContent = 'Tap Talk to Nova to try again, or type below.';
-    };
-    try {
-      recognition.start();
-      status.textContent = 'Listening…';
-    } catch {
-      talk.disabled = false;
-      status.textContent = 'Microphone unavailable. You can still type.';
-    }
+  typeButton.onclick = () => {
+    ++turn;
+    recognition?.abort();
+    recognition = undefined;
+    window.speechSynthesis?.cancel();
+    voice = false;
+    typing = true;
+    status.textContent = '';
+    render();
+    input.focus();
   };
 
-  talk.onclick = () => {
-    voice = true;
-    talk.disabled = true;
-    speak(label.textContent, listen);
-  };
-
-  form.onsubmit = async (event) => {
-    event.preventDefault();
-    if (submit.disabled || preview.completed) return;
-    const value = input.value.trim();
+  const accept = async (message) => {
+    if (busy || preview.completed) return;
+    let symptom = message.trim().slice(0, 500);
     if (!preview.vehicle) {
-      const vehicle = window.parseNovaVehicle(value);
+      // Leave model names intact and separate common spoken symptom transitions.
+      const match = symptom.match(/\s+(?:and\s+)?(?:my (?:problem|issue) is(?: that)?|the (?:problem|issue) is(?: that)?|it(?=\s|['’])|and I(?=\s))\b|[.;?!]\s+(?=[A-Za-z])/i);
+      const description = match ? symptom.slice(0, match.index) : symptom;
+      const vehicle = window.parseNovaVehicle(description);
       if (!vehicle || !vehicle.model || Number(vehicle.year) > new Date().getFullYear() + 1) {
-        status.textContent = 'Enter your year, make and model, like 2020 Dodge Challenger.';
+        status.textContent = 'Tell me the year, make and model. For example, 2020 Dodge Challenger.';
+        if (voice) promptAndListen(status.textContent);
         return;
       }
       preview.vehicle = vehicle;
@@ -149,18 +211,26 @@
       showVehicle();
       input.value = '';
       render();
-      input.focus();
-      if (voice) speak(prompt.textContent);
+      symptom = match ? symptom.slice(match.index).replace(/^[.;?!]\s+/, '').trim() : '';
+      if (symptom.length < 4) {
+        if (voice) promptAndListen(`I’ve added your ${vehicleName()} to My Garage for this visit. What’s going on with it?`);
+        else input.focus();
+        return;
+      }
+    }
+    if (symptom.length < 4) {
+      status.textContent = 'Tell me what the vehicle is doing.';
+      if (voice) promptAndListen(status.textContent);
       return;
     }
 
-    submit.disabled = input.disabled = talk.disabled = true;
+    busy = submit.disabled = input.disabled = true;
     status.textContent = 'Nova is thinking…';
     try {
       const response = await fetch('/api/guest/diagnose', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({vehicle: vehicleName(), symptom: value})
+        body: JSON.stringify({vehicle: vehicleName(), symptom})
       });
       const result = await response.json();
       if (!response.ok && !result.completed) throw new Error(result.error || 'Please try again.');
@@ -169,26 +239,48 @@
       save();
       status.textContent = '';
       render();
-      if (voice) speak(preview.answer);
+      const currentTurn = ++turn;
+      const invite = (played) => {
+        if (currentTurn !== turn) return;
+        if (played) showSignup();
+        else setTimeout(() => { if (currentTurn === turn) showSignup(); }, 4500);
+      };
+      if (voice && guest && !home.hidden) speak(preview.answer, invite);
+      else invite(false);
     } catch (error) {
-      status.textContent = error.message || 'Nova is temporarily unavailable.';
+      status.textContent = (error.message || 'Nova is temporarily unavailable.') + ' Tap Talk to Nova or type to try again.';
     } finally {
-      submit.disabled = input.disabled = talk.disabled = false;
+      busy = submit.disabled = input.disabled = false;
     }
+  };
+
+  form.onsubmit = (event) => {
+    event.preventDefault();
+    accept(input.value);
   };
 
   offer.querySelector('button').onclick = () => window.openNovaMembership();
   window.openNovaGuestPreview = open;
+  window.pauseNovaGuestPreview = () => {
+    if (!guest) return;
+    ++turn;
+    recognition?.abort();
+    recognition = undefined;
+    window.speechSynthesis?.cancel();
+  };
   window.addEventListener('nova-membership-state', ({detail}) => {
     guest = window.novaGuestPreviewEnabled = !detail.signedIn;
     panel.hidden = !guest || home.hidden;
-    heroTalk.onclick = guest ? () => {
-      open();
-      if (!preview.completed) talk.click();
-    } : memberTalk;
+    heroTalk.onclick = guest ? open : memberTalk;
     if (guest) {
       render();
       showVehicle();
+      if (!triedWelcome && !preview.completed && !home.hidden &&
+          !new URLSearchParams(location.search).has('membership')) {
+        triedWelcome = true;
+        voice = true;
+        promptAndListen(preview.vehicle ? 'What’s going on with your vehicle?' : welcome, true);
+      }
     } else {
       if (window.novaGuestVehicle) {
         delete window.novaGuestVehicle;
