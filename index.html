@@ -938,7 +938,10 @@ if (data.type === 'response.audio.delta' ||
       window.openNovaMembership();
     } else if (data.code === 'nova_trial_voice_allowance_reached') {
       const dialog = document.getElementById('nova-trial-voice-limit');
-      if (!dialog.open) dialog.showModal();
+      if (!dialog.open) {
+        window.trackNovaFunnel?.('membership_opened');
+        dialog.showModal();
+      }
     } else {
       alert(data.error || 'Unable to connect to the voice assistant.');
     }
@@ -5780,7 +5783,7 @@ document.querySelector('#nova-trial-voice-limit button[autofocus]').addEventList
     dialog.setAttribute('aria-labelledby', 'nova-membership-title');
     dialog.innerHTML = `
       <h2 id="nova-membership-title">Nova Membership</h2>
-      <p>Try Nova free for 3 days. Live voice has a trial usage limit. A card is required. Then $9.99 USD per month until you cancel. Cancel online before your trial ends to avoid the first charge.</p>
+      <p id="nova-membership-terms"></p>
       <form id="nova-membership-login">
         <label>Email <input type="email" name="email" autocomplete="email" required maxlength="254"></label>
         <label id="nova-membership-code" hidden>Code from your email
@@ -5800,6 +5803,7 @@ document.querySelector('#nova-trial-voice-limit button[autofocus]').addEventList
           <button type="button" id="nova-membership-confirm-paid" class="primary">Confirm and Start Paid Membership</button>
           <button type="button" id="nova-membership-keep-trial">Keep My Free Trial</button>
         </div>
+        <p id="nova-membership-trial-detail" hidden>Your trial ends after 3 days. To continue for $9.99/month plus any applicable tax, add a payment method in Manage Subscription. If you add one, billing starts when the trial ends unless you cancel.</p>
         <button type="button" id="nova-membership-manage">Manage Subscription</button>
         <div id="nova-premium" hidden>
           <p id="nova-premium-detail"></p>
@@ -5857,6 +5861,10 @@ document.querySelector('#nova-trial-voice-limit button[autofocus]').addEventList
     const render = (next) => {
       state = next;
       window.dispatchEvent(new CustomEvent('nova-membership-state', {detail: state}));
+      dialog.querySelector('#nova-membership-terms').textContent = state.cardFreeTrial
+        ? 'Try Nova free for 3 days. No card required to start. Live voice has a trial usage limit.'
+        : 'Try Nova free for 3 days. Live voice has a trial usage limit. A card is required. Then $9.99 USD per month until you cancel. Cancel online before your trial ends to avoid the first charge.';
+      dialog.querySelector('#nova-membership-trial-detail').hidden = !(state.cardFreeTrial && state.trialActive);
       login.hidden = !!state.signedIn;
       account.hidden = !state.signedIn;
       dialog.querySelector('#nova-membership-email').textContent = state.email || '';
@@ -5918,6 +5926,7 @@ document.querySelector('#nova-trial-voice-limit button[autofocus]').addEventList
       run(async () => {
         if (awaitingCode) {
           await api('verify', {email: email.value, code: code.value});
+          window.trackNovaFunnel?.('email_verified');
           setCodeStep(false);
           render(await api('status'));
           await showUsagePack();
@@ -5938,6 +5947,7 @@ document.querySelector('#nova-trial-voice-limit button[autofocus]').addEventList
     });
     const startCheckout = (signup) => run(async () => {
       const result = await api('checkout', {signup, acceptMonthlyCharge: signup === 'paid'});
+      window.trackNovaFunnel?.(signup === 'trial' ? 'trial_checkout_opened' : 'paid_checkout_opened');
       window.location.assign(result.url);
     });
     checkout.onclick = () => startCheckout('trial');
@@ -5955,6 +5965,7 @@ document.querySelector('#nova-trial-voice-limit button[autofocus]').addEventList
       paidConfirmation.hidden = true;
       const result = await api('start-paid', {acceptImmediateCharge: true});
       render(await api('status'));
+      if (result.paid) window.trackNovaFunnel?.('paid_started');
       message.textContent = result.paid
         ? 'Payment confirmed. Your paid Nova membership is active.'
         : 'Payment is awaiting confirmation. Check Membership again shortly.';
@@ -5983,6 +5994,9 @@ document.querySelector('#nova-trial-voice-limit button[autofocus]').addEventList
     }
     const url = new URL(window.location.href);
     if (url.searchParams.has('membership')) {
+      if (url.searchParams.get('membership') === 'complete' && state.active) {
+        window.trackNovaFunnel?.(state.trialActive ? 'trial_started' : 'paid_started');
+      }
       url.searchParams.delete('membership');
       history.replaceState(history.state, '', url);
       open();
@@ -6010,4 +6024,36 @@ document.querySelector('#nova-trial-voice-limit button[autofocus]').addEventList
 #nova-guest-answer { white-space: pre-wrap; }
 #nova-guest-status:empty, #nova-guest-answer:empty { display: none; }
 </style>
+<script>
+(() => {
+  if (location.hostname !== 'parts-genius-ai-nova-v15-test.up.railway.app') return;
+  const parameters = new URLSearchParams(location.search);
+  const referrer = document.referrer ? new URL(document.referrer).hostname : '';
+  const campaign = (parameters.get('utm_source') || '').toLowerCase();
+  const source = campaign === 'facebook' || parameters.has('fbclid') || /(^|\.)facebook\.com$/.test(referrer)
+    ? 'facebook'
+    : campaign === 'instagram' || /(^|\.)instagram\.com$/.test(referrer) ? 'instagram'
+    : campaign === 'google' || /(^|\.)google\.com$/.test(referrer) ? 'google'
+    : campaign || (referrer && referrer !== location.hostname) ? 'other' : 'direct';
+  const sent = new Set();
+  window.trackNovaFunnel = (event) => {
+    if (sent.has(event)) return;
+    sent.add(event);
+    let attributedSource = source;
+    try {
+      const key = 'nova-funnel:' + event;
+      if (sessionStorage.getItem(key)) return;
+      attributedSource = sessionStorage.getItem('nova-funnel:source') || source;
+      sessionStorage.setItem('nova-funnel:source', attributedSource);
+      sessionStorage.setItem(key, '1');
+    } catch {}
+    void fetch('/api/nova-funnel', {
+      method: 'POST', credentials: 'omit', keepalive: true,
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({event, source: attributedSource})
+    }).catch(() => {});
+  };
+  window.trackNovaFunnel('visit');
+})();
+</script>
 <script src="/guest-preview.js"></script>

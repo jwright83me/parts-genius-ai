@@ -361,6 +361,7 @@
 
   const open = () => {
     if (!guest) return false;
+    window.trackNovaFunnel?.('preview_started');
     show('home');
     if (stopRecording) { unlockAnswerAudio(); stopRecording(); return true; }
     if (preview.completed) showSignup();
@@ -425,6 +426,7 @@
       return;
     }
 
+    window.trackNovaFunnel?.('preview_started');
     busy = submit.disabled = input.disabled = true;
     status.textContent = 'Nova is thinking…';
     if (voice) buttonState('connecting', 'Nova is thinking…');
@@ -436,6 +438,7 @@
       });
       const result = await response.json();
       if (!response.ok && !result.completed) throw new Error(result.error || 'Please try again.');
+      if (result.answer) window.trackNovaFunnel?.('first_answer');
       preview.answer = result.answer;
       if (result.audio) answerAudio = result.audio;
       markComplete();

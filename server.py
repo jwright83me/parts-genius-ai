@@ -1067,6 +1067,32 @@ def list_vehicle_engines():
 def lookup_status():
     return jsonify({"version": "active-vehicle-search-v2", "max_research_attempts": 2})
 
+NOVA_FUNNEL_EVENTS = {
+    "visit", "preview_started", "first_answer", "membership_opened", "email_verified",
+    "trial_checkout_opened", "paid_checkout_opened", "trial_started", "paid_started",
+}
+NOVA_FUNNEL_SOURCES = {"direct", "facebook", "instagram", "google", "other"}
+
+
+@app.post("/api/nova-funnel")
+def nova_funnel():
+    if os.getenv("RAILWAY_ENVIRONMENT_NAME") != "nova-v15-test":
+        return "", 404
+    if request.headers.get("Origin") != os.getenv("NOVA_SITE_URL", "").rstrip("/"):
+        return "", 403
+    if not request.is_json or not 0 < (request.content_length or 0) <= 256:
+        return "", 400
+    event = request.get_json(silent=True)
+    if not isinstance(event, dict):
+        return "", 400
+    name, source = event.get("event"), event.get("source")
+    if (not isinstance(name, str) or name not in NOVA_FUNNEL_EVENTS
+            or not isinstance(source, str) or source not in NOVA_FUNNEL_SOURCES):
+        return "", 400
+    print(f"nova_funnel event={name} source={source}", flush=True)
+    return "", 204
+
+
 @app.get("/guest-preview.js")
 def guest_preview_script():
     return send_file("guest-preview.js", mimetype="application/javascript")
