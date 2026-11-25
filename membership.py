@@ -460,7 +460,7 @@ def checkout():
             if existing.status == "open":
                 # Older sessions had no selection metadata. The old flow based it on membership history.
                 existing_signup = (existing.metadata or {}).get("nova_signup", "paid" if previous else "trial")
-                if existing_signup == signup:
+                if existing_signup == signup and (signup != "trial" or getattr(existing, "payment_method_collection", None) == "if_required"):
                     return jsonify(url=existing.url)
                 try:
                     stripe.checkout.Session.expire(pending)
@@ -486,13 +486,13 @@ def checkout():
             }
         # The v2 payload omits the legacy payment_method_types field.
         checkout_session = stripe.checkout.Session.create(
-            customer=customer, mode="subscription", payment_method_collection="always",
+            customer=customer, mode="subscription", payment_method_collection="if_required" if signup == "trial" else "always",
             line_items=[{"price": price_id(), "quantity": 1}],
-            subscription_data={"trial_period_days": 3} if signup == "trial" else {},
+            subscription_data={"trial_period_days": 3, "trial_settings": {"end_behavior": {"missing_payment_method": "cancel"}}} if signup == "trial" else {},
             metadata={"nova_signup": signup},
             success_url=site_url() + "/?membership=complete",
             cancel_url=site_url() + "/?membership=return",
-            idempotency_key=f"nova-checkout-v3-{customer}-{pending or 'first'}-{signup}",
+            idempotency_key=f"nova-checkout-v4-{customer}-{pending or 'first'}-{signup}",
             **checkout_options,
         )
         db.execute("UPDATE nova_membership SET checkout_session = %s WHERE user_id = %s",
