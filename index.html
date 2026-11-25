@@ -5888,7 +5888,9 @@ document.querySelector('#nova-trial-voice-limit button[autofocus]').addEventList
     const render = (next) => {
       state = next;
       window.dispatchEvent(new CustomEvent('nova-membership-state', {detail: state}));
-      dialog.querySelector('#nova-membership-terms').textContent = state.cardFreeTrial
+      const terms = dialog.querySelector('#nova-membership-terms');
+      terms.hidden = !!state.active || !!state.paymentPending || (state.signedIn && !state.trialEligible);
+      terms.textContent = state.cardFreeTrial
         ? 'Try Nova free for 3 days. No card required to start. Live voice has a trial usage limit.'
         : 'Try Nova free for 3 days. Live voice has a trial usage limit. A card is required. Then $9.99 USD per month until you cancel. Cancel online before your trial ends to avoid the first charge.';
       dialog.querySelector('#nova-membership-trial-detail').hidden = !(state.cardFreeTrial && state.trialActive);
@@ -6053,7 +6055,6 @@ document.querySelector('#nova-trial-voice-limit button[autofocus]').addEventList
 </style>
 <script>
 (() => {
-  if (location.hostname !== 'parts-genius-ai-nova-v15-test.up.railway.app') return;
   const parameters = new URLSearchParams(location.search);
   const referrer = document.referrer ? new URL(document.referrer).hostname : '';
   const campaign = (parameters.get('utm_source') || '').toLowerCase();

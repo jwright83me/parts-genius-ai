@@ -182,10 +182,6 @@ def price_id():
     return os.environ["STRIPE_PRICE_ID"]
 
 
-def card_free_trial():
-    return current_app.config["NOVA_STRIPE_MODE"] == "test"
-
-
 def account_id():
     return session.get("membership_user")
 
@@ -375,7 +371,7 @@ def signout():
 def can_start_paid_trial(subscription):
     if subscription is None or subscription.status != "trialing":
         return False
-    if card_free_trial() and not getattr(subscription, "default_payment_method", None):
+    if not getattr(subscription, "default_payment_method", None) and not getattr(subscription, "default_source", None):
         return False
     if any(getattr(subscription, field, None) for field in
            ("cancel_at", "cancel_at_period_end", "schedule", "pending_update")):
@@ -389,14 +385,14 @@ def can_start_paid_trial(subscription):
 @membership.get("/status")
 def status():
     if not account_id():
-        return jsonify(enabled=True, signedIn=False, cardFreeTrial=card_free_trial(),
+        return jsonify(enabled=True, signedIn=False, cardFreeTrial=True,
                        guestPreviewComplete=bool(session.get("nova_preview_answered")))
     customer = membership_customer(account_id())
     active, previous, payment_pending = subscription_state(customer)
     item = nova_subscription_item(active) if active else None
     premium = item is not None and is_premium_price(item.price)
     return jsonify(enabled=True, signedIn=True, active=bool(active), trialEligible=not previous,
-                   cardFreeTrial=card_free_trial(),
+                   cardFreeTrial=True,
                    trialActive=bool(active and active.status == "trialing"),
                    canStartPaid=can_start_paid_trial(active),
                    premium=premium, showPremium=current_app.config["NOVA_STRIPE_MODE"] == "test",
@@ -464,7 +460,7 @@ def checkout():
             return jsonify(error="This account has already had a membership. Choose Subscribe Now."), 409
         if signup == "paid" and selection.get("acceptMonthlyCharge") is not True:
             return jsonify(error="Confirm the monthly price to continue."), 400
-        collection = "if_required" if signup == "trial" and card_free_trial() else "always"
+        collection = "if_required" if signup == "trial" else "always"
         if pending:
             existing = stripe.checkout.Session.retrieve(pending)
             if existing.status == "open":
@@ -497,8 +493,7 @@ def checkout():
         trial_options = {}
         if signup == "trial":
             trial_options["trial_period_days"] = 3
-            if card_free_trial():
-                trial_options["trial_settings"] = {"end_behavior": {"missing_payment_method": "cancel"}}
+            trial_options["trial_settings"] = {"end_behavior": {"missing_payment_method": "cancel"}}
         checkout_session = stripe.checkout.Session.create(
             customer=customer, mode="subscription", payment_method_collection=collection,
             line_items=[{"price": price_id(), "quantity": 1}],

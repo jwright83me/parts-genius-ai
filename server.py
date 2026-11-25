@@ -1076,9 +1076,10 @@ NOVA_FUNNEL_SOURCES = {"direct", "facebook", "instagram", "google", "other"}
 
 @app.post("/api/nova-funnel")
 def nova_funnel():
-    if os.getenv("RAILWAY_ENVIRONMENT_NAME") != "nova-v15-test":
+    if os.getenv("RAILWAY_ENVIRONMENT_NAME") not in {"nova-v15-test", "production"}:
         return "", 404
-    if request.headers.get("Origin") != os.getenv("NOVA_SITE_URL", "").rstrip("/"):
+    origin = os.getenv("NOVA_SITE_URL", "").rstrip("/")
+    if not origin or request.headers.get("Origin") != origin:
         return "", 403
     if not request.is_json or not 0 < (request.content_length or 0) <= 256:
         return "", 400
